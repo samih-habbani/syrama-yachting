@@ -1,26 +1,83 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --noir:         #06090f;
+  --bleu-nuit:    #0b1220;
+  --or:           #b8974a;
+  --or-clair:     #d4b472;
+  --or-pale:      #f0e4c0;
+  --champagne:    #f5eedd;
+  --gris:         #6a6a5e;
+  --blanc-casse:  #f8f4ec;
+
+  --font-cormorant: 'Cormorant Garamond', serif;
+  --font-lora:    'Lora', serif;
+  --font-heading: 'Cormorant Garamond', serif;
+  --font-body:    'Lora', serif;
+
+  --background: #06090f;
+  --foreground: #f5eedd;
+  --accent: #b8974a;
+  --accent-light: #d4b472;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-gold: var(--accent);
+  --color-gold-light: var(--accent-light);
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-lora);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  @apply antialiased;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-[#06090f] text-[#f5eedd];
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-[var(--font-heading)] font-light tracking-wide;
+}
+
+p, span, a, div {
+  @apply font-[var(--font-lora)];
+}
+
+.section-label {
+  font-family: var(--font-lora);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--or);
+}
+
+.gold-text {
+  background: linear-gradient(135deg, var(--or-clair) 0%, var(--or) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-[#06090f];
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-[#b8974a] rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-[#d4b472];
 }
