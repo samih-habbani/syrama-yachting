@@ -37,14 +37,14 @@ export default function Navbar() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <motion.div
-            className="flex items-center gap-3"
+            className="flex flex-col"
             whileHover={{ scale: 1.02 }}
           >
-            <div className="w-10 h-10 bg-gradient-to-br from-[#b8974a] to-[#d4b472] rounded-sm flex items-center justify-center shadow-lg shadow-[#b8974a]/30">
-              <span className="text-[#06090f] font-[var(--font-heading)] font-bold text-sm">𝙎</span>
-            </div>
-            <span className="text-[#f5eedd] font-[var(--font-heading)] text-lg font-bold tracking-widest">
+            <span className="text-[#f5eedd] font-[var(--font-cormorant)] text-xl font-light tracking-widest">
               SYRAMA
+            </span>
+            <span className="text-[#6a6a5e] font-[var(--font-tenor)] text-xs tracking-widest mt-1">
+              YACHTING
             </span>
           </motion.div>
 

@@ -2,6 +2,7 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Intro from '@/components/Intro';
 import Fleet from '@/components/Fleet';
+import Destinations from '@/components/sections/Destinations';
 import Services from '@/components/Services';
 import Experiences from '@/components/Experiences';
 import Contact from '@/components/Contact';
@@ -15,6 +16,7 @@ export default function Home() {
         <Hero />
         <Intro />
         <Fleet />
+        <Destinations />
         <Services />
         <Experiences />
         <Contact />
