@@ -5,6 +5,8 @@ import Fleet from '@/components/Fleet';
 import Destinations from '@/components/sections/Destinations';
 import Services from '@/components/Services';
 import Experiences from '@/components/Experiences';
+import HowItWorks from '@/components/sections/HowItWorks';
+import Testimonials from '@/components/sections/Testimonials';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 
@@ -19,6 +21,8 @@ export default function Home() {
         <Destinations />
         <Services />
         <Experiences />
+        <HowItWorks />
+        <Testimonials />
         <Contact />
       </main>
       <Footer />
