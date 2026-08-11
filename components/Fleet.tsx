@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import { yachts } from '@/lib/yachts-data'
 
 export default function Fleet() {
@@ -68,7 +69,7 @@ export default function Fleet() {
               transition={{ duration: 0.9, delay: i * 0.1, ease: [0.25, 0.1, 0, 1] }}
               viewport={{ once: true, margin: '-40px' }}
             >
-              <div style={{ textDecoration: 'none', display: 'block' }}>
+              <Link href={`/yachting/fleet/${yacht.id}`} style={{ textDecoration: 'none', display: 'block' }}>
                 <div style={{ position: 'relative', overflow: 'hidden', aspectRatio: '4/3' }}>
                   <img
                     src={yacht.image}
@@ -138,7 +139,7 @@ export default function Fleet() {
                     )}
                   </div>
                 </div>
-              </div>
+              </Link>
             </motion.div>
           ))}
         </div>
