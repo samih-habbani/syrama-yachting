@@ -53,3 +53,16 @@ model Yacht {
 
   @@map("yacht")
 }
+
+model Media {
+  id             Int       @id @default(autoincrement())
+  propertyId     Int?      @map("property_id")
+  yachtId        Int?      @map("yacht_id")
+  url            String?
+  alt            String?
+  updatedAt      DateTime? @map("updated_at")
+  luxuryWatchId  Int?      @map("luxury_watch_id")
+  leadingYachtId Int?      @map("leading_yacht_id")
+
+  @@map("media")
+}
