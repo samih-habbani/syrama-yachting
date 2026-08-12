@@ -1,12 +1,76 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { yachts } from '@/lib/yachts-data'
+import FleetFilters from './FleetFilters'
 
-export default function Fleet() {
-  const [activeTab, setActiveTab] = useState<'charter' | 'sale'>('charter')
-  const filtered = yachts.filter(y => y.type === activeTab)
+interface FilterState {
+  region: string | null
+  minLength: number
+  maxLength: number
+  minGuests: number
+  maxGuests: number
+  minCabins: number
+  maxCabins: number
+  builder: string | null
+  minYear: number
+  maxYear: number
+}
+
+interface FleetProps {
+  showFilters?: boolean
+}
+
+export default function Fleet({ showFilters = true }: FleetProps) {
+  const searchParams = useSearchParams()
+  const regionParam = searchParams.get('region')
+  const tabParam = searchParams.get('tab')
+
+  const [activeTab, setActiveTab] = useState<'charter' | 'sale'>(tabParam === 'sale' ? 'sale' : 'charter')
+  const [filters, setFilters] = useState<FilterState>({
+    region: regionParam,
+    minLength: 0,
+    maxLength: 200,
+    minGuests: 0,
+    maxGuests: 100,
+    minCabins: 0,
+    maxCabins: 20,
+    builder: null,
+    minYear: 0,
+    maxYear: 2030,
+  })
+
+  useEffect(() => {
+    if (tabParam === 'sale') {
+      setActiveTab('sale')
+    }
+  }, [tabParam])
+
+  useEffect(() => {
+    if (regionParam) {
+      setFilters(prev => ({ ...prev, region: regionParam }))
+    }
+  }, [regionParam])
+
+  const filtered = useMemo(() => {
+    return yachts.filter(y => {
+      const typeMatch = y.type === activeTab
+      const regionMatch = !filters.region || y.regions.includes(filters.region)
+      const lengthValue = parseInt(y.length)
+      const lengthMatch = lengthValue >= filters.minLength && lengthValue <= filters.maxLength
+      const guestsValue = parseInt(y.guests)
+      const guestsMatch = guestsValue >= filters.minGuests && guestsValue <= filters.maxGuests
+      const cabinsValue = parseInt(y.cabins)
+      const cabinsMatch = cabinsValue >= filters.minCabins && cabinsValue <= filters.maxCabins
+      const builderMatch = !filters.builder || y.builder === filters.builder
+      const yearValue = parseInt(y.year)
+      const yearMatch = yearValue >= filters.minYear && yearValue <= filters.maxYear
+
+      return typeMatch && regionMatch && lengthMatch && guestsMatch && cabinsMatch && builderMatch && yearMatch
+    })
+  }, [activeTab, filters])
 
   return (
     <section style={{ background: '#06090f', minHeight: '100vh', paddingTop: 80, paddingBottom: 80 }}>
@@ -17,14 +81,14 @@ export default function Fleet() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
           viewport={{ once: true }}
-          style={{ marginBottom: 80 }}
+          style={{ marginBottom: 60 }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
             <div style={{ width: 32, height: 1, background: '#b8974a' }} />
             <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b8974a' }}>Exclusive Fleet</span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'end', marginBottom: 60 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'end', marginBottom: 40 }}>
             <div>
               <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(48px, 6vw, 88px)', lineHeight: 1.0, color: '#f5eedd', margin: 0 }}>Our vessels.</h2>
             </div>
@@ -58,6 +122,9 @@ export default function Fleet() {
             ))}
           </div>
         </motion.div>
+
+        {/* Filters */}
+        {showFilters && <FleetFilters onFiltersChange={setFilters} resultCount={filtered.length} />}
 
         {/* Yacht Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 40, marginBottom: 80 }}>

@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model Yacht {
+  id                    Int      @id @default(autoincrement())
+  builder               String?
+  model                 String
+  engines               String?
+  length                Float
+  beam                  Float?
+  beamOpenPlatform      Float?   @map("beam_open_platform")
+  draft                 Float?
+  cruiseSpeed           Float?   @map("cruise_speed")
+  maxSpeed              Float?   @map("max_speed")
+  cabins                Int
+  maxGuests             Int?     @map("max_guests")
+  maxSleeping           Int?     @map("max_sleeping")
+  consumption           String?
+  autonomy              String?
+  fuelCapacity          Int?     @map("fuel_capacity")
+  waterCapacity         Int?     @map("water_capacity")
+  navigationClass       String?  @map("navigation_class")
+  dryWeight             Float?   @map("dry_weight")
+  hull                  String?
+  status                String?
+  available             Boolean
+  rating                Float?
+  reviewsCount          Int?     @map("reviews_count")
+  city                  String?
+  providerId            Int?     @map("provider_id")
+  priceDay              Float?   @map("price_day")
+  year                  Int?
+  region                String?
+  currency              String
+  lengthUnit            String   @map("length_unit")
+  mapIframeSrc          String?  @map("map_iframe_src")
+  priceHour             Float?   @map("price_hour")
+  priceWeek             Float?   @map("price_week")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@map("yacht")
+}

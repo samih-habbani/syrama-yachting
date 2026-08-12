@@ -16,6 +16,7 @@ export type Yacht = {
   desc: string
   longDesc: string
   amenities: string[]
+  regions: string[]
 }
 
 export const yachts: Yacht[] = [
@@ -42,6 +43,7 @@ export const yachts: Yacht[] = [
     desc: 'A stunning 55-metre Benetti with timeless elegance.',
     longDesc: 'Lumière represents the pinnacle of Italian shipbuilding. Built by Benetti in 2021, this 55-metre superyacht offers six lavish staterooms with luxurious amenities. Her elegant design and sophisticated interior make her the perfect choice for those seeking both style and comfort. With a professional crew of nine, Lumière ensures every detail is attended to perfection.',
     amenities: ['Full beach club', 'Jacuzzi', 'Cinema room', 'Gym & spa', 'Water toy garage', 'Satellite internet', 'Chef & sommelier', 'Modern galley', 'Air conditioning', 'Stabilisers'],
+    regions: ['med'],
   },
   {
     id: 'étoile-des-mers',
@@ -66,6 +68,7 @@ export const yachts: Yacht[] = [
     desc: 'Dutch elegance meets Mediterranean charm on this 48-metre Feadship.',
     longDesc: 'Étoile des Mers showcases the renowned craftsmanship of Feadship. Built in 2020, this 48-metre superyacht combines understated elegance with exceptional performance. Five guest staterooms accommodate up to ten discerning travelers. Her shallow draft enables access to exclusive anchorages, while her professional crew of eight ensures bespoke service throughout your journey.',
     amenities: ['Shallow draft design', 'Sundeck pool', 'Zero-speed stabilisers', 'Water toys garage', 'Alfresco dining', 'Wine cellar', 'Private chef', 'Satellite comms', 'Tender included', 'Air conditioning'],
+    regions: ['med', 'caribbean'],
   },
   {
     id: 'azurite',
@@ -90,6 +93,7 @@ export const yachts: Yacht[] = [
     desc: 'Italian design meets sleek performance on this modern 42-metre Sanlorenzo.',
     longDesc: 'Azurite embodies Sanlorenzo\'s signature style and innovation. At 42 metres, she combines cutting-edge design with practical luxury. Four guest cabins offer maximum comfort for eight guests, while her crew of six provides attentive service. With a top speed of 18 knots, Azurite is perfect for exploring the Greek islands, French Riviera, and beyond.',
     amenities: ['Sports sundeck', 'Seabobs', 'Paddleboards', 'Kayaks', 'Snorkelling gear', 'Italian galley kitchen', 'Alfresco bar', 'Sound system', 'Stabilisers', 'Air conditioning'],
+    regions: ['med'],
   },
   {
     id: 'pearl-of-prestige',
@@ -114,6 +118,7 @@ export const yachts: Yacht[] = [
     desc: 'The flagship—a 65-metre Lürssen with helipad, beach club and cinema.',
     longDesc: 'Pearl of Prestige represents the pinnacle of ocean living. Built by Lürssen in 2019, she offers seven lavish staterooms, a full beach club at sea level, an on-deck Jacuzzi, and a helipad for seamless transfers. Her 11-strong crew ensures every detail is attended to perfection. Whether crossing the Atlantic or anchored off exclusive destinations, Pearl of Prestige sets a standard unmatched.',
     amenities: ['Helipad', 'Full beach club', 'Cinema room', 'Jacuzzi', 'Gym & spa', 'Tender garage', 'Dive equipment', 'Chef & sommelier', 'Satellite internet', 'Air conditioning'],
+    regions: ['red-sea', 'indian-ocean'],
   },
   {
     id: 'serenity-wave',
@@ -138,6 +143,7 @@ export const yachts: Yacht[] = [
     desc: 'Speed and style distilled into 38 metres of pure luxury.',
     longDesc: 'Serenity Wave is a modern marvel of yacht engineering. Built by Princess in 2023, she reaches 20 knots for those who want to be at anchor in an exclusive cove within the hour. Four staterooms and an open-plan saloon make her as comfortable at sunset as she is thrilling at full throttle. The ideal choice for those seeking both performance and comfort.',
     amenities: ['High speed capability', 'Open deck sunbathing', 'Jet ski launch', 'Snorkelling kit', 'Day bar', 'BBQ grill', 'Wakeboard', 'Sound system', 'Air conditioning', 'Professional crew'],
+    regions: ['caribbean'],
   },
 ]
 

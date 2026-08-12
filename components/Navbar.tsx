@@ -16,10 +16,9 @@ export default function Navbar() {
   }, []);
 
   const navItems = [
-    { label: 'YACHTS', href: '#fleet' },
-    { label: 'SERVICES', href: '#services' },
-    { label: 'EXPERIENCES', href: '#experiences' },
-    { label: 'CONTACT', href: '#contact' },
+    { label: 'CHARTERS', href: '/charters' },
+    { label: 'SALES', href: '/sales' },
+    { label: 'BESPOKE EXPERIENCES', href: '/experiences' },
   ];
 
   return (

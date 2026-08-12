@@ -211,48 +211,6 @@ export default function Experiences() {
             <ActivityCard key={activity.id} activity={activity} delay={i * 0.08} />
           ))}
         </div>
-
-        {/* CTA Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.4 }}
-          viewport={{ once: true }}
-          style={{
-            padding: '48px 40px',
-            background: 'linear-gradient(135deg, rgba(184,151,74,0.08) 0%, rgba(212,180,114,0.03) 100%)',
-            border: '1px solid rgba(184,151,74,0.2)',
-            textAlign: 'center',
-          }}
-        >
-          <h3 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(28px, 5vw, 48px)', fontWeight: 300, color: '#f5eedd', marginBottom: 16 }}>
-            Create Your Perfect Voyage
-          </h3>
-          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#6a6a5e', maxWidth: 500, margin: '0 auto 32px' }}>
-            Every experience is bespoke. Our concierge team combines multiple activities into seamless, unforgettable maritime adventures tailored exclusively to you.
-          </p>
-          <a
-            href="#contact"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 14,
-              fontFamily: 'var(--font-tenor)',
-              fontSize: 10,
-              letterSpacing: '0.28em',
-              textTransform: 'uppercase',
-              color: '#06090f',
-              background: '#b8974a',
-              padding: '16px 36px',
-              textDecoration: 'none',
-              transition: 'background 0.3s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
-          >
-            Design Your Experience
-          </a>
-        </motion.div>
       </div>
     </section>
   )
