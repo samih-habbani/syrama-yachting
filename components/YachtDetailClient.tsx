@@ -1,0 +1,104 @@
+'use client'
+import { useState } from 'react'
+import Link from 'next/link'
+
+interface Media {
+  id: number
+  url: string | null
+  alt: string | null
+}
+
+interface Yacht {
+  id: number
+  model: string
+  builder: string | null
+  length: number
+  maxGuests: number | null
+  cabins: number
+  year: number | null
+  priceDay: number | null
+  region: string | null
+  city: string | null
+  media?: Media[]
+}
+
+interface YachtDetailClientProps {
+  yacht: Yacht
+}
+
+export default function YachtDetailClient({ yacht }: YachtDetailClientProps) {
+  const [imgIndex, setImgIndex] = useState(0)
+  const images = yacht.media || []
+  const prev = () => setImgIndex(i => (i - 1 + images.length) % images.length)
+  const next = () => setImgIndex(i => (i + 1) % images.length)
+
+  return (
+    <main style={{ background: '#06090f', minHeight: '100vh' }}>
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 48px', background: 'rgba(6,9,15,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(184,151,74,0.12)' }}>
+        <Link href="/yachting/fleet" style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#6a6a5e', textDecoration: 'none' }}>← Our fleet</Link>
+        <Link href="/#contact" style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '12px 24px', textDecoration: 'none' }}>Contact Us</Link>
+      </nav>
+
+      <div style={{ position: 'relative', height: '70vh', overflow: 'hidden', marginTop: 64, background: '#1a1a1a' }}>
+        {images.length > 0 && (
+          <img
+            src={`/uploads/yachts/${images[imgIndex].url}`}
+            alt={images[imgIndex].alt || yacht.model}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.65)' }}
+            loading="eager"
+          />
+        )}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(6,9,15,0.9) 100%)' }} />
+        {images.length > 1 && (
+          <>
+            <button onClick={prev} style={{ position: 'absolute', left: 24, top: '50%', transform: 'translateY(-50%)', background: 'rgba(6,9,15,0.5)', border: '1px solid rgba(184,151,74,0.3)', color: '#b8974a', width: 44, height: 44, cursor: 'pointer', fontSize: 18, backdropFilter: 'blur(8px)' }}>‹</button>
+            <button onClick={next} style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', background: 'rgba(6,9,15,0.5)', border: '1px solid rgba(184,151,74,0.3)', color: '#b8974a', width: 44, height: 44, cursor: 'pointer', fontSize: 18, backdropFilter: 'blur(8px)' }}>›</button>
+            <div style={{ position: 'absolute', bottom: 20, right: 24, fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', color: 'rgba(245,238,221,0.5)' }}>{imgIndex + 1} / {images.length}</div>
+          </>
+        )}
+        <div style={{ position: 'absolute', bottom: 32, left: 'clamp(32px, 6vw, 96px)' }}>
+          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 300, color: '#f5eedd', lineHeight: 1.1 }}>{yacht.model}</div>
+          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginTop: 8 }}>{yacht.length}m · {yacht.builder} · {yacht.year}</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, padding: '12px clamp(32px, 6vw, 96px)', background: '#06090f', overflowX: 'auto' }}>
+        {images.map((img, i) => (
+          <div key={i} onClick={() => setImgIndex(i)} style={{ width: 80, height: 56, overflow: 'hidden', cursor: 'pointer', outline: imgIndex === i ? '2px solid #b8974a' : '2px solid transparent', outlineOffset: 2, transition: 'outline-color 0.2s ease', flexShrink: 0 }}>
+            <img src={`/uploads/yachts/${img.url}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: imgIndex === i ? 'brightness(1)' : 'brightness(0.5)', transition: 'filter 0.3s ease' }} loading="lazy" />
+          </div>
+        ))}
+      </div>
+
+      <div style={{ padding: '64px clamp(32px, 6vw, 96px) 120px', display: 'grid', gridTemplateColumns: '1fr 360px', gap: 80, alignItems: 'start' }}>
+        <div>
+          <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', marginBottom: 48, paddingBottom: 32, borderBottom: '1px solid rgba(184,151,74,0.12)' }}>
+            {[
+              ['Length', `${yacht.length}m`],
+              ['Cabins', yacht.cabins],
+              ['Guests', yacht.maxGuests],
+              ['Builder', yacht.builder],
+              ['Year', yacht.year],
+              ['Region', yacht.region]
+            ].filter(([_, value]) => value !== null && value !== undefined).map(([label, value]) => (
+              <div key={label}>
+                <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#6a6a5e', marginBottom: 8 }}>{label}</div>
+                <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 18, fontWeight: 300, color: '#d4b472' }}>{value}</div>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, lineHeight: 2, color: '#6a6a5e', marginBottom: 48 }}>Premium yacht available for charter. Experience luxury maritime travel with professional crew and world-class amenities.</p>
+        </div>
+
+        <div style={{ position: 'sticky', top: 100, border: '1px solid rgba(184,151,74,0.2)', padding: 36, background: 'rgba(184,151,74,0.02)' }}>
+          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 24, fontWeight: 300, color: '#f5eedd', marginBottom: 8 }}>{yacht.model}</div>
+          {yacht.priceDay && (
+            <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 32 }}>From €{yacht.priceDay.toLocaleString()}/day</div>
+          )}
+          <Link href="/#contact" style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '16px', textDecoration: 'none', marginBottom: 16 }}>Request charter</Link>
+          <a href="https://wa.me/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', border: '1px solid rgba(184,151,74,0.3)', padding: '14px', textDecoration: 'none' }}>WhatsApp us</a>
+        </div>
+      </div>
+    </main>
+  )
+}
