@@ -1,8 +1,7 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
 import FleetFilters from './FleetFilters'
 
 interface Media {
@@ -13,21 +12,13 @@ interface Media {
 
 interface Yacht {
   id: number
-  name?: string
-  builder: string
+  builder: string | null
   model: string
   length: number
   maxGuests: number | null
   cabins: number
-  year: number | null
-  region: string | null
-  city: string | null
   priceDay: number | null
   status: string | null
-  available: boolean
-  rating: number | null
-  reviewsCount: number | null
-  mapIframeSrc: string | null
   media?: Media[]
 }
 
@@ -40,80 +31,20 @@ interface FilterState {
   builder: string | null
 }
 
-interface FleetProps {
+interface FleetClientProps {
+  yachts: Yacht[]
   showFilters?: boolean
-  limit?: number
 }
 
-export default function Fleet({ showFilters = true, limit }: FleetProps) {
-  const searchParams = useSearchParams()
-  const regionParam = searchParams.get('region')
-  const tabParam = searchParams.get('tab')
-
-  const [activeTab, setActiveTab] = useState<'charter' | 'sale'>(tabParam === 'sale' ? 'sale' : 'charter')
-  const [yachts, setYachts] = useState<Yacht[]>([])
-  const [loading, setLoading] = useState(true)
-  const [filters, setFilters] = useState<FilterState>({
-    region: regionParam,
-    minLength: 0,
-    maxLength: 200,
-    minGuests: 0,
-    maxGuests: 100,
-    builder: null,
-  })
-
-  useEffect(() => {
-    fetchYachts()
-  }, [activeTab, filters])
-
-  const fetchYachts = async () => {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams({
-        type: activeTab,
-        ...(filters.region && { region: filters.region }),
-        ...(filters.builder && { builder: filters.builder }),
-        minLength: filters.minLength.toString(),
-        maxLength: filters.maxLength.toString(),
-        minGuests: filters.minGuests.toString(),
-        maxGuests: filters.maxGuests.toString(),
-        ...(limit && { limit: limit.toString() }),
-      })
-
-      const response = await fetch(`/api/yachts?${params}`)
-      const data = await response.json()
-      setYachts(Array.isArray(data) ? data : [])
-    } catch (error) {
-      console.error('Error fetching yachts:', error)
-      setYachts([])
-    } finally {
-      setLoading(false)
-    }
+export default function FleetClient({ yachts, showFilters = true }: FleetClientProps) {
+  const handleFiltersChange = (filters: FilterState) => {
+    // Handle filter changes if needed
   }
-
-  useEffect(() => {
-    if (tabParam === 'sale') {
-      setActiveTab('sale')
-    }
-  }, [tabParam])
-
-  useEffect(() => {
-    if (regionParam) {
-      setFilters(prev => ({ ...prev, region: regionParam }))
-    }
-  }, [regionParam])
 
   return (
     <section style={{ background: '#06090f', minHeight: '100vh', paddingTop: 80, paddingBottom: 80 }}>
       <div style={{ paddingLeft: 'clamp(32px, 6vw, 96px)', paddingRight: 'clamp(32px, 6vw, 96px)' }}>
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          style={{ marginBottom: 60 }}
-        >
+        <div style={{ marginBottom: 60 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
             <div style={{ width: 32, height: 1, background: '#b8974a' }} />
             <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b8974a' }}>Exclusive Fleet</span>
@@ -127,43 +58,12 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
               <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#6a6a5e', margin: '0 0 20px' }}>Handpicked superyachts for charter and acquisition. Each vessel represents the pinnacle of maritime luxury, impeccably maintained and staffed by elite crews.</p>
             </div>
           </div>
+        </div>
 
-          {/* Toggle */}
-          <div style={{ display: 'flex', gap: 24 }}>
-            {(['charter', 'sale'] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                style={{
-                  fontFamily: 'var(--font-tenor)',
-                  fontSize: 11,
-                  letterSpacing: '0.2em',
-                  textTransform: 'uppercase',
-                  background: 'transparent',
-                  border: 'none',
-                  padding: '12px 0',
-                  color: activeTab === tab ? '#b8974a' : '#6a6a5e',
-                  cursor: 'pointer',
-                  borderBottom: activeTab === tab ? '2px solid #b8974a' : '2px solid transparent',
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                {tab === 'charter' ? 'Charter' : 'For Sale'}
-              </button>
-            ))}
-          </div>
-        </motion.div>
+        {showFilters && <FleetFilters onFiltersChange={handleFiltersChange} resultCount={yachts.length} />}
 
-        {/* Filters */}
-        {showFilters && <FleetFilters onFiltersChange={setFilters} resultCount={yachts.length} />}
-
-        {/* Yacht Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 40, marginBottom: 80 }}>
-          {loading ? (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px' }}>
-              <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, color: '#b8974a' }}>Loading yachts...</div>
-            </div>
-          ) : yachts.length === 0 ? (
+          {yachts.length === 0 ? (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px' }}>
               <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, color: '#6a6a5e' }}>No yachts found matching your criteria.</div>
             </div>
@@ -226,7 +126,7 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                           <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>{yacht.maxGuests}</div>
                         </div>
                       )}
-                      {activeTab === 'charter' && yacht.priceDay && (
+                      {yacht.priceDay && (
                         <div>
                           <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>Rate</div>
                           <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>€{yacht.priceDay.toLocaleString()}/day</div>
@@ -240,15 +140,12 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
           )}
         </div>
 
-        {/* CTA */}
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(24px, 3vw, 38px)', fontWeight: 300, color: '#f5eedd', marginBottom: 16 }}>
-            {activeTab === 'charter' ? 'Ready to set sail?' : 'Interested in acquisition?'}
+            Ready to set sail?
           </div>
           <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#6a6a5e', maxWidth: 480, margin: '0 auto 32px' }}>
-            {activeTab === 'charter'
-              ? 'Contact our concierge team to arrange your bespoke voyage.'
-              : 'Speak with our brokers about purchasing opportunities and investment potential.'}
+            Contact our concierge team to arrange your bespoke voyage.
           </p>
           <a
             href="#contact"
