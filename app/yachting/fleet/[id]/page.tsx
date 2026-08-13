@@ -22,31 +22,30 @@ interface Yacht {
   media?: Media[]
 }
 
+export const revalidate = 86400
+export const dynamicParams = true
+
 export default async function YachtDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const yachtId = parseInt(id)
 
-  const yacht = await prisma.yacht.findUnique({
-    where: { id: yachtId },
-    select: {
-      id: true,
-      model: true,
-      builder: true,
-      length: true,
-      maxGuests: true,
-      cabins: true,
-      year: true,
-      priceDay: true,
-      region: true,
-      city: true,
-      media: {
-        orderBy: { id: 'asc' },
-        select: { id: true, url: true, alt: true }
-      }
-    }
-  })
+  const yacht = await prisma.$queryRaw`
+    SELECT
+      y.id, y.model, y.builder, y.length, y.max_guests as "maxGuests",
+      y.cabins, y.year, y.price_day as "priceDay",
+      y.region, y.city,
+      (SELECT json_agg(json_build_object('id', m.id, 'url', m.url, 'alt', m.alt) ORDER BY m.id)
+       FROM media m WHERE m.yacht_id = y.id) as media
+    FROM yacht y
+    WHERE y.id = ${yachtId}
+  ` as Promise<(Yacht & { media: Media[] | null })[]>
 
-  if (!yacht) notFound()
+  if (!yacht || yacht.length === 0) notFound()
 
-  return <YachtDetailClient yacht={yacht} />
+  const yachtData = {
+    ...yacht[0],
+    media: yacht[0].media || []
+  }
+
+  return <YachtDetailClient yacht={yachtData} />
 }

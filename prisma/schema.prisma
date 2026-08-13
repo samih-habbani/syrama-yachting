@@ -52,6 +52,9 @@ model Yacht {
   createdAt             DateTime @default(now()) @map("created_at")
   media                 Media[]
 
+  @@index([status])
+  @@index([length])
+  @@index([region])
   @@map("yacht")
 }
 
@@ -66,5 +69,6 @@ model Media {
   leadingYachtId Int?      @map("leading_yacht_id")
   yacht          Yacht?    @relation(fields: [yachtId], references: [id])
 
+  @@index([yachtId])
   @@map("media")
 }

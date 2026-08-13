@@ -11,6 +11,8 @@ import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import { getYachts } from '@/lib/yacht-service';
 
+export const revalidate = 3600
+
 export default async function Home() {
   const yachts = await getYachts({ type: 'charter', limit: 6 })
 
