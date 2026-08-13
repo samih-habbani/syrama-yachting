@@ -50,6 +50,7 @@ model Yacht {
   priceHour             Float?   @map("price_hour")
   priceWeek             Float?   @map("price_week")
   createdAt             DateTime @default(now()) @map("created_at")
+  media                 Media[]
 
   @@map("yacht")
 }
@@ -63,6 +64,7 @@ model Media {
   updatedAt      DateTime? @map("updated_at")
   luxuryWatchId  Int?      @map("luxury_watch_id")
   leadingYachtId Int?      @map("leading_yacht_id")
+  yacht          Yacht?    @relation(fields: [yachtId], references: [id])
 
   @@map("media")
 }

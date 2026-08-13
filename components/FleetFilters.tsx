@@ -1,7 +1,6 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { yachts } from '@/lib/yachts-data'
 
 interface FilterState {
   region: string | null
@@ -9,11 +8,7 @@ interface FilterState {
   maxLength: number
   minGuests: number
   maxGuests: number
-  minCabins: number
-  maxCabins: number
   builder: string | null
-  minYear: number
-  maxYear: number
 }
 
 interface FleetFiltersProps {
@@ -21,45 +16,61 @@ interface FleetFiltersProps {
   resultCount: number
 }
 
-// Extract unique values from yachts
-const regions = Array.from(new Set(yachts.flatMap(y => y.regions)))
-const builders = Array.from(new Set(yachts.map(y => y.builder))).sort()
-const lengths = yachts.map(y => parseInt(y.length)).sort((a, b) => a - b)
-const years = yachts.map(y => parseInt(y.year)).sort((a, b) => a - b)
-const guests = yachts.map(y => parseInt(y.guests)).sort((a, b) => a - b)
-const cabins = yachts.map(y => parseInt(y.cabins)).sort((a, b) => a - b)
-
-const minLength = Math.min(...lengths)
-const maxLength = Math.max(...lengths)
-const minYear = Math.min(...years)
-const maxYear = Math.max(...years)
-const minGuests = Math.min(...guests)
-const maxGuests = Math.max(...guests)
-const minCabins = Math.min(...cabins)
-const maxCabins = Math.max(...cabins)
-
-const regionLabels: { [key: string]: string } = {
-  'med': 'Mediterranean',
-  'caribbean': 'Caribbean',
-  'red-sea': 'Red Sea',
-  'indian-ocean': 'Indian Ocean',
-}
-
 export default function FleetFilters({ onFiltersChange, resultCount }: FleetFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(true)
+  const [regions, setRegions] = useState<string[]>([])
+  const [builders, setBuilders] = useState<string[]>([])
+  const [minLength, setMinLength] = useState(0)
+  const [maxLength, setMaxLength] = useState(200)
+  const [minGuests, setMinGuests] = useState(0)
+  const [maxGuests, setMaxGuests] = useState(100)
 
   const [filters, setFilters] = useState<FilterState>({
     region: null,
-    minLength: minLength,
-    maxLength: maxLength,
-    minGuests: minGuests,
-    maxGuests: maxGuests,
-    minCabins: minCabins,
-    maxCabins: maxCabins,
+    minLength: 0,
+    maxLength: 200,
+    minGuests: 0,
+    maxGuests: 100,
     builder: null,
-    minYear: minYear,
-    maxYear: maxYear,
   })
+
+  // Charger les options de filtres depuis la BDD
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const response = await fetch('/api/yachts')
+        const yachts = await response.json()
+
+        // Extraire les régions uniques
+        const uniqueRegions = Array.from(new Set(yachts.map((y: any) => y.region).filter(Boolean)))
+          .sort()
+        setRegions(uniqueRegions as string[])
+
+        // Extraire les constructeurs uniques
+        const uniqueBuilders = Array.from(new Set(yachts.map((y: any) => y.builder).filter(Boolean)))
+          .sort()
+        setBuilders(uniqueBuilders as string[])
+
+        // Calculer les min/max
+        const lengths = yachts.map((y: any) => y.length).filter(Boolean)
+        const guests = yachts.map((y: any) => y.maxGuests).filter(Boolean)
+
+        if (lengths.length > 0) {
+          setMinLength(Math.floor(Math.min(...lengths)))
+          setMaxLength(Math.ceil(Math.max(...lengths)))
+        }
+
+        if (guests.length > 0) {
+          setMinGuests(Math.floor(Math.min(...guests)))
+          setMaxGuests(Math.ceil(Math.max(...guests)))
+        }
+      } catch (error) {
+        console.error('Error fetching filter options:', error)
+      }
+    }
+
+    fetchFilterOptions()
+  }, [])
 
   const handleFilterChange = useCallback((newFilters: Partial<FilterState>) => {
     const updated = { ...filters, ...newFilters }
@@ -70,15 +81,11 @@ export default function FleetFilters({ onFiltersChange, resultCount }: FleetFilt
   const resetFilters = () => {
     const defaultFilters: FilterState = {
       region: null,
-      minLength: minLength,
-      maxLength: maxLength,
-      minGuests: minGuests,
-      maxGuests: maxGuests,
-      minCabins: minCabins,
-      maxCabins: maxCabins,
+      minLength,
+      maxLength,
+      minGuests,
+      maxGuests,
       builder: null,
-      minYear: minYear,
-      maxYear: maxYear,
     }
     setFilters(defaultFilters)
     onFiltersChange(defaultFilters)
@@ -90,11 +97,7 @@ export default function FleetFilters({ onFiltersChange, resultCount }: FleetFilt
     filters.minLength > minLength ||
     filters.maxLength < maxLength ||
     filters.minGuests > minGuests ||
-    filters.maxGuests < maxGuests ||
-    filters.minCabins > minCabins ||
-    filters.maxCabins < maxCabins ||
-    filters.minYear > minYear ||
-    filters.maxYear < maxYear
+    filters.maxGuests < maxGuests
 
   return (
     <motion.div
@@ -176,32 +179,34 @@ export default function FleetFilters({ onFiltersChange, resultCount }: FleetFilt
           >
             <div style={{ padding: '32px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 32 }}>
               {/* Region Filter */}
-              <div>
-                <label style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', display: 'block', marginBottom: 12 }}>
-                  Destination
-                </label>
-                <select
-                  value={filters.region || ''}
-                  onChange={(e) => handleFilterChange({ region: e.target.value || null })}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    fontFamily: 'var(--font-tenor)',
-                    fontSize: 12,
-                    color: '#f5eedd',
-                    background: 'rgba(184,151,74,0.05)',
-                    border: '1px solid rgba(184,151,74,0.2)',
-                    borderRadius: 4,
-                  }}
-                >
-                  <option value="">All Destinations</option>
-                  {regions.map(region => (
-                    <option key={region} value={region}>
-                      {regionLabels[region] || region}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {regions.length > 0 && (
+                <div>
+                  <label style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', display: 'block', marginBottom: 12 }}>
+                    Destination
+                  </label>
+                  <select
+                    value={filters.region || ''}
+                    onChange={(e) => handleFilterChange({ region: e.target.value || null })}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      fontFamily: 'var(--font-tenor)',
+                      fontSize: 12,
+                      color: '#f5eedd',
+                      background: 'rgba(184,151,74,0.05)',
+                      border: '1px solid rgba(184,151,74,0.2)',
+                      borderRadius: 4,
+                    }}
+                  >
+                    <option value="">All Destinations</option>
+                    {regions.map(region => (
+                      <option key={region} value={region}>
+                        {region}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Length Filter */}
               <div>
@@ -233,63 +238,35 @@ export default function FleetFilters({ onFiltersChange, resultCount }: FleetFilt
                 />
               </div>
 
-              {/* Cabins Filter */}
-              <div>
-                <label style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', display: 'block', marginBottom: 12 }}>
-                  Cabins: up to {filters.maxCabins}
-                </label>
-                <input
-                  type="range"
-                  min={minCabins}
-                  max={maxCabins}
-                  value={filters.maxCabins}
-                  onChange={(e) => handleFilterChange({ maxCabins: parseInt(e.target.value) })}
-                  style={{ width: '100%', accentColor: '#b8974a' }}
-                />
-              </div>
-
               {/* Builder Filter */}
-              <div>
-                <label style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', display: 'block', marginBottom: 12 }}>
-                  Builder
-                </label>
-                <select
-                  value={filters.builder || ''}
-                  onChange={(e) => handleFilterChange({ builder: e.target.value || null })}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    fontFamily: 'var(--font-tenor)',
-                    fontSize: 12,
-                    color: '#f5eedd',
-                    background: 'rgba(184,151,74,0.05)',
-                    border: '1px solid rgba(184,151,74,0.2)',
-                    borderRadius: 4,
-                  }}
-                >
-                  <option value="">All Builders</option>
-                  {builders.map(builder => (
-                    <option key={builder} value={builder}>
-                      {builder}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Year Filter */}
-              <div>
-                <label style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', display: 'block', marginBottom: 12 }}>
-                  Year: up to {filters.maxYear}
-                </label>
-                <input
-                  type="range"
-                  min={minYear}
-                  max={maxYear}
-                  value={filters.maxYear}
-                  onChange={(e) => handleFilterChange({ maxYear: parseInt(e.target.value) })}
-                  style={{ width: '100%', accentColor: '#b8974a' }}
-                />
-              </div>
+              {builders.length > 0 && (
+                <div>
+                  <label style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', display: 'block', marginBottom: 12 }}>
+                    Builder
+                  </label>
+                  <select
+                    value={filters.builder || ''}
+                    onChange={(e) => handleFilterChange({ builder: e.target.value || null })}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      fontFamily: 'var(--font-tenor)',
+                      fontSize: 12,
+                      color: '#f5eedd',
+                      background: 'rgba(184,151,74,0.05)',
+                      border: '1px solid rgba(184,151,74,0.2)',
+                      borderRadius: 4,
+                    }}
+                  >
+                    <option value="">All Builders</option>
+                    {builders.map(builder => (
+                      <option key={builder} value={builder}>
+                        {builder}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

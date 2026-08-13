@@ -3,8 +3,33 @@ import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { yachts } from '@/lib/yachts-data'
 import FleetFilters from './FleetFilters'
+
+interface Media {
+  id: number
+  url: string | null
+  alt: string | null
+}
+
+interface Yacht {
+  id: number
+  name?: string
+  builder: string
+  model: string
+  length: number
+  maxGuests: number | null
+  cabins: number
+  year: number | null
+  region: string | null
+  city: string | null
+  priceDay: number | null
+  status: string | null
+  available: boolean
+  rating: number | null
+  reviewsCount: number | null
+  mapIframeSrc: string | null
+  media?: Media[]
+}
 
 interface FilterState {
   region: string | null
@@ -12,35 +37,58 @@ interface FilterState {
   maxLength: number
   minGuests: number
   maxGuests: number
-  minCabins: number
-  maxCabins: number
   builder: string | null
-  minYear: number
-  maxYear: number
 }
 
 interface FleetProps {
   showFilters?: boolean
+  limit?: number
 }
 
-export default function Fleet({ showFilters = true }: FleetProps) {
+export default function Fleet({ showFilters = true, limit }: FleetProps) {
   const searchParams = useSearchParams()
   const regionParam = searchParams.get('region')
   const tabParam = searchParams.get('tab')
 
   const [activeTab, setActiveTab] = useState<'charter' | 'sale'>(tabParam === 'sale' ? 'sale' : 'charter')
+  const [yachts, setYachts] = useState<Yacht[]>([])
+  const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState<FilterState>({
     region: regionParam,
     minLength: 0,
     maxLength: 200,
     minGuests: 0,
     maxGuests: 100,
-    minCabins: 0,
-    maxCabins: 20,
     builder: null,
-    minYear: 0,
-    maxYear: 2030,
   })
+
+  useEffect(() => {
+    fetchYachts()
+  }, [activeTab, filters])
+
+  const fetchYachts = async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        type: activeTab,
+        ...(filters.region && { region: filters.region }),
+        ...(filters.builder && { builder: filters.builder }),
+        minLength: filters.minLength.toString(),
+        maxLength: filters.maxLength.toString(),
+        minGuests: filters.minGuests.toString(),
+        maxGuests: filters.maxGuests.toString(),
+      })
+
+      const response = await fetch(`/api/yachts?${params}`)
+      const data = await response.json()
+      setYachts(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Error fetching yachts:', error)
+      setYachts([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     if (tabParam === 'sale') {
@@ -54,23 +102,7 @@ export default function Fleet({ showFilters = true }: FleetProps) {
     }
   }, [regionParam])
 
-  const filtered = useMemo(() => {
-    return yachts.filter(y => {
-      const typeMatch = y.type === activeTab
-      const regionMatch = !filters.region || y.regions.includes(filters.region)
-      const lengthValue = parseInt(y.length)
-      const lengthMatch = lengthValue >= filters.minLength && lengthValue <= filters.maxLength
-      const guestsValue = parseInt(y.guests)
-      const guestsMatch = guestsValue >= filters.minGuests && guestsValue <= filters.maxGuests
-      const cabinsValue = parseInt(y.cabins)
-      const cabinsMatch = cabinsValue >= filters.minCabins && cabinsValue <= filters.maxCabins
-      const builderMatch = !filters.builder || y.builder === filters.builder
-      const yearValue = parseInt(y.year)
-      const yearMatch = yearValue >= filters.minYear && yearValue <= filters.maxYear
-
-      return typeMatch && regionMatch && lengthMatch && guestsMatch && cabinsMatch && builderMatch && yearMatch
-    })
-  }, [activeTab, filters])
+  const filtered = limit ? yachts.slice(0, limit) : yachts
 
   return (
     <section style={{ background: '#06090f', minHeight: '100vh', paddingTop: 80, paddingBottom: 80 }}>
@@ -128,87 +160,85 @@ export default function Fleet({ showFilters = true }: FleetProps) {
 
         {/* Yacht Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 40, marginBottom: 80 }}>
-          {filtered.map((yacht, i) => (
-            <motion.div
-              key={yacht.id}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: i * 0.1, ease: [0.25, 0.1, 0, 1] }}
-              viewport={{ once: true, margin: '-40px' }}
-            >
-              <Link href={`/yachting/fleet/${yacht.id}`} style={{ textDecoration: 'none', display: 'block' }}>
-                <div style={{ position: 'relative', overflow: 'hidden', aspectRatio: '4/3' }}>
-                  <img
-                    src={yacht.image}
-                    alt={yacht.name}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      filter: 'brightness(0.75)',
-                      transition: 'transform 0.9s cubic-bezier(0.25, 0.1, 0, 1)',
-                      cursor: 'pointer',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                  />
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(6,9,15,0.85) 0%, transparent 60%)' }} />
+          {loading ? (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px' }}>
+              <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, color: '#b8974a' }}>Loading yachts...</div>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px' }}>
+              <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, color: '#6a6a5e' }}>No yachts found matching your criteria.</div>
+            </div>
+          ) : (
+            filtered.map((yacht, i) => (
+              <motion.div
+                key={yacht.id}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: i * 0.1, ease: [0.25, 0.1, 0, 1] }}
+                viewport={{ once: true, margin: '-40px' }}
+              >
+                <Link href={`/yachting/fleet/${yacht.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+                  <div style={{ position: 'relative', overflow: 'hidden', aspectRatio: '4/3', background: '#1a1a1a' }}>
+                    <img
+                      src={yacht.media?.[0]?.url ? `/uploads/properties/${yacht.media[0].url}` : `/uploads/properties/${yacht.id}.jpg`}
+                      alt={yacht.media?.[0]?.alt || yacht.model}
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://via.placeholder.com/400x300?text=' + encodeURIComponent(yacht.model)
+                      }}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        filter: 'brightness(0.75)',
+                        transition: 'transform 0.9s cubic-bezier(0.25, 0.1, 0, 1)',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                    />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(6,9,15,0.85) 0%, transparent 60%)' }} />
 
-                  <div style={{ position: 'absolute', bottom: 20, left: 24, right: 24 }}>
-                    <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 26, fontWeight: 300, color: '#f5eedd', lineHeight: 1.2 }}>
-                      {yacht.name}
+                    <div style={{ position: 'absolute', bottom: 20, left: 24, right: 24 }}>
+                      <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 26, fontWeight: 300, color: '#f5eedd', lineHeight: 1.2 }}>
+                        {yacht.model}
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginTop: 4 }}>
+                        {yacht.length}m · {yacht.builder}
+                      </div>
                     </div>
-                    <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginTop: 4 }}>
-                      {yacht.length} · {yacht.builder}
+
+                    <div style={{ position: 'absolute', top: 20, right: 20, fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,238,221,0.6)', background: 'rgba(6,9,15,0.5)', padding: '6px 10px' }}>
+                      View →
                     </div>
                   </div>
 
-                  <div style={{ position: 'absolute', top: 20, right: 20, fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,238,221,0.6)', background: 'rgba(6,9,15,0.5)', padding: '6px 10px' }}>
-                    View →
-                  </div>
-                </div>
-
-                <div style={{ padding: '18px 0', borderBottom: '1px solid rgba(184,151,74,0.12)' }}>
-                  <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 11, letterSpacing: '0.1em', color: '#6a6a5e', marginBottom: 12 }}>
-                    {activeTab === 'charter' ? `${yacht.guests} · ${yacht.cabins} · ${yacht.speed}` : `${yacht.guests} · Built ${yacht.year}`}
-                  </div>
-                  <div style={{ display: 'flex', gap: 28 }}>
-                    {activeTab === 'charter' ? (
-                      <>
-                        <div>
-                          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>Length</div>
-                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>{yacht.length}</div>
-                        </div>
+                  <div style={{ padding: '18px 0', borderBottom: '1px solid rgba(184,151,74,0.12)' }}>
+                    <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 11, letterSpacing: '0.1em', color: '#6a6a5e', marginBottom: 12 }}>
+                      {yacht.maxGuests && `${yacht.maxGuests} guests`} {yacht.cabins && `· ${yacht.cabins} cabins`}
+                    </div>
+                    <div style={{ display: 'flex', gap: 28 }}>
+                      <div>
+                        <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>Length</div>
+                        <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>{yacht.length}m</div>
+                      </div>
+                      {yacht.maxGuests && (
                         <div>
                           <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>Guests</div>
-                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>{yacht.guests}</div>
+                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>{yacht.maxGuests}</div>
                         </div>
+                      )}
+                      {activeTab === 'charter' && yacht.priceDay && (
                         <div>
                           <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>Rate</div>
-                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>{yacht.price}</div>
+                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>€{yacht.priceDay.toLocaleString()}/day</div>
                         </div>
-                      </>
-                    ) : (
-                      <>
-                        <div>
-                          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>Length</div>
-                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>{yacht.length}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>Builder</div>
-                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>{yacht.builder}</div>
-                        </div>
-                        <div>
-                          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>Price</div>
-                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>{yacht.price}</div>
-                        </div>
-                      </>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+                </Link>
+              </motion.div>
+            ))
+          )}
         </div>
 
         {/* CTA */}

@@ -17,7 +17,7 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <Intro />
-        <Fleet showFilters={false} />
+        <Fleet showFilters={false} limit={6} />
         <Destinations />
         <Services />
         <Experiences />
