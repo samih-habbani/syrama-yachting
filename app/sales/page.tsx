@@ -2,16 +2,19 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 
-const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'
+const MapComponent = dynamic(() => import('@/components/DestinationsMap'), {
+  ssr: false,
+  loading: () => <div style={{ width: '100%', height: '100%', background: '#1a1a1a' }} />
+})
 
 const destinations = [
-  { id: 'med', label: 'Mediterranean', sub: 'French Riviera · Italy · Greece', coords: [14.0, 38.5] as [number, number] },
-  { id: 'caribbean', label: 'Caribbean', sub: 'St. Barts · Antigua · BVI', coords: [-63.0, 17.5] as [number, number] },
-  { id: 'red-sea', label: 'Red Sea', sub: 'Dubai · Oman · Saudi Arabia', coords: [38.5, 22.0] as [number, number] },
-  { id: 'indian-ocean', label: 'Indian Ocean', sub: 'Maldives · Seychelles', coords: [73.5, 4.0] as [number, number] },
+  { id: 'med', label: 'Mediterranean', sub: 'French Riviera · Italy · Greece', coords: [38.5, 14.0] as [number, number] },
+  { id: 'caribbean', label: 'Caribbean', sub: 'St. Barts · Antigua · BVI', coords: [17.5, -63.0] as [number, number] },
+  { id: 'red-sea', label: 'Red Sea', sub: 'Dubai · Oman · Saudi Arabia', coords: [22.0, 38.5] as [number, number] },
+  { id: 'indian-ocean', label: 'Indian Ocean', sub: 'Maldives · Seychelles', coords: [4.0, 73.5] as [number, number] },
 ]
 
 export default function SalesPage() {
@@ -56,56 +59,7 @@ export default function SalesPage() {
 
         {/* Map */}
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden', cursor: 'default' }}>
-          <ComposableMap
-            projection="geoMercator"
-            projectionConfig={{ scale: 118, center: [20, 18] }}
-            style={{ width: '100%', height: '100%' }}
-          >
-            <Geographies geography={GEO_URL}>
-              {({ geographies }: { geographies: any[] }) =>
-                geographies.map((geo: any) => (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    fill="rgba(184,151,74,0.12)"
-                    stroke="rgba(212,180,114,0.35)"
-                    strokeWidth={0.5}
-                    style={{ default: { outline: 'none' }, hover: { outline: 'none', fill: 'rgba(184,151,74,0.22)' }, pressed: { outline: 'none' } }}
-                  />
-                ))
-              }
-            </Geographies>
-            {destinations.map(dest => (
-              <Marker key={dest.id} coordinates={dest.coords}>
-                {/* Invisible large hit area */}
-                <circle
-                  r={20}
-                  fill="transparent"
-                  style={{ cursor: 'pointer', pointerEvents: 'all' }}
-                  onMouseEnter={() => setActive(dest.id)}
-                  onMouseLeave={() => setActive(null)}
-                  onClick={() => router.push(`/yachting/fleet?tab=sale&region=${dest.id}`)}
-                />
-                {/* Glow ring */}
-                {active === dest.id && (
-                  <circle r={14} fill="rgba(184,151,74,0.12)" stroke="rgba(184,151,74,0.4)" strokeWidth={1} style={{ pointerEvents: 'none' }} />
-                )}
-                {/* Visible dot */}
-                <circle
-                  r={active === dest.id ? 7 : 5}
-                  fill={active === dest.id ? '#d4b472' : 'rgba(184,151,74,0.7)'}
-                  stroke="#d4b472"
-                  strokeWidth={1}
-                  style={{ transition: 'all 0.3s ease', pointerEvents: 'none' }}
-                />
-                {active === dest.id && (
-                  <text y={-20} textAnchor="middle" style={{ fontFamily: 'var(--font-tenor)', fontSize: '10px', fill: '#f5eedd', letterSpacing: '0.12em', pointerEvents: 'none' }}>
-                    {dest.label}
-                  </text>
-                )}
-              </Marker>
-            ))}
-          </ComposableMap>
+          <MapComponent isSale={true} />
         </div>
       </div>
     </main>
