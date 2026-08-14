@@ -29,7 +29,7 @@ export default async function YachtDetailPage({ params }: { params: Promise<{ id
   const { id } = await params
   const yachtId = parseInt(id)
 
-  const yacht = await prisma.$queryRaw`
+  const yacht = await prisma.$queryRaw<(Yacht & { media: Media[] | null })[]>`
     SELECT
       y.id, y.model, y.builder, y.length, y.max_guests as "maxGuests",
       y.cabins, y.year, y.price_day as "priceDay",
@@ -38,7 +38,7 @@ export default async function YachtDetailPage({ params }: { params: Promise<{ id
        FROM media m WHERE m.yacht_id = y.id) as media
     FROM yacht y
     WHERE y.id = ${yachtId}
-  ` as Promise<(Yacht & { media: Media[] | null })[]>
+  `
 
   if (!yacht || yacht.length === 0) notFound()
 
