@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { smoothScrollToId } from '@/lib/scroll';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -109,13 +110,23 @@ export default function Navbar() {
               ADMIN
             </Link>
 
-            <motion.button
-              className="bg-gradient-to-r from-[#b8974a] to-[#d4b472] hover:from-[#d4b472] hover:to-[#b8974a] text-[#06090f] px-8 py-2 rounded-sm font-[var(--font-heading)] font-bold text-xs tracking-widest transition-all duration-500 shadow-lg shadow-[#b8974a]/40 hover:shadow-xl hover:shadow-[#b8974a]/60"
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
+            <Link
+              href="/#intro"
+              onClick={e => {
+                if (pathname === '/') {
+                  e.preventDefault()
+                  smoothScrollToId('intro')
+                }
+              }}
             >
-              FIND A YACHT
-            </motion.button>
+              <motion.div
+                className="bg-gradient-to-r from-[#b8974a] to-[#d4b472] hover:from-[#d4b472] hover:to-[#b8974a] text-[#06090f] px-8 py-2 rounded-sm font-[var(--font-heading)] font-bold text-xs tracking-widest transition-all duration-500 shadow-lg shadow-[#b8974a]/40 hover:shadow-xl hover:shadow-[#b8974a]/60 cursor-pointer"
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                FIND A YACHT
+              </motion.div>
+            </Link>
           </div>
         </div>
 
