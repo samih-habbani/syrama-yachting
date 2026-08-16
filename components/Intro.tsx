@@ -13,6 +13,7 @@ export default function Intro() {
 
   return (
     <section
+      id="intro"
       ref={sectionRef}
       style={{
         position: 'relative',

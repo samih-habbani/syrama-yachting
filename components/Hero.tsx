@@ -248,7 +248,7 @@ export default function Hero() {
             style={{ display: 'flex', alignItems: 'center', gap: 40, marginTop: 52 }}
           >
             <a
-              href="#contact"
+              href="#intro"
               data-cursor
               style={{
                 fontFamily: 'var(--font-lora)',
