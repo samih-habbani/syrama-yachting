@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     })
 
     // Send email asynchronously without blocking the response
-    sendEmail(
+    const emailPromise = sendEmail(
       'contact@syrama-services.com',
       `New Message: ${subject}`,
       `
@@ -56,7 +56,16 @@ export async function POST(request: Request) {
           </p>
         </div>
       `
-    ).catch(err => console.error('Email sending error:', err))
+    )
+
+    // Handle email sending without blocking response
+    emailPromise
+      .then(() => {
+        console.log('[API] Email sent successfully for message ID:', newMessage.id)
+      })
+      .catch(err => {
+        console.error('[API] Email sending failed for message ID:', newMessage.id, err)
+      })
 
     return Response.json(
       {

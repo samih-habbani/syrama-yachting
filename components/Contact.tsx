@@ -234,7 +234,8 @@ export default function Contact() {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
-                        name: `${formData.prenom} ${formData.nom}`,
+                        firstName: formData.prenom,
+                        lastName: formData.nom,
                         email: formData.email,
                         phone: formData.phone,
                         subject: formData.type || 'Website Contact Form',
@@ -350,7 +351,7 @@ export default function Contact() {
                     style={{ ...inputStyle('type'), display: 'block', marginTop: 8, appearance: 'none' } as any}
                   >
                     <option value="" style={{ background: 'var(--bleu-nuit)' }}>Select...</option>
-                    {['Yacht Charter', 'Yacht Sales', 'Concierge Services', 'Bespoke Request'].map(o => (
+                    {['Yacht Charter', 'Yacht Sales', 'Bespoke Experiences', 'Other'].map(o => (
                       <option key={o} value={o} style={{ background: 'var(--bleu-nuit)' }}>{o}</option>
                     ))}
                   </select>

@@ -32,14 +32,19 @@ export default function ContactForm() {
     setIsLoading(true)
 
     try {
+      console.log('[Form Debug] Sending data:', formData)
+
       const response = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
 
+      console.log('[Form Debug] Response status:', response.status)
+
       if (!response.ok) {
         const data = await response.json()
+        console.log('[Form Debug] Error response:', data)
         setError(data.error || 'Failed to send message')
         return
       }
@@ -160,10 +165,10 @@ export default function ContactForm() {
           required
         >
           <option value="">Select a request type</option>
-          <option value="Yacht Charter Inquiry">Yacht Charter Inquiry</option>
-          <option value="Yacht Sales Inquiry">Yacht Sales Inquiry</option>
+          <option value="Yacht Charter">Yacht Charter</option>
+          <option value="Yacht Sales">Yacht Sales</option>
           <option value="Bespoke Experiences">Bespoke Experiences</option>
-          <option value="Other Inquiry">Other Inquiry</option>
+          <option value="Other">Other</option>
         </select>
       </div>
 
