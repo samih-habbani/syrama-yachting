@@ -1,9 +1,29 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+
+  const linkMap: Record<string, string> = {
+    // YACHT CHARTER section
+    'French Riviera': '/charters?region=french-riviera',
+    'Cannes': '/charters?region=cannes',
+    'Saint-Tropez': '/charters?region=saint-tropez',
+    'Monaco': '/charters?region=monaco',
+    'Dubai': '/charters?region=dubai',
+    'All Yachts': '/charters',
+    // SERVICES section
+    'Yacht Charter': '/charters',
+    'Yacht Sales': '/sales',
+    'Bespoke Experiences': '/experiences',
+    // SYRAMA section
+    'About': '/about',
+    'Contact': '/#contact',
+    'Instagram': 'https://www.instagram.com/syrama_services/',
+    'LinkedIn': 'https://www.linkedin.com/in/samih-habbani/',
+  };
 
   const footerLinks = [
     {
@@ -75,16 +95,32 @@ export default function Footer() {
                 {section.category}
               </h4>
               <ul className="space-y-3">
-                {section.links.map((link, linkIdx) => (
-                  <li key={linkIdx}>
-                    <a
-                      href="#"
-                      className="font-[var(--font-lora)] text-[#f5eedd]/70 hover:text-[#b8974a] transition-colors duration-300 text-sm tracking-wide"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
+                {section.links.map((link, linkIdx) => {
+                  const href = linkMap[link] || '#';
+                  const isExternal = href.startsWith('http');
+
+                  return (
+                    <li key={linkIdx}>
+                      {isExternal ? (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-[var(--font-lora)] text-[#f5eedd]/70 hover:text-[#b8974a] transition-colors duration-300 text-sm tracking-wide"
+                        >
+                          {link}
+                        </a>
+                      ) : (
+                        <Link
+                          href={href}
+                          className="font-[var(--font-lora)] text-[#f5eedd]/70 hover:text-[#b8974a] transition-colors duration-300 text-sm tracking-wide"
+                        >
+                          {link}
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </motion.div>
           ))}
@@ -106,12 +142,43 @@ export default function Footer() {
             viewport={{ once: true }}
           >
             {/* Copyright */}
-            <motion.p
-              className="font-[var(--font-lora)] text-[#f5eedd]/60 text-sm tracking-wide text-center md:text-right"
+            <motion.div
+              className="font-[var(--font-lora)] text-[#f5eedd]/60 text-sm tracking-wide text-center md:text-left"
               variants={itemVariants}
             >
-              © {currentYear} Syrama Yachting. All rights reserved.
-            </motion.p>
+              <p>© {currentYear} Syrama Yachting. All rights reserved.</p>
+            </motion.div>
+
+            {/* Contact & Links */}
+            <motion.div
+              className="flex items-center gap-6 text-sm tracking-wide flex-wrap justify-center md:justify-end"
+              variants={itemVariants}
+            >
+              <a
+                href="https://www.instagram.com/syrama_services/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#f5eedd]/60 hover:text-[#b8974a] transition-colors"
+              >
+                Instagram
+              </a>
+              <span className="text-[#b8974a]/30">•</span>
+              <a
+                href="https://wa.me/971505548034"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#f5eedd]/60 hover:text-[#b8974a] transition-colors"
+              >
+                WhatsApp +971 50 554 8034
+              </a>
+              <span className="text-[#b8974a]/30">•</span>
+              <Link
+                href="/privacy"
+                className="text-[#f5eedd]/60 hover:text-[#b8974a] transition-colors"
+              >
+                Privacy
+              </Link>
+            </motion.div>
           </motion.div>
         </motion.div>
 
