@@ -91,7 +91,7 @@ export default function Services() {
       </div>
 
       {/* Experience Grid - NO MARQUEE */}
-      <div style={{ padding: '0 48px 160px', maxWidth: 1400, margin: '0 auto' }}>
+      <div style={{ width: '100%', padding: '0 clamp(32px, 6vw, 96px) 160px' }}>
         {/* Row 1: large left + one tall right */}
         <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 12, marginBottom: 12 }}>
           <ServiceCard exp={services[0]} height={580} delay={0} />
