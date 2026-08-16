@@ -247,8 +247,13 @@ export default function Hero() {
             transition={{ duration: 1.1, delay: 1.85, ease: cubicBezier(0.25, 0.1, 0, 1) }}
             style={{ display: 'flex', alignItems: 'center', gap: 40, marginTop: 52 }}
           >
-            <a
-              href="#intro"
+            <button
+              onClick={() => {
+                const element = document.getElementById('intro')
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+              }}
               data-cursor
               style={{
                 fontFamily: 'var(--font-lora)',
@@ -261,14 +266,21 @@ export default function Hero() {
                 textDecoration: 'none',
                 transition: 'background 0.3s ease, transform 0.3s ease',
                 display: 'inline-block',
+                border: 'none',
+                cursor: 'pointer',
               }}
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--or-clair)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'var(--or)'; e.currentTarget.style.transform = 'translateY(0)' }}
             >
               FIND A YACHT
-            </a>
-            <a
-              href="#contact"
+            </button>
+            <button
+              onClick={() => {
+                const element = document.getElementById('contact')
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+              }}
               style={{
                 fontFamily: 'var(--font-lora)',
                 fontSize: 11,
@@ -280,6 +292,10 @@ export default function Hero() {
                 alignItems: 'center',
                 gap: 10,
                 transition: 'color 0.3s ease',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
               }}
               onMouseEnter={e => (e.currentTarget.style.color = 'var(--or-clair)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'var(--gris)')}
@@ -288,7 +304,7 @@ export default function Hero() {
               <svg width="20" height="1" viewBox="0 0 20 1" fill="none">
                 <line x1="0" y1="0.5" x2="20" y2="0.5" stroke="currentColor" strokeWidth="1"/>
               </svg>
-            </a>
+            </button>
           </motion.div>
         </div>
       </motion.div>
