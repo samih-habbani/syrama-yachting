@@ -43,7 +43,7 @@ export default function Contact() {
       {/* Background image */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <motion.img
-          src="/assets/Samih Habbani.png"
+          src="/assets/founder.webp"
           alt=""
           aria-hidden
           loading="lazy"
@@ -69,22 +69,22 @@ export default function Contact() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 48 }}>
               <div style={{ width: 32, height: 1, background: 'var(--or)' }} />
-              <span className="section-label">Private Contact</span>
+              <span className="section-label">YOUR YACHT ADVISOR</span>
             </div>
             <h2 style={{
               fontFamily: 'var(--font-cormorant)', fontWeight: 300,
               fontSize: 'clamp(42px, 5vw, 72px)', lineHeight: 1.05,
               color: 'var(--champagne)', margin: '0 0 32px',
             }}>
-              Your next<br />
-              voyage begins<br />
-              <em style={{ fontStyle: 'italic', color: 'var(--or-clair)' }}>here.</em>
+              Personal Service,<br />
+              From First Enquiry to<br />
+              <em style={{ fontStyle: 'italic', color: 'var(--or-clair)' }}>Embarkation.</em>
             </h2>
             <p style={{
               fontFamily: 'var(--font-lora)', fontSize: 14, lineHeight: 1.9,
               color: 'var(--gris)', maxWidth: 400,
             }}>
-              Every request is handled by a dedicated advisor within 2 hours. No intermediaries — you speak directly with our team.
+              Every request is personally handled by a dedicated yacht advisor, from sourcing the right yacht to coordinating the details of your charter.
             </p>
           </motion.div>
 
@@ -96,9 +96,9 @@ export default function Contact() {
             style={{ display: 'flex', flexDirection: 'column', gap: 0 }}
           >
             {[
-              { label: 'Private WhatsApp', val: '+971 50 554 8034' },
-              { label: 'Confidential Email', val: 'contact@syrama.ae' },
-              { label: 'Availability', val: '24h/24 · 7j/7 · 365j/an' },
+              { label: 'WhatsApp', val: '+971 50 554 8034' },
+              { label: 'Email', val: 'contact@syrama.ae' },
+              { label: 'Availability', val: 'Available 24/7' },
             ].map(({ label, val }) => (
               <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '24px 0', borderBottom: '1px solid rgba(184,151,74,0.08)' }}>
                 <span style={{ fontFamily: 'var(--font-lora)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gris)' }}>{label}</span>
@@ -140,7 +140,7 @@ export default function Contact() {
             </div>
             {/* Photo */}
             <img
-              src="/assets/Samih Habbani.png"
+              src="/assets/founder.webp"
               alt="Founder — Syrama Yachting"
               style={{
                 width: '100%', height: '100%', minHeight: 500, objectFit: 'cover', objectPosition: 'center center',
@@ -324,7 +324,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
-                      Phone
+                      Phone / WhatsApp
                     </label>
                     <input
                       type="tel"
@@ -340,7 +340,7 @@ export default function Contact() {
 
                 <div>
                   <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
-                    Type of request
+                    Request Type
                   </label>
                   <select
                     value={formData.type}
@@ -358,7 +358,7 @@ export default function Contact() {
 
                 <div>
                   <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
-                    Your request
+                    Tell us what you're looking for
                   </label>
                   <textarea
                     rows={4}
@@ -395,7 +395,7 @@ export default function Contact() {
                   onMouseEnter={e => { if (!isLoading) { e.currentTarget.style.background = 'var(--or-clair)'; e.currentTarget.style.transform = 'translateY(-2px)' } }}
                   onMouseLeave={e => { if (!isLoading) { e.currentTarget.style.background = 'var(--or)'; e.currentTarget.style.transform = 'translateY(0)' } }}
                 >
-                  {isLoading ? 'Sending...' : 'Send request'}
+                  {isLoading ? 'Sending...' : 'SEND MY REQUEST'}
                 </button>
               </form>
             )}

@@ -15,8 +15,8 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "Syrama Yachting | Luxury Yacht Charter & Sales",
-  description: "Experience extraordinary yacht charters and luxury yacht sales with Syrama Yachting",
+  title: "Luxury Yacht Charter & Sales | Syrama Yachting",
+  description: "Discover luxury yachts for charter across the French Riviera, Mediterranean, Dubai and worldwide. Personal yacht brokerage and bespoke charter experiences by Syrama Yachting.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

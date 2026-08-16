@@ -4,53 +4,46 @@ import { motion, cubicBezier } from 'framer-motion'
 
 const services = [
   {
-    img: '/assets/gastronomy.webp',
-    title: 'Starred Chefs',
-    label: 'Gastronomy',
-    desc: 'Michelin-starred chefs, private dining experiences, rare wines and bespoke menus.',
+    img: '/assets/private-dining.webp',
+    title: 'Private Dining',
+    label: 'Culinary',
+    desc: 'Private chefs, restaurant reservations, bespoke menus and carefully selected wines.',
     position: 'center',
   },
   {
-    img: '/assets/high-end-mobility.webp',
-    title: 'Fleet Management',
-    label: 'Crew & Operations',
-    desc: 'Expert captains, professional crew, maintenance, provisioning, and logistics.',
+    img: '/assets/crew-onboard.webp',
+    title: 'Crew & Onboard Services',
+    label: 'Onboard',
+    desc: 'Additional crew, provisioning and onboard arrangements tailored to your charter.',
     position: 'center',
   },
   {
-    img: '/assets/desert-signature.webp',
+    img: '/assets/water-sports.webp',
     title: 'Water Sports',
     label: 'Aquatic Adventures',
-    desc: 'Jet skis, tenders, diving equipment, snorkeling, and watersports instructors.',
-    position: 'center',
+    desc: 'Jet skis, SeaBobs, e-foils, snorkeling, diving and water toys on request.',
+    position: 'center right',
   },
   {
-    img: '/assets/luxury-maison.webp',
-    title: 'Wellness & Spa',
+    img: '/assets/wellness-onboard.webp',
+    title: 'Wellness On Board',
     label: 'Rejuvenation',
-    desc: 'Onboard spa facilities, massage therapists, yoga instructors, wellness programs.',
+    desc: 'Massage therapists, yoga sessions and personalised wellness experiences.',
     position: 'center',
   },
   {
-    img: '/assets/signature-experiences.webp',
-    title: 'Destination Concierge',
-    label: 'Shore Experiences',
-    desc: 'Curated excursions, private guides, exclusive venues, cultural immersion.',
+    img: '/assets/shore-experiences.webp',
+    title: 'Shore Experiences',
+    label: 'Ashore',
+    desc: 'Beach clubs, restaurants, private guides and carefully selected experiences ashore.',
     position: 'center',
   },
   {
-    img: '/assets/icon-private-access.webp',
-    title: 'Navigation & Logistics',
+    img: '/assets/bespoke-itineraries.webp',
+    title: 'Bespoke Itineraries',
     label: 'Route Planning',
-    desc: 'Expert navigation, itinerary design, port arrangements, and destination expertise.',
+    desc: 'Routes designed around your destination, preferences and time on board.',
     position: 'center 40%',
-  },
-  {
-    img: '/assets/unique-experience.webp',
-    title: 'Entertainment',
-    label: 'Bespoke Events',
-    desc: 'Live performances, DJ services, celebration planning, themed parties on deck.',
-    position: 'center',
   },
 ]
 
@@ -74,15 +67,15 @@ export default function Services() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 40 }}>
               <div style={{ width: 32, height: 1, background: 'var(--or)' }} />
-              <span className="section-label">Bespoke Services</span>
+              <span className="section-label">BEYOND THE YACHT</span>
             </div>
             <h2 style={{
               fontFamily: 'var(--font-cormorant)', fontWeight: 300,
               fontSize: 'clamp(42px, 5vw, 72px)', lineHeight: 1.05,
               color: 'var(--champagne)', margin: 0,
             }}>
-              If you can imagine it,<br />
-              <em style={{ fontStyle: 'italic', color: 'var(--or-clair)' }}>we make it happen.</em>
+              Bespoke Yacht Charter<br />
+              <em style={{ fontStyle: 'italic', color: 'var(--or-clair)' }}>Experiences.</em>
             </h2>
           </motion.div>
           <motion.p
@@ -92,7 +85,7 @@ export default function Services() {
             viewport={{ once: true }}
             style={{ fontFamily: 'var(--font-lora)', fontSize: 14, lineHeight: 1.9, color: 'var(--gris)' }}
           >
-            Our global network gives us access to what others consider impossible. No request too ambitious — only bespoke solutions delivered with discretion and excellence.
+            Every charter can be shaped around the way you want to spend your time at sea. From dining and water sports to personalised itineraries and experiences ashore, our team coordinates every detail around you.
           </motion.p>
         </div>
       </div>
@@ -130,8 +123,7 @@ function ServiceCard({ exp, height, delay }: { exp: typeof services[0], height: 
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.9, delay, ease: cubicBezier(0.25, 0.1, 0, 1) }}
       viewport={{ once: true, margin: '-40px' }}
-      data-cursor
-      style={{ position: 'relative', overflow: 'hidden', height, cursor: 'none' }}
+      style={{ position: 'relative', overflow: 'hidden', height, cursor: 'pointer' }}
     >
       <img
         src={exp.img}

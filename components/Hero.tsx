@@ -12,7 +12,7 @@ const ParticleField = dynamic(
   { ssr: false }
 )
 
-const words = ['extraordinary.', 'refined.', 'unforgettable.']
+const words = ['Tailored', 'Refined', 'Personalized']
 
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null)
@@ -190,7 +190,7 @@ export default function Hero() {
             style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 44 }}
           >
             <div style={{ width: 32, height: 1, background: 'var(--or)' }} />
-            <span className="section-label">Syrama · Yacht Charters</span>
+            <span className="section-label">SYRAMA · YACHT CHARTER & SALES</span>
           </motion.div>
 
           {/* Title */}
@@ -200,7 +200,7 @@ export default function Hero() {
             animate="visible"
             style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, lineHeight: 1.0, margin: 0 }}
           >
-            {['The most', 'extraordinary'].map((text, i) => (
+            {['Luxury Yacht', 'Charter,'].map((text, i) => (
               <motion.div key={i} variants={line} style={{ overflow: 'hidden' }}>
                 <span style={{
                   display: 'block',
@@ -215,7 +215,7 @@ export default function Hero() {
             <motion.div variants={line} style={{ overflow: 'hidden' }}>
               <span style={{ display: 'block', fontSize: 'clamp(56px, 8.5vw, 112px)', letterSpacing: '-0.01em' }}>
                 <span className="gold-text">
-                  <span ref={wordRef}>extraordinary.</span>
+                  <span ref={wordRef}>Tailored.</span>
                 </span>
               </span>
             </motion.div>
@@ -236,7 +236,7 @@ export default function Hero() {
               marginTop: 32,
             }}
           >
-            We orchestrate every detail of your extraordinary voyage.
+            Discover exceptional yachts for charter across the French Riviera, Mediterranean, Dubai and the world's most sought-after destinations.
           </motion.p>
 
           {/* CTAs */}

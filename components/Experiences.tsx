@@ -4,45 +4,45 @@ import { motion, cubicBezier } from 'framer-motion'
 const activities = [
   {
     id: 'jet-ski',
-    name: 'Jet Ski Expeditions',
+    name: 'Jet Ski',
     label: 'Water Sports',
-    description: 'Experience pure adrenaline and speed across pristine waters. Our state-of-the-art jet skis offer the perfect blend of excitement and luxury.',
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80',
+    description: 'Explore the coastline at your own pace.',
+    image: '/assets/experiences_at_sea/jetski.webp',
   },
   {
     id: 'seabob',
-    name: 'SeaBob Adventures',
+    name: 'SeaBob',
     label: 'Underwater',
-    description: 'Glide beneath the surface like a dolphin. Explore underwater worlds in comfort and elegance with our premium SeaBob technology.',
-    image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80',
+    description: 'Discover the water above and below the surface.',
+    image: '/assets/experiences_at_sea/seabob.webp',
   },
   {
     id: 'efoil',
-    name: 'E-Foil Experiences',
+    name: 'E-Foil',
     label: 'Innovation',
-    description: 'Float above the water on an electric hydrofoil board. A futuristic, serene way to experience the ocean like never before.',
-    image: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800&q=80',
+    description: 'Experience silent electric flight over the water.',
+    image: '/assets/experiences_at_sea/efoil.webp',
   },
   {
     id: 'cruises',
-    name: 'Inter-Regional Cruises',
+    name: 'Coastal Cruising',
     label: 'Voyages',
-    description: 'Voyage between iconic destinations. From Mediterranean islands to Caribbean jewels, explore the world\'s most coveted waters in absolute comfort.',
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80',
+    description: 'Connect iconic destinations by sea.',
+    image: '/assets/experiences_at_sea/cruising.webp',
   },
   {
     id: 'diving',
-    name: 'Luxury Diving',
+    name: 'Diving',
     label: 'Exploration',
-    description: 'Discover vibrant coral reefs and marine life with certified diving instructors. Bespoke underwater expeditions tailored to your experience level.',
-    image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80',
+    description: 'Private diving experiences with qualified professionals.',
+    image: '/assets/experiences_at_sea/diving.webp',
   },
   {
     id: 'snorkeling',
-    name: 'Premium Snorkeling',
+    name: 'Snorkeling',
     label: 'Discovery',
-    description: 'Explore turquoise lagoons and hidden underwater gardens. Our concierge sources the most exclusive and pristine snorkeling locations worldwide.',
-    image: 'https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800&q=80',
+    description: 'Discover secluded coves and clear Mediterranean waters.',
+    image: '/assets/experiences_at_sea/snorkling.webp',
   },
 ]
 
@@ -190,17 +190,17 @@ export default function Experiences() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 40 }}>
                 <div style={{ width: 32, height: 1, background: '#b8974a' }} />
-                <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b8974a' }}>Maritime Experiences</span>
+                <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b8974a' }}>ON THE WATER</span>
               </div>
 
               <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(48px, 6vw, 88px)', lineHeight: 1.0, color: '#f5eedd', margin: 0 }}>
-                At Sea<br />
-                <em style={{ fontStyle: 'italic', color: '#d4b472' }}>Activities</em>
+                Experiences<br />
+                <em style={{ fontStyle: 'italic', color: '#d4b472' }}>Beyond the Yacht.</em>
               </h2>
             </div>
 
             <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#6a6a5e', margin: 0 }}>
-              From thrilling water sports to serene underwater exploration, experience the ocean's endless possibilities with world-class equipment and expert guidance.
+              Add another dimension to your charter with water sports, underwater exploration and experiences tailored to your destination.
             </p>
           </div>
         </motion.div>

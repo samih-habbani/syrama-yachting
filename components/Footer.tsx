@@ -7,16 +7,16 @@ export default function Footer() {
 
   const footerLinks = [
     {
-      category: 'EXPERIENCES',
-      links: ['Yacht Charter', 'Luxury Sales', 'Fleet Management', 'Custom Voyages'],
+      category: 'YACHT CHARTER',
+      links: ['French Riviera', 'Cannes', 'Saint-Tropez', 'Monaco', 'Dubai', 'All Yachts'],
     },
     {
-      category: 'COMPANY',
-      links: ['About Syrama', 'Our Story', 'Careers', 'Awards'],
+      category: 'SERVICES',
+      links: ['Yacht Charter', 'Yacht Sales', 'Bespoke Experiences'],
     },
     {
-      category: 'RESOURCES',
-      links: ['Blog', 'Destinations', 'Press', 'Contact'],
+      category: 'SYRAMA',
+      links: ['About', 'Contact', 'Instagram', 'LinkedIn'],
     },
   ];
 
@@ -64,7 +64,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="font-[var(--font-lora)] text-[#f5eedd]/60 text-sm leading-relaxed tracking-wide">
-              Luxury yacht experiences for the world's most discerning travelers.
+              Luxury yacht charter and sales across the Mediterranean and worldwide.
             </p>
           </motion.div>
 
@@ -105,22 +105,6 @@ export default function Footer() {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            {/* Social Links */}
-            <motion.div
-              className="flex gap-8"
-              variants={itemVariants}
-            >
-              {['Instagram', 'Facebook', 'LinkedIn', 'YouTube'].map((social) => (
-                <a
-                  key={social}
-                  href="#"
-                  className="font-[var(--font-lora)] text-[#f5eedd]/60 hover:text-[#b8974a] transition-colors duration-300 text-sm tracking-wide"
-                >
-                  {social}
-                </a>
-              ))}
-            </motion.div>
-
             {/* Copyright */}
             <motion.p
               className="font-[var(--font-lora)] text-[#f5eedd]/60 text-sm tracking-wide text-center md:text-right"
@@ -140,7 +124,7 @@ export default function Footer() {
           transition={{ delay: 0.5 }}
         >
           <p className="font-[var(--font-lora)] text-[#f5eedd]/40 text-xs tracking-widest">
-            LUXURY MARITIME EXPERIENCES | WORLDWIDE SERVICE | ESTABLISHED 2024
+            LUXURY YACHT CHARTER & SALES | WORLDWIDE SERVICE
           </p>
         </motion.div>
       </div>

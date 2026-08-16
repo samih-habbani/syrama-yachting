@@ -114,7 +114,7 @@ export default function Navbar() {
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
             >
-              INQUIRE
+              FIND A YACHT
             </motion.button>
           </div>
         </div>

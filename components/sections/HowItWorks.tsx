@@ -10,17 +10,17 @@ const steps = [
   {
     number: '02',
     title: 'Receive a curated selection',
-    description: 'Your broker selects the most suitable yachts.',
+    description: 'Your dedicated broker sources the most suitable available yachts.',
   },
   {
     number: '03',
-    title: 'We arrange the details',
-    description: 'Yacht, itinerary, crew requests, restaurants, water toys, transfers…',
+    title: 'We arrange every detail',
+    description: 'Itinerary, crew requests, restaurants, water toys, transfers and more.',
   },
   {
     number: '04',
     title: 'Step aboard',
-    description: 'Everything is ready.',
+    description: 'Your yacht and experience are ready.',
   },
 ]
 
@@ -63,8 +63,8 @@ export default function HowItWorks() {
             color: '#f5eedd',
             margin: '0 0 24px',
           }}>
-            Your charter,<br />
-            <em style={{ fontStyle: 'italic', color: '#d4b472' }}>made effortless.</em>
+            Your Yacht Charter,<br />
+            <em style={{ fontStyle: 'italic', color: '#d4b472' }}>Made Effortless.</em>
           </h2>
 
           <p style={{
@@ -75,7 +75,7 @@ export default function HowItWorks() {
             maxWidth: 600,
             margin: '0 auto',
           }}>
-            A seamless journey from inquiry to unforgettable voyage — four simple steps to your perfect maritime experience.
+            From your first enquiry to embarkation, your dedicated broker coordinates every stage of your charter.
           </p>
         </motion.div>
 

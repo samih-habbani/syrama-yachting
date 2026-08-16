@@ -71,7 +71,7 @@ export default function Intro() {
           style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 48 }}
         >
           <div style={{ width: 32, height: 1, background: 'var(--or)' }} />
-          <span className="section-label">Personalized Yacht Experiences</span>
+          <span className="section-label">PRIVATE YACHT CHARTER & SALES</span>
         </motion.div>
 
         {/* Title */}
@@ -90,7 +90,7 @@ export default function Intro() {
             maxWidth: 900,
           }}
         >
-          {['More than a', 'yacht. A journey', 'designed around you.'].map((text, i) => (
+          {['The right yacht.', 'The right destination.', 'Entirely tailored to you.'].map((text, i) => (
             <motion.div key={i} variants={line} style={{ overflow: 'hidden' }}>
               <span style={{ display: 'block' }}>{text}</span>
             </motion.div>
@@ -112,7 +112,7 @@ export default function Intro() {
             marginBottom: 120,
           }}
         >
-          We accompany you personally through every stage of your voyage. From selecting the perfect yacht to designing your itinerary and orchestrating every detail, our experts ensure your experience transcends expectations. Your journey, our commitment.
+          From day charters to multi-day escapes and superyacht experiences, our brokers source the right yacht for your destination, dates and preferences — then take care of every detail from itinerary to embarkation.
         </motion.p>
 
         {/* Two-column grid */}
@@ -121,14 +121,14 @@ export default function Intro() {
             {
               label: 'CHARTER',
               title: 'Charter a Yacht',
-              desc: 'Explore yachts available for charter',
-              link: 'Explore',
+              desc: 'Explore our selection of motor yachts and superyachts available for charter.',
+              link: 'VIEW YACHTS FOR CHARTER',
             },
             {
               label: 'SALES',
               title: 'Buy a Yacht',
-              desc: 'Discover yachts available for sale',
-              link: 'Explore',
+              desc: 'Discover selected yachts for sale and benefit from personalised brokerage support.',
+              link: 'EXPLORE YACHTS FOR SALE',
             },
           ].map((item, i) => (
             <motion.div

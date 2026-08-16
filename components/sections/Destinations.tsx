@@ -115,16 +115,16 @@ export default function Destinations() {
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 24 }}>
             <div style={{ width: 32, height: 1, background: '#b8974a' }} />
-            <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b8974a' }}>Sailing Destinations</span>
+            <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b8974a' }}>WORLDWIDE DESTINATIONS</span>
             <div style={{ width: 32, height: 1, background: '#b8974a' }} />
           </div>
 
           <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(48px, 6vw, 88px)', lineHeight: 1.0, color: '#f5eedd', margin: '0 0 40px' }}>
-            Where will you<br />go next?
+            Luxury Yacht Charter Destinations.
           </h2>
 
           <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#6a6a5e', maxWidth: 600, margin: '0 auto' }}>
-            From the glittering shores of the Côte d'Azur to the pristine islands of Greece, our network spans the world's most coveted yachting destinations.
+            From Cannes, Saint-Tropez and Monaco to Ibiza, Greece and Dubai, discover exceptional yachting destinations across the Mediterranean and beyond.
           </p>
         </motion.div>
 

@@ -47,15 +47,15 @@ export default function FleetClient({ yachts, showFilters = true }: FleetClientP
         <div style={{ marginBottom: 60 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
             <div style={{ width: 32, height: 1, background: '#b8974a' }} />
-            <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b8974a' }}>Exclusive Fleet</span>
+            <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b8974a' }}>CURATED YACHT SELECTION</span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'end', marginBottom: 40 }}>
             <div>
-              <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(48px, 6vw, 88px)', lineHeight: 1.0, color: '#f5eedd', margin: 0 }}>Our vessels.</h2>
+              <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(48px, 6vw, 88px)', lineHeight: 1.0, color: '#f5eedd', margin: 0 }}>Yachts for Charter.</h2>
             </div>
             <div>
-              <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#6a6a5e', margin: '0 0 20px' }}>Handpicked superyachts for charter and acquisition. Each vessel represents the pinnacle of maritime luxury, impeccably maintained and staffed by elite crews.</p>
+              <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#6a6a5e', margin: '0 0 20px' }}>Explore a selection of yachts available for charter through our trusted network. From elegant day yachts to crewed motor yachts and superyachts, we source the right vessel for every journey.</p>
             </div>
           </div>
         </div>
@@ -142,10 +142,10 @@ export default function FleetClient({ yachts, showFilters = true }: FleetClientP
 
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(24px, 3vw, 38px)', fontWeight: 300, color: '#f5eedd', marginBottom: 16 }}>
-            Ready to set sail?
+            Looking for something specific?
           </div>
           <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#6a6a5e', maxWidth: 480, margin: '0 auto 32px' }}>
-            Contact our concierge team to arrange your bespoke voyage.
+            Tell us your destination, dates and preferences. Our brokers will source a tailored selection of available yachts.
           </p>
           <a
             href="#contact"
@@ -166,7 +166,7 @@ export default function FleetClient({ yachts, showFilters = true }: FleetClientP
             onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
             onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
           >
-            Get in touch
+            REQUEST A YACHT SELECTION
           </a>
         </div>
       </div>

@@ -71,7 +71,7 @@ export default function WhySyrama() {
           right: -200,
           width: '50%',
           height: '100%',
-          backgroundImage: 'url(/assets/Syrama%20Yachting%20-%20Why%20Choose%20Us.png)',
+          backgroundImage: 'url(/assets/why-syrama.webp)',
           backgroundSize: 'cover',
           backgroundRepeat: 'no-repeat',
           opacity: 0.25,
