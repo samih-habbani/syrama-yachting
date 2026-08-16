@@ -2,8 +2,6 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Intro from '@/components/Intro';
 import FleetClient from '@/components/FleetClient';
-import Services from '@/components/Services';
-import Experiences from '@/components/Experiences';
 import Destinations from '@/components/sections/Destinations';
 import WhySyrama from '@/components/WhySyrama';
 import HowItWorks from '@/components/sections/HowItWorks';
@@ -24,8 +22,6 @@ export default async function Home() {
         <Hero />
         <Intro />
         <FleetClient yachts={yachts} showFilters={false} />
-        <Services />
-        <Experiences />
         <Destinations />
         <WhySyrama />
         <HowItWorks />
