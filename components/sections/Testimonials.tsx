@@ -41,6 +41,12 @@ export default function Testimonials() {
           viewport={{ once: true }}
           style={{ marginBottom: 80, textAlign: 'center' }}
         >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 24 }}>
+            <div style={{ width: 32, height: 1, background: '#b8974a' }} />
+            <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b8974a' }}>CLIENT EXPERIENCES</span>
+            <div style={{ width: 32, height: 1, background: '#b8974a' }} />
+          </div>
+
           <h2 style={{
             fontFamily: 'var(--font-cormorant)',
             fontWeight: 300,
@@ -49,7 +55,7 @@ export default function Testimonials() {
             color: '#f5eedd',
             margin: 0,
           }}>
-            Trusted by our clients
+            Trusted by Clients Worldwide.
           </h2>
         </motion.div>
 

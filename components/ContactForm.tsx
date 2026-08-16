@@ -4,17 +4,21 @@ import { useState } from 'react'
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     subject: '',
+    destination: '',
+    preferredDate: '',
+    numberOfGuests: '',
     message: ''
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
@@ -42,10 +46,14 @@ export default function ContactForm() {
 
       setSuccess(true)
       setFormData({
-        name: '',
+        firstName: '',
+        lastName: '',
         email: '',
         phone: '',
         subject: '',
+        destination: '',
+        preferredDate: '',
+        numberOfGuests: '',
         message: ''
       })
 
@@ -74,22 +82,41 @@ export default function ContactForm() {
         </div>
       )}
 
+      {/* Row 1: First Name, Last Name */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="text-gray-500 text-sm tracking-widest uppercase block mb-3">
-            Full Name *
+            First Name *
           </label>
           <input
             type="text"
-            name="name"
-            value={formData.name}
+            name="firstName"
+            value={formData.firstName}
             onChange={handleChange}
-            placeholder="Your name"
+            placeholder="Your first name"
             className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
             required
           />
         </div>
 
+        <div>
+          <label className="text-gray-500 text-sm tracking-widest uppercase block mb-3">
+            Last Name *
+          </label>
+          <input
+            type="text"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            placeholder="Your last name"
+            className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
+            required
+          />
+        </div>
+      </div>
+
+      {/* Row 2: Email, Phone */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="text-gray-500 text-sm tracking-widest uppercase block mb-3">
             Email *
@@ -104,40 +131,91 @@ export default function ContactForm() {
             required
           />
         </div>
+
+        <div>
+          <label className="text-gray-500 text-sm tracking-widest uppercase block mb-3">
+            Phone / WhatsApp
+          </label>
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="+33..."
+            className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
+          />
+        </div>
       </div>
 
+      {/* Row 3: Request Type */}
       <div>
         <label className="text-gray-500 text-sm tracking-widest uppercase block mb-3">
-          Phone
+          Request Type *
         </label>
-        <input
-          type="tel"
-          name="phone"
-          value={formData.phone}
-          onChange={handleChange}
-          placeholder="+33..."
-          className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
-        />
-      </div>
-
-      <div>
-        <label className="text-gray-500 text-sm tracking-widest uppercase block mb-3">
-          Subject *
-        </label>
-        <input
-          type="text"
+        <select
           name="subject"
           value={formData.subject}
           onChange={handleChange}
-          placeholder="Message subject"
-          className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
+          className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm"
           required
-        />
+        >
+          <option value="">Select a request type</option>
+          <option value="Yacht Charter Inquiry">Yacht Charter Inquiry</option>
+          <option value="Yacht Sales Inquiry">Yacht Sales Inquiry</option>
+          <option value="Bespoke Experiences">Bespoke Experiences</option>
+          <option value="Other Inquiry">Other Inquiry</option>
+        </select>
       </div>
 
+      {/* Row 4: Destination, Preferred Date, Number of Guests */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <label className="text-gray-500 text-sm tracking-widest uppercase block mb-3">
+            Destination
+          </label>
+          <input
+            type="text"
+            name="destination"
+            value={formData.destination}
+            onChange={handleChange}
+            placeholder="Where would you like to charter?"
+            className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
+          />
+        </div>
+
+        <div>
+          <label className="text-gray-500 text-sm tracking-widest uppercase block mb-3">
+            Preferred Date
+          </label>
+          <input
+            type="date"
+            name="preferredDate"
+            value={formData.preferredDate}
+            onChange={handleChange}
+            className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
+          />
+        </div>
+
+        <div>
+          <label className="text-gray-500 text-sm tracking-widest uppercase block mb-3">
+            Number of Guests
+          </label>
+          <input
+            type="number"
+            name="numberOfGuests"
+            value={formData.numberOfGuests}
+            onChange={handleChange}
+            placeholder="Number of guests"
+            min="1"
+            className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
+          />
+        </div>
+      </div>
+
+      {/* Row 5: Message */}
       <div>
         <label className="text-gray-500 text-sm tracking-widest uppercase block mb-3">
-          Message *
+          Tell us what you're looking for *
         </label>
         <textarea
           name="message"
@@ -155,7 +233,7 @@ export default function ContactForm() {
         disabled={isLoading}
         className="w-full bg-[#b8974a] text-[#06090f] rounded-lg px-6 py-3 transition font-medium text-sm tracking-wider uppercase hover:bg-[#d4af7a] disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isLoading ? 'Sending...' : 'Send Message'}
+        {isLoading ? 'Sending...' : 'SEND MY REQUEST'}
       </button>
     </form>
   )

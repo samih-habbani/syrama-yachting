@@ -193,7 +193,7 @@ export default function HowItWorks() {
             maxWidth: 500,
             margin: '0 auto 32px',
           }}>
-            Ready to begin your journey? Our concierge team is standing by to curate your perfect voyage.
+            Tell us where and when you want to charter. We'll take care of the rest.
           </p>
 
           <a

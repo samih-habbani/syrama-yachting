@@ -98,7 +98,7 @@ export default function Contact() {
             {[
               { label: 'WhatsApp', val: '+971 50 554 8034' },
               { label: 'Email', val: 'contact@syrama.ae' },
-              { label: 'Availability', val: 'Available 24/7' },
+              { label: 'Availability', val: '24/7' },
             ].map(({ label, val }) => (
               <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '24px 0', borderBottom: '1px solid rgba(184,151,74,0.08)' }}>
                 <span style={{ fontFamily: 'var(--font-lora)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--gris)' }}>{label}</span>

@@ -117,14 +117,19 @@ model Reservation {
 }
 
 model Message {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String
-  phone     String?
-  subject   String
-  message   String
-  status    String   @default("unread")
-  createdAt DateTime @default(now()) @map("created_at")
+  id              Int      @id @default(autoincrement())
+  name            String?
+  firstName       String?  @map("first_name")
+  lastName        String?  @map("last_name")
+  email           String
+  phone           String?
+  subject         String
+  message         String
+  destination     String?
+  preferredDate   String?  @map("preferred_date")
+  numberOfGuests  Int?     @map("number_of_guests")
+  status          String   @default("unread")
+  createdAt       DateTime @default(now()) @map("created_at")
 
   @@index([email])
   @@index([status])

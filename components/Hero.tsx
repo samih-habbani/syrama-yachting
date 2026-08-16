@@ -215,8 +215,9 @@ export default function Hero() {
             <motion.div variants={line} style={{ overflow: 'hidden' }}>
               <span style={{ display: 'block', fontSize: 'clamp(56px, 8.5vw, 112px)', letterSpacing: '-0.01em' }}>
                 <span className="gold-text">
-                  <span ref={wordRef}>Tailored.</span>
+                  <span ref={wordRef}>Tailored</span>
                 </span>
+                {' Around You.'}
               </span>
             </motion.div>
           </motion.h1>
@@ -264,10 +265,10 @@ export default function Hero() {
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--or-clair)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'var(--or)'; e.currentTarget.style.transform = 'translateY(0)' }}
             >
-              Begin
+              FIND A YACHT
             </a>
             <a
-              href="#fleet"
+              href="#contact"
               style={{
                 fontFamily: 'var(--font-lora)',
                 fontSize: 11,
@@ -283,7 +284,7 @@ export default function Hero() {
               onMouseEnter={e => (e.currentTarget.style.color = 'var(--or-clair)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'var(--gris)')}
             >
-              Discover
+              SPEAK WITH A BROKER
               <svg width="20" height="1" viewBox="0 0 20 1" fill="none">
                 <line x1="0" y1="0.5" x2="20" y2="0.5" stroke="currentColor" strokeWidth="1"/>
               </svg>

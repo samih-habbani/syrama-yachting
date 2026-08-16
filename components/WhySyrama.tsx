@@ -161,7 +161,7 @@ export default function WhySyrama() {
             margin: '0 auto',
             letterSpacing: '0.02em'
           }}>
-            Five pillars of excellence that transform your yacht charter from a vacation into an unforgettable voyage.
+            A personal approach to yacht charter, combining expert sourcing, worldwide access and dedicated support from enquiry to embarkation.
           </p>
         </motion.div>
 
@@ -312,7 +312,7 @@ export default function WhySyrama() {
               e.currentTarget.style.transform = 'translateY(0)'
             }}
           >
-            Begin Your Journey
+            SPEAK WITH A BROKER
           </a>
         </motion.div>
       </div>

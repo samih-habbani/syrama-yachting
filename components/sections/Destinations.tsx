@@ -261,7 +261,7 @@ export default function Destinations() {
           viewport={{ once: true }}
           style={{ textAlign: 'center' }}>
           <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#6a6a5e', maxWidth: 500, margin: '0 auto 32px' }}>
-            Not sure which destination is perfect for you? Our concierge team curates the ideal itinerary based on your preferences.
+            Not sure where to charter? Tell us the experience you're looking for and our team will recommend the right destination, yacht and itinerary.
           </p>
           <a
             href="#contact"
@@ -282,7 +282,7 @@ export default function Destinations() {
             onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
             onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
           >
-            Plan Your Voyage
+            PLAN YOUR CHARTER
           </a>
         </motion.div>
       </div>
