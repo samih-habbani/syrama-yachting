@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import Navbar from '@/components/Navbar'
 
 const MapComponent = dynamic(() => import('@/components/DestinationsMap'), {
   ssr: false,
@@ -23,13 +24,7 @@ export default function ChartersPage() {
 
   return (
     <main style={{ background: '#06090f', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 48px', background: 'rgba(6,9,15,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(184,151,74,0.2)' }}>
-        <Link href="/" style={{ textDecoration: 'none' }}>
-          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 22, fontWeight: 300, letterSpacing: '0.3em', color: '#f5eedd' }}>SYRAMA</div>
-          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#9a9a8e', marginTop: 2 }}>Yachting</div>
-        </Link>
-        <Link href="/#contact" style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#06090f', background: 'linear-gradient(135deg, #b8974a, #d4b472)', padding: '12px 24px', textDecoration: 'none', boxShadow: '0 4px 20px rgba(184,151,74,0.35)' }}>Contact Us</Link>
-      </nav>
+      <Navbar />
 
       <div style={{ flex: 1, display: 'flex', paddingTop: 80 }}>
         {/* Sidebar */}

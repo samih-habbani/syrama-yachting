@@ -43,7 +43,7 @@ export default function Contact() {
       {/* Background image */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <motion.img
-          src="/images/Samih HABBANI - Syrama Yachting.JPG"
+          src="/assets/Samih Habbani.png"
           alt=""
           aria-hidden
           loading="lazy"
@@ -140,7 +140,7 @@ export default function Contact() {
             </div>
             {/* Photo */}
             <img
-              src="/images/Samih HABBANI - Syrama Yachting.JPG"
+              src="/assets/Samih Habbani.png"
               alt="Founder — Syrama Yachting"
               style={{
                 width: '100%', height: '100%', minHeight: 500, objectFit: 'cover', objectPosition: 'center center',

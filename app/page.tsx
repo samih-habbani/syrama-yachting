@@ -3,8 +3,7 @@ import Hero from '@/components/Hero';
 import Intro from '@/components/Intro';
 import FleetClient from '@/components/FleetClient';
 import Destinations from '@/components/sections/Destinations';
-import Services from '@/components/Services';
-import Experiences from '@/components/Experiences';
+import WhySyrama from '@/components/WhySyrama';
 import HowItWorks from '@/components/sections/HowItWorks';
 import Testimonials from '@/components/sections/Testimonials';
 import Contact from '@/components/Contact';
@@ -24,8 +23,7 @@ export default async function Home() {
         <Intro />
         <FleetClient yachts={yachts} showFilters={false} />
         <Destinations />
-        <Services />
-        <Experiences />
+        <WhySyrama />
         <HowItWorks />
         <Testimonials />
         <Contact />

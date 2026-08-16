@@ -64,7 +64,7 @@ export default function Services() {
       style={{ position: 'relative', background: 'var(--noir)', overflow: 'hidden' }}
     >
       {/* Header */}
-      <div style={{ padding: '160px 48px 80px', maxWidth: 1200, margin: '0 auto' }}>
+      <div style={{ paddingTop: 160, paddingBottom: 80, paddingLeft: 'clamp(32px, 6vw, 96px)', paddingRight: 'clamp(32px, 6vw, 96px)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'end' }}>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
