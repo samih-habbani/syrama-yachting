@@ -1,6 +1,6 @@
 'use client'
 import { useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, cubicBezier } from 'framer-motion'
 
 const services = [
   {
