@@ -129,7 +129,7 @@ export default function FleetClient({ yachts, showFilters = true }: FleetClientP
                       {yacht.priceDay && (
                         <div>
                           <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>Rate</div>
-                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>€{yacht.priceDay.toLocaleString()}/day</div>
+                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>€{yacht.priceDay.toLocaleString('fr-FR')}/day</div>
                         </div>
                       )}
                     </div>

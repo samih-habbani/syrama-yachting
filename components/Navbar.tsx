@@ -64,14 +64,23 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* CTA Button */}
-          <motion.button
-            className="bg-gradient-to-r from-[#b8974a] to-[#d4b472] hover:from-[#d4b472] hover:to-[#b8974a] text-[#06090f] px-8 py-2 rounded-sm font-[var(--font-heading)] font-bold text-xs tracking-widest transition-all duration-500 shadow-lg shadow-[#b8974a]/40 hover:shadow-xl hover:shadow-[#b8974a]/60"
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            INQUIRE
-          </motion.button>
+          {/* Right Section - Admin Link + CTA Button */}
+          <div className="flex items-center gap-4">
+            <Link
+              href="/admin/dashboard/yachts"
+              className="text-[#b8974a] hover:text-[#d4b472] font-[var(--font-lora)] text-xs tracking-widest transition-colors duration-300"
+            >
+              ADMIN
+            </Link>
+
+            <motion.button
+              className="bg-gradient-to-r from-[#b8974a] to-[#d4b472] hover:from-[#d4b472] hover:to-[#b8974a] text-[#06090f] px-8 py-2 rounded-sm font-[var(--font-heading)] font-bold text-xs tracking-widest transition-all duration-500 shadow-lg shadow-[#b8974a]/40 hover:shadow-xl hover:shadow-[#b8974a]/60"
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              INQUIRE
+            </motion.button>
+          </div>
         </div>
 
         {/* Mobile Menu */}

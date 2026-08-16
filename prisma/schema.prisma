@@ -51,6 +51,7 @@ model Yacht {
   priceWeek             Float?   @map("price_week")
   createdAt             DateTime @default(now()) @map("created_at")
   media                 Media[]
+  reservations          Reservation[]
 
   @@index([status])
   @@index([length])
@@ -71,4 +72,61 @@ model Media {
 
   @@index([yachtId])
   @@map("media")
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("user")
+}
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  fullName  String   @map("full_name")
+  email     String   @unique
+  phone     String
+  createdAt DateTime @default(now()) @map("created_at")
+  reservations Reservation[]
+
+  @@map("client")
+}
+
+model Reservation {
+  id        Int      @id @default(autoincrement())
+  clientId  Int      @map("client_id")
+  yachtId   Int      @map("yacht_id")
+  date      DateTime
+  numberOfPeople Int @map("number_of_people")
+  location  String
+  region    String?
+  price     Float?
+  status    String   @default("pending")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  yacht     Yacht    @relation(fields: [yachtId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([yachtId])
+  @@index([region])
+  @@map("reservation")
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  status    String   @default("unread")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([email])
+  @@index([status])
+  @@map("message")
 }

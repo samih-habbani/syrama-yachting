@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import ReservationModal from './ReservationModal'
 
 interface Media {
   id: number
@@ -28,6 +29,7 @@ interface YachtDetailClientProps {
 
 export default function YachtDetailClient({ yacht }: YachtDetailClientProps) {
   const [imgIndex, setImgIndex] = useState(0)
+  const [isReservationOpen, setIsReservationOpen] = useState(false)
   const images = yacht.media || []
   const prev = () => setImgIndex(i => (i - 1 + images.length) % images.length)
   const next = () => setImgIndex(i => (i + 1) % images.length)
@@ -95,10 +97,17 @@ export default function YachtDetailClient({ yacht }: YachtDetailClientProps) {
           {yacht.priceDay && (
             <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 32 }}>From €{yacht.priceDay.toLocaleString()}/day</div>
           )}
-          <Link href="/#contact" style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '16px', textDecoration: 'none', marginBottom: 16 }}>Request charter</Link>
+          <button onClick={() => setIsReservationOpen(true)} style={{ width: '100%', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '16px', border: 'none', cursor: 'pointer', marginBottom: 16 }}>Request charter</button>
           <a href="https://wa.me/" target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', border: '1px solid rgba(184,151,74,0.3)', padding: '14px', textDecoration: 'none' }}>WhatsApp us</a>
         </div>
       </div>
+
+      <ReservationModal
+        yachtId={yacht.id}
+        yachtModel={yacht.model}
+        isOpen={isReservationOpen}
+        onClose={() => setIsReservationOpen(false)}
+      />
     </main>
   )
 }

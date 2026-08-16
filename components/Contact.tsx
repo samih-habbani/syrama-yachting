@@ -9,6 +9,16 @@ export default function Contact() {
 
   const [focused, setFocused] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [formData, setFormData] = useState({
+    prenom: '',
+    nom: '',
+    email: '',
+    phone: '',
+    type: '',
+    msg: ''
+  })
 
   const inputStyle = (name: string) => ({
     width: '100%',
@@ -214,9 +224,55 @@ export default function Contact() {
               </motion.div>
             ) : (
               <form
-                onSubmit={e => { e.preventDefault(); setSubmitted(true) }}
+                onSubmit={async (e) => {
+                  e.preventDefault()
+                  setError('')
+                  setIsLoading(true)
+
+                  try {
+                    const response = await fetch('/api/messages', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        name: `${formData.prenom} ${formData.nom}`,
+                        email: formData.email,
+                        phone: formData.phone,
+                        subject: formData.type || 'Website Contact Form',
+                        message: formData.msg
+                      })
+                    })
+
+                    if (!response.ok) {
+                      const data = await response.json()
+                      setError(data.error || 'Failed to send message')
+                      return
+                    }
+
+                    setSubmitted(true)
+                    setFormData({ prenom: '', nom: '', email: '', phone: '', type: '', msg: '' })
+                  } catch (err) {
+                    setError('An error occurred. Please try again.')
+                    console.error(err)
+                  } finally {
+                    setIsLoading(false)
+                  }
+                }}
                 style={{ display: 'flex', flexDirection: 'column', gap: 32 }}
               >
+                {error && (
+                  <div style={{
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.5)',
+                    color: 'rgb(253, 230, 138)',
+                    padding: '12px 16px',
+                    borderRadius: '4px',
+                    fontFamily: 'var(--font-lora)',
+                    fontSize: 12
+                  }}>
+                    {error}
+                  </div>
+                )}
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
                   <div>
                     <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
@@ -225,6 +281,8 @@ export default function Contact() {
                     <input
                       type="text"
                       required
+                      value={formData.prenom}
+                      onChange={(e) => setFormData({ ...formData, prenom: e.target.value })}
                       placeholder="Alexander"
                       onFocus={() => setFocused('prenom')}
                       onBlur={() => setFocused(null)}
@@ -238,9 +296,44 @@ export default function Contact() {
                     <input
                       type="text"
                       required
+                      value={formData.nom}
+                      onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+                      placeholder="Smith"
                       onFocus={() => setFocused('nom')}
                       onBlur={() => setFocused(null)}
                       style={{ ...inputStyle('nom'), display: 'block', marginTop: 8 } as any}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+                  <div>
+                    <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="your@email.com"
+                      onFocus={() => setFocused('email')}
+                      onBlur={() => setFocused(null)}
+                      style={{ ...inputStyle('email'), display: 'block', marginTop: 8 } as any}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
+                      Phone
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="+33..."
+                      onFocus={() => setFocused('phone')}
+                      onBlur={() => setFocused(null)}
+                      style={{ ...inputStyle('phone'), display: 'block', marginTop: 8 } as any}
                     />
                   </div>
                 </div>
@@ -250,6 +343,8 @@ export default function Contact() {
                     Type of request
                   </label>
                   <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                     onFocus={() => setFocused('type')}
                     onBlur={() => setFocused(null)}
                     style={{ ...inputStyle('type'), display: 'block', marginTop: 8, appearance: 'none' } as any}
@@ -267,6 +362,9 @@ export default function Contact() {
                   </label>
                   <textarea
                     rows={4}
+                    required
+                    value={formData.msg}
+                    onChange={(e) => setFormData({ ...formData, msg: e.target.value })}
                     placeholder="Describe your project..."
                     onFocus={() => setFocused('msg')}
                     onBlur={() => setFocused(null)}
@@ -280,8 +378,9 @@ export default function Contact() {
 
                 <button
                   type="submit"
+                  disabled={isLoading}
                   style={{
-                    background: 'var(--or)',
+                    background: isLoading ? 'rgba(184,151,74,0.5)' : 'var(--or)',
                     color: 'var(--noir)',
                     fontFamily: 'var(--font-lora)',
                     fontSize: 11,
@@ -291,12 +390,12 @@ export default function Contact() {
                     border: 'none',
                     alignSelf: 'flex-start',
                     transition: 'background 0.3s ease, transform 0.3s ease',
-                    cursor: 'pointer',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--or-clair)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'var(--or)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                  onMouseEnter={e => { if (!isLoading) { e.currentTarget.style.background = 'var(--or-clair)'; e.currentTarget.style.transform = 'translateY(-2px)' } }}
+                  onMouseLeave={e => { if (!isLoading) { e.currentTarget.style.background = 'var(--or)'; e.currentTarget.style.transform = 'translateY(0)' } }}
                 >
-                  Send request
+                  {isLoading ? 'Sending...' : 'Send request'}
                 </button>
               </form>
             )}
