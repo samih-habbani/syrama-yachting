@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, cubicBezier, AnimatePresence } from 'framer-motion'
 
 const destinations = [
   {
@@ -153,7 +153,7 @@ export default function Destinations() {
                     key={dest.id}
                     initial={{ opacity: 0, y: 40 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.9, delay: i * 0.1, ease: [0.25, 0.1, 0, 1] }}
+                    transition={{ duration: 0.9, delay: i * 0.1, ease: cubicBezier(0.25, 0.1, 0, 1) }}
                     viewport={{ once: true, margin: '-40px' }}
                     onMouseEnter={() => setActiveDestination(dest.id)}
                     onMouseLeave={() => setActiveDestination(null)}

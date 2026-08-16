@@ -52,7 +52,7 @@ export default function Intro() {
       <motion.div
         initial={{ scaleX: 0 }}
         whileInView={{ scaleX: 1 }}
-        transition={{ duration: 1.8, ease: [0.25, 0.1, 0, 1] }}
+        transition={{ duration: 1.8, ease: cubicBezier(0.25, 0.1, 0, 1) }}
         viewport={{ once: true }}
         style={{
           position: 'absolute', top: 0, left: 0, right: 0, height: 1,

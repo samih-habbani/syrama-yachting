@@ -128,7 +128,7 @@ function ServiceCard({ exp, height, delay }: { exp: typeof services[0], height: 
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.9, delay, ease: [0.25, 0.1, 0, 1] }}
+      transition={{ duration: 0.9, delay, ease: cubicBezier(0.25, 0.1, 0, 1) }}
       viewport={{ once: true, margin: '-40px' }}
       data-cursor
       style={{ position: 'relative', overflow: 'hidden', height, cursor: 'none' }}

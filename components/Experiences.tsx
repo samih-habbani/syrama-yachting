@@ -51,7 +51,7 @@ function ActivityCard({ activity, delay }: { activity: typeof activities[0], del
     <motion.div
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.9, delay, ease: [0.25, 0.1, 0, 1] }}
+      transition={{ duration: 0.9, delay, ease: cubicBezier(0.25, 0.1, 0, 1) }}
       viewport={{ once: true, margin: '-40px' }}
       style={{ position: 'relative', overflow: 'hidden', height: 420 }}
     >

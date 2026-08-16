@@ -1,6 +1,6 @@
 'use client'
 import { useRef, useState } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, cubicBezier, useScroll, useTransform } from 'framer-motion'
 
 export default function Contact() {
   const sectionRef = useRef<HTMLElement>(null)
@@ -64,7 +64,7 @@ export default function Contact() {
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.25, 0.1, 0, 1] }}
+            transition={{ duration: 1, ease: cubicBezier(0.25, 0.1, 0, 1) }}
             viewport={{ once: true }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 48 }}>
@@ -91,7 +91,7 @@ export default function Contact() {
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.15, ease: [0.25, 0.1, 0, 1] }}
+            transition={{ duration: 1, delay: 0.15, ease: cubicBezier(0.25, 0.1, 0, 1) }}
             viewport={{ once: true }}
             style={{ display: 'flex', flexDirection: 'column', gap: 0 }}
           >
@@ -204,7 +204,7 @@ export default function Contact() {
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2, ease: [0.25, 0.1, 0, 1] }}
+            transition={{ duration: 1, delay: 0.2, ease: cubicBezier(0.25, 0.1, 0, 1) }}
             viewport={{ once: true }}
             style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
           >

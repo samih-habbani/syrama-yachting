@@ -1,7 +1,7 @@
 'use client'
 import dynamic from 'next/dynamic'
 import { useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, cubicBezier, useScroll, useTransform } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -73,7 +73,7 @@ export default function Hero() {
       <motion.div
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
-        transition={{ duration: 1.8, delay: 0.5, ease: [0.25, 0.1, 0, 1] }}
+        transition={{ duration: 1.8, delay: 0.5, ease: cubicBezier(0.25, 0.1, 0, 1) }}
         style={{
           position: 'absolute', top: 0, left: 0, right: 0, height: 1,
           background: 'linear-gradient(to right, transparent, var(--or) 30%, var(--or-clair) 50%, var(--or) 70%, transparent)',
@@ -225,7 +225,7 @@ export default function Hero() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.1, delay: 1.55, ease: [0.25, 0.1, 0, 1] }}
+            transition={{ duration: 1.1, delay: 1.55, ease: cubicBezier(0.25, 0.1, 0, 1) }}
             style={{
               fontFamily: 'var(--font-lora)',
               fontSize: 14,
@@ -243,7 +243,7 @@ export default function Hero() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.1, delay: 1.85, ease: [0.25, 0.1, 0, 1] }}
+            transition={{ duration: 1.1, delay: 1.85, ease: cubicBezier(0.25, 0.1, 0, 1) }}
             style={{ display: 'flex', alignItems: 'center', gap: 40, marginTop: 52 }}
           >
             <a
