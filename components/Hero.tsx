@@ -236,8 +236,7 @@ export default function Hero() {
               marginTop: 32,
             }}
           >
-            We orchestrate every detail of your extraordinary voyage.<br />
-            Exclusive access. Absolute discretion.
+            We orchestrate every detail of your extraordinary voyage.
           </motion.p>
 
           {/* CTAs */}
