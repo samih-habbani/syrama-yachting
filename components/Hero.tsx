@@ -183,17 +183,6 @@ export default function Hero() {
       >
         <div style={{ maxWidth: 580 }}>
 
-          {/* Label */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, delay: 0.7 }}
-            style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 44 }}
-          >
-            <div style={{ width: 32, height: 1, background: 'var(--or)' }} />
-            <span className="section-label">SYRAMA · YACHT CHARTER & SALES</span>
-          </motion.div>
-
           {/* Title */}
           <motion.h1
             variants={stagger}

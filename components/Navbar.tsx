@@ -8,12 +8,29 @@ import { smoothScrollToId } from '@/lib/scroll';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
   // Ne pas afficher le back button sur les pages principales
   const mainPages = ['/', '/charters', '/sales', '/experiences'];
   const showBackButton = !mainPages.includes(pathname);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await fetch('/api/auth/session');
+        const data = await response.json();
+        setIsAuthenticated(data.isAuthenticated);
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkSession();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -103,12 +120,14 @@ export default function Navbar() {
 
           {/* Right Section - Admin Link + CTA Button */}
           <div className="flex items-center gap-4">
-            <Link
-              href="/admin/dashboard/yachts"
-              className="text-[#b8974a] hover:text-[#d4b472] font-[var(--font-lora)] text-xs tracking-widest transition-colors duration-300"
-            >
-              ADMIN
-            </Link>
+            {isAuthenticated && (
+              <Link
+                href="/admin/dashboard/yachts"
+                className="text-[#b8974a] hover:text-[#d4b472] font-[var(--font-lora)] text-xs tracking-widest transition-colors duration-300"
+              >
+                ADMIN
+              </Link>
+            )}
 
             <Link
               href="/#intro"
