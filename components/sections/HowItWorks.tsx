@@ -26,7 +26,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section style={{ background: '#06090f', paddingTop: 100, paddingBottom: 100, position: 'relative', overflow: 'hidden' }}>
+    <section className="py-16 md:py-[100px]" style={{ background: '#06090f', position: 'relative', overflow: 'hidden' }}>
       {/* Section number bg */}
       <div
         aria-hidden
@@ -46,14 +46,15 @@ export default function HowItWorks() {
         05
       </div>
 
-      <div style={{ paddingLeft: 'clamp(32px, 6vw, 96px)', paddingRight: 'clamp(32px, 6vw, 96px)', position: 'relative', zIndex: 1 }}>
+      <div style={{ paddingLeft: 'clamp(24px, 6vw, 96px)', paddingRight: 'clamp(24px, 6vw, 96px)', position: 'relative', zIndex: 1 }}>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
           viewport={{ once: true }}
-          style={{ marginBottom: 80, textAlign: 'center' }}
+          className="mb-12 md:mb-20"
+          style={{ textAlign: 'center' }}
         >
           <h2 style={{
             fontFamily: 'var(--font-cormorant)',
@@ -80,14 +81,15 @@ export default function HowItWorks() {
         </motion.div>
 
         {/* Steps Container */}
-        <div style={{ position: 'relative', marginBottom: 80 }}>
-          {/* Connecting line */}
+        <div className="mb-12 md:mb-20" style={{ position: 'relative' }}>
+          {/* Connecting line — only makes sense once steps sit in a single row */}
           <div
+            className="hidden lg:block"
             style={{
               position: 'absolute',
               top: 60,
-              left: 'clamp(32px, 6vw, 96px)',
-              right: 'clamp(32px, 6vw, 96px)',
+              left: 'clamp(24px, 6vw, 96px)',
+              right: 'clamp(24px, 6vw, 96px)',
               height: 1,
               background: 'linear-gradient(90deg, rgba(184,151,74,0) 0%, rgba(184,151,74,0.3) 50%, rgba(184,151,74,0) 100%)',
               zIndex: 0,
@@ -95,10 +97,7 @@ export default function HowItWorks() {
           />
 
           {/* Steps Grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: 32,
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8" style={{
             position: 'relative',
             zIndex: 1,
           }}>

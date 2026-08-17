@@ -42,15 +42,15 @@ export default function FleetClient({ yachts, showFilters = true }: FleetClientP
   }
 
   return (
-    <section style={{ background: '#06090f', minHeight: '100vh', paddingTop: 80, paddingBottom: 80 }}>
-      <div style={{ paddingLeft: 'clamp(32px, 6vw, 96px)', paddingRight: 'clamp(32px, 6vw, 96px)' }}>
-        <div style={{ marginBottom: 60 }}>
+    <section className="py-16 md:py-20" style={{ background: '#06090f', minHeight: '100vh' }}>
+      <div style={{ paddingLeft: 'clamp(24px, 6vw, 96px)', paddingRight: 'clamp(24px, 6vw, 96px)' }}>
+        <div className="mb-10 md:mb-[60px]">
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
             <div style={{ width: 32, height: 1, background: '#b8974a' }} />
             <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b8974a' }}>CURATED YACHT SELECTION</span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'end', marginBottom: 40 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-20 items-end mb-8 md:mb-10">
             <div>
               <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(48px, 6vw, 88px)', lineHeight: 1.0, color: '#f5eedd', margin: 0 }}>Yachts for Charter.</h2>
             </div>
@@ -62,7 +62,7 @@ export default function FleetClient({ yachts, showFilters = true }: FleetClientP
 
         {showFilters && <FleetFilters onFiltersChange={handleFiltersChange} resultCount={yachts.length} />}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 40, marginBottom: 80 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 mb-16 md:mb-20">
           {yachts.length === 0 ? (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px' }}>
               <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, color: '#6a6a5e' }}>No yachts found matching your criteria.</div>

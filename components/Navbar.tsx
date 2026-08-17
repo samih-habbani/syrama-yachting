@@ -104,7 +104,7 @@ export default function Navbar() {
           </div>
 
           {/* Center Nav Items */}
-          <div className="hidden md:flex items-center gap-12">
+          <div className="hidden lg:flex items-center gap-6 xl:gap-12">
             {navItems.map((item, idx) => {
               const isActive = pathname === item.href;
               return (
@@ -133,11 +133,11 @@ export default function Navbar() {
           </div>
 
           {/* Right Section - Admin Link + CTA Button */}
-          <div className="flex items-center gap-3 md:gap-4">
+          <div className="flex items-center gap-3 lg:gap-4">
             {isAuthenticated && (
               <Link
                 href="/admin/dashboard/yachts"
-                className="hidden md:block text-[#b8974a] hover:text-[#d4b472] font-[var(--font-lora)] text-xs tracking-widest transition-colors duration-300"
+                className="hidden lg:block text-[#b8974a] hover:text-[#d4b472] font-[var(--font-lora)] text-xs tracking-widest transition-colors duration-300"
               >
                 ADMIN
               </Link>
@@ -153,7 +153,7 @@ export default function Navbar() {
               }}
             >
               <motion.div
-                className="bg-gradient-to-r from-[#b8974a] to-[#d4b472] hover:from-[#d4b472] hover:to-[#b8974a] text-[#06090f] px-4 md:px-8 py-2 rounded-sm font-[var(--font-heading)] font-bold text-[10px] md:text-xs tracking-widest transition-all duration-500 shadow-lg shadow-[#b8974a]/40 hover:shadow-xl hover:shadow-[#b8974a]/60 cursor-pointer whitespace-nowrap"
+                className="bg-gradient-to-r from-[#b8974a] to-[#d4b472] hover:from-[#d4b472] hover:to-[#b8974a] text-[#06090f] px-4 lg:px-8 py-2 rounded-sm font-[var(--font-heading)] font-bold text-[10px] lg:text-xs tracking-widest transition-all duration-500 shadow-lg shadow-[#b8974a]/40 hover:shadow-xl hover:shadow-[#b8974a]/60 cursor-pointer whitespace-nowrap"
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -166,7 +166,7 @@ export default function Navbar() {
               onClick={() => setIsMenuOpen(prev => !prev)}
               aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMenuOpen}
-              className="md:hidden relative z-[70] w-6 h-5 flex flex-col justify-between shrink-0"
+              className="lg:hidden relative z-[70] w-6 h-5 flex flex-col justify-between shrink-0"
             >
               <motion.span
                 className="block h-px w-full bg-[#f5eedd] origin-center"
@@ -196,7 +196,7 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.35, ease: 'easeInOut' }}
-            className="md:hidden fixed inset-0 z-[60] h-[100dvh] w-screen bg-[#06090f] flex flex-col overflow-hidden"
+            className="lg:hidden fixed inset-0 z-[60] h-[100dvh] w-screen bg-[#06090f] flex flex-col overflow-hidden"
           >
             {/* Ambient glow */}
             <div

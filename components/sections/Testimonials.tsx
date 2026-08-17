@@ -31,15 +31,16 @@ function Stars() {
 
 export default function Testimonials() {
   return (
-    <section style={{ background: '#06090f', paddingTop: 100, paddingBottom: 100 }}>
-      <div style={{ paddingLeft: 'clamp(32px, 6vw, 96px)', paddingRight: 'clamp(32px, 6vw, 96px)' }}>
+    <section className="py-16 md:py-[100px]" style={{ background: '#06090f' }}>
+      <div style={{ paddingLeft: 'clamp(24px, 6vw, 96px)', paddingRight: 'clamp(24px, 6vw, 96px)' }}>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
           viewport={{ once: true }}
-          style={{ marginBottom: 80, textAlign: 'center' }}
+          className="mb-12 md:mb-20"
+          style={{ textAlign: 'center' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 24 }}>
             <div style={{ width: 32, height: 1, background: '#b8974a' }} />
@@ -60,12 +61,7 @@ export default function Testimonials() {
         </motion.div>
 
         {/* Testimonials Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 40,
-          marginBottom: 60,
-        }}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 mb-12 md:mb-[60px]">
           {testimonials.map((testimonial, i) => (
             <motion.div
               key={i}

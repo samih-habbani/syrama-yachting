@@ -56,11 +56,11 @@ export default function WhySyrama() {
   return (
     <section
       ref={sectionRef}
+      className="px-6 pt-24 pb-16 md:px-12 md:pt-40 md:pb-[120px]"
       style={{
         position: 'relative',
         overflow: 'hidden',
         background: 'var(--noir)',
-        padding: '160px 48px 120px'
       }}
     >
       {/* Background image */}
@@ -116,7 +116,8 @@ export default function WhySyrama() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: cubicBezier(0.25, 0.1, 0, 1) }}
           viewport={{ once: true }}
-          style={{ marginBottom: 80, textAlign: 'center' }}
+          className="mb-12 md:mb-20"
+          style={{ textAlign: 'center' }}
         >
           <div style={{
             display: 'flex',

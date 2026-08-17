@@ -7,16 +7,18 @@ export function ParticleField() {
 
   useEffect(() => {
     const canvas = canvasRef.current!
+    const isMobile = window.innerWidth < 768
+
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2))
     renderer.setSize(window.innerWidth, window.innerHeight)
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000)
     camera.position.z = 400
 
-    // Stars
-    const count = 3000
+    // Stars — fewer on mobile to keep frame rate and battery usage in check
+    const count = isMobile ? 900 : 3000
     const positions = new Float32Array(count * 3)
     const sizes = new Float32Array(count)
     for (let i = 0; i < count; i++) {
@@ -63,7 +65,7 @@ export function ParticleField() {
     scene.add(points)
 
     // Gold dust – smaller, more stars
-    const dustCount = 800
+    const dustCount = isMobile ? 250 : 800
     const dustPos = new Float32Array(dustCount * 3)
     for (let i = 0; i < dustCount; i++) {
       dustPos[i * 3]     = (Math.random() - 0.5) * 600

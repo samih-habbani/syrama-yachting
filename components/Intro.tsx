@@ -15,10 +15,10 @@ export default function Intro() {
     <section
       id="intro"
       ref={sectionRef}
+      className="px-6 py-24 md:px-12 md:py-40"
       style={{
         position: 'relative',
         background: 'var(--noir)',
-        padding: '160px 48px',
         overflow: 'hidden',
       }}
     >
@@ -104,20 +104,20 @@ export default function Intro() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.4 }}
           viewport={{ once: true }}
+          className="mb-16 md:mb-[120px]"
           style={{
             fontFamily: 'var(--font-lora)',
             fontSize: 14,
             lineHeight: 1.9,
             color: 'var(--gris)',
             maxWidth: 680,
-            marginBottom: 120,
           }}
         >
           From day charters to multi-day escapes and superyacht experiences, our brokers source the right yacht for your destination, dates and preferences — then take care of every detail from itinerary to embarkation.
         </motion.p>
 
-        {/* Two-column grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 60 }}>
+        {/* Two-column grid — stacks on mobile */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-[60px]">
           {[
             {
               label: 'CHARTER',

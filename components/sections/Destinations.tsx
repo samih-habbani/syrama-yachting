@@ -72,20 +72,34 @@ export default function Destinations() {
   const carouselRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState(0)
+  const [itemsPerView, setItemsPerView] = useState(3)
 
-  const itemsPerView = 3
+  useEffect(() => {
+    const updateItemsPerView = () => {
+      if (window.innerWidth < 640) setItemsPerView(1)
+      else if (window.innerWidth < 1024) setItemsPerView(2)
+      else setItemsPerView(3)
+    }
+    updateItemsPerView()
+    window.addEventListener('resize', updateItemsPerView)
+    return () => window.removeEventListener('resize', updateItemsPerView)
+  }, [])
+
   const totalSlides = Math.ceil(destinations.length / itemsPerView)
 
-  const handleDragStart = (e: React.MouseEvent) => {
+  useEffect(() => {
+    setCurrentIndex(prev => Math.min(prev, totalSlides - 1))
+  }, [totalSlides])
+
+  const handleDragStart = (clientX: number) => {
     setIsDragging(true)
-    setDragStart(e.clientX)
+    setDragStart(clientX)
   }
 
-  const handleDragEnd = (e: React.MouseEvent) => {
+  const handleDragEnd = (clientX: number) => {
     if (!isDragging) return
     setIsDragging(false)
-    const dragEnd = e.clientX
-    const diff = dragStart - dragEnd
+    const diff = dragStart - clientX
 
     if (Math.abs(diff) > 50) {
       if (diff > 0 && currentIndex < totalSlides - 1) {
@@ -103,15 +117,16 @@ export default function Destinations() {
   const offset = -currentIndex * 100
 
   return (
-    <section style={{ background: '#06090f', paddingTop: 100, paddingBottom: 100 }}>
-      <div style={{ paddingLeft: 'clamp(32px, 6vw, 96px)', paddingRight: 'clamp(32px, 6vw, 96px)' }}>
+    <section className="py-16 md:py-[100px]" style={{ background: '#06090f' }}>
+      <div style={{ paddingLeft: 'clamp(24px, 6vw, 96px)', paddingRight: 'clamp(24px, 6vw, 96px)' }}>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
           viewport={{ once: true }}
-          style={{ marginBottom: 80, textAlign: 'center' }}
+          className="mb-12 md:mb-20"
+          style={{ textAlign: 'center' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 24 }}>
             <div style={{ width: 32, height: 1, background: '#b8974a' }} />
@@ -131,10 +146,12 @@ export default function Destinations() {
         {/* Carousel Container */}
         <div
           ref={carouselRef}
-          onMouseDown={handleDragStart}
-          onMouseUp={handleDragEnd}
+          onMouseDown={e => handleDragStart(e.clientX)}
+          onMouseUp={e => handleDragEnd(e.clientX)}
           onMouseLeave={() => setIsDragging(false)}
-          style={{ cursor: isDragging ? 'grabbing' : 'grab', marginBottom: 60, overflow: 'hidden' }}
+          onTouchStart={e => handleDragStart(e.touches[0].clientX)}
+          onTouchEnd={e => handleDragEnd(e.changedTouches[0].clientX)}
+          style={{ cursor: isDragging ? 'grabbing' : 'grab', marginBottom: 60, overflow: 'hidden', touchAction: 'pan-y' }}
         >
           <div style={{ display: 'flex', transition: isDragging ? 'none' : 'transform 0.6s cubic-bezier(0.25, 0.1, 0, 1)', transform: `translateX(${offset}%)` }}>
             {Array.from({ length: totalSlides }).map((_, slideIdx) => (
@@ -142,8 +159,8 @@ export default function Destinations() {
                 key={slideIdx}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)',
-                  gap: 32,
+                  gridTemplateColumns: `repeat(${itemsPerView}, 1fr)`,
+                  gap: 'clamp(16px, 3vw, 32px)',
                   width: '100%',
                   flexShrink: 0,
                 }}
@@ -157,7 +174,8 @@ export default function Destinations() {
                     viewport={{ once: true, margin: '-40px' }}
                     onMouseEnter={() => setActiveDestination(dest.id)}
                     onMouseLeave={() => setActiveDestination(null)}
-                    style={{ cursor: 'pointer', position: 'relative', height: 400, userSelect: 'none' }}
+                    onClick={() => { setActiveDestination(dest.id); setShowMap(true) }}
+                    style={{ cursor: 'pointer', position: 'relative', height: 'clamp(280px, 45vw, 400px)', userSelect: 'none' }}
                   >
                     {/* Image container */}
                     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>

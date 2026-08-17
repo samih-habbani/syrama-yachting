@@ -57,10 +57,10 @@ export default function Contact() {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, var(--noir) 0%, rgba(6,9,15,0.6) 40%, var(--noir) 100%)' }} />
       </div>
 
-      <div style={{ position: 'relative', zIndex: 2, maxWidth: 1300, margin: '0 auto', padding: '160px 48px 120px' }}>
+      <div className="px-6 pt-24 pb-16 md:px-12 md:pt-40 md:pb-[120px]" style={{ position: 'relative', zIndex: 2, maxWidth: 1300, margin: '0 auto' }}>
 
         {/* ── Top header row: title left, contact channels right ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 80, alignItems: 'end' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 mb-12 md:mb-20 items-end">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -109,10 +109,10 @@ export default function Contact() {
         </div>
 
         {/* ── Divider ── */}
-        <div style={{ height: 1, background: 'linear-gradient(to right, transparent, rgba(184,151,74,0.25) 30%, rgba(184,151,74,0.25) 70%, transparent)', marginBottom: 80 }} />
+        <div className="mb-12 md:mb-20" style={{ height: 1, background: 'linear-gradient(to right, transparent, rgba(184,151,74,0.25) 30%, rgba(184,151,74,0.25) 70%, transparent)' }} />
 
         {/* ── Bottom row: founder card left, form right ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 80, alignItems: 'stretch' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-10 lg:gap-20 items-stretch">
 
           {/* Founder card */}
           <motion.div
@@ -143,7 +143,7 @@ export default function Contact() {
               src="/assets/founder.webp"
               alt="Founder — Syrama Yachting"
               style={{
-                width: '100%', height: '100%', minHeight: 500, objectFit: 'cover', objectPosition: 'center center',
+                width: '100%', height: '100%', minHeight: 'clamp(320px, 60vw, 500px)', objectFit: 'cover', objectPosition: 'center center',
                 display: 'block',
                 filter: 'brightness(0.6) contrast(1.1) saturate(0.85)',
               }}
@@ -274,7 +274,7 @@ export default function Contact() {
                   </div>
                 )}
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
                       First Name
@@ -307,7 +307,7 @@ export default function Contact() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
                       Email
@@ -405,21 +405,27 @@ export default function Contact() {
       </div>
 
       {/* Footer */}
-      <div style={{
-        position: 'relative', zIndex: 2,
-        borderTop: '1px solid rgba(184,151,74,0.1)',
-        padding: '32px 48px',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      }}>
-        <div style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>
+      <div
+        className="flex flex-col sm:flex-row gap-4 sm:gap-0 items-center px-6 py-8 sm:px-12 sm:py-8"
+        style={{
+          position: 'relative', zIndex: 2,
+          borderTop: '1px solid rgba(184,151,74,0.1)',
+          justifyContent: 'space-between',
+        }}
+      >
+        <div style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', textAlign: 'center' }}>
           © 2026 · Syrama · All rights reserved
         </div>
         <div style={{ display: 'flex', gap: 32 }}>
-          {['Instagram', 'WhatsApp', 'Privacy'].map(l => (
-            <a key={l} href="#" style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', textDecoration: 'none', transition: 'color 0.3s' }}
+          {[
+            { label: 'Instagram', href: 'https://www.instagram.com/syrama_services/' },
+            { label: 'WhatsApp', href: 'https://wa.me/971505548034' },
+            { label: 'Privacy', href: '/privacy' },
+          ].map(l => (
+            <a key={l.label} href={l.href} target={l.href.startsWith('http') ? '_blank' : undefined} rel={l.href.startsWith('http') ? 'noopener noreferrer' : undefined} style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', textDecoration: 'none', transition: 'color 0.3s' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'var(--or)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}>
-              {l}
+              {l.label}
             </a>
           ))}
         </div>

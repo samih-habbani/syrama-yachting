@@ -58,10 +58,10 @@ export default function Hero() {
     <section
       id="hero"
       ref={sectionRef}
+      className="h-[100dvh]"
       style={{
         position: 'relative',
-        height: '100vh',
-        minHeight: 700,
+        minHeight: 560,
         overflow: 'hidden',
         background: 'var(--noir)',
         display: 'flex',
@@ -82,8 +82,9 @@ export default function Hero() {
         }}
       />
 
-      {/* ── VIDEO panel — right 38% ── */}
+      {/* ── VIDEO panel — right 38%, hidden on mobile/tablet to keep the headline unobstructed ── */}
       <motion.div
+        className="hidden lg:block"
         style={{
           position: 'absolute',
           top: 60, right: 0,
@@ -169,12 +170,12 @@ export default function Hero() {
       {/* ── LEFT content ── */}
       <motion.div
         ref={containerRef}
+        className="px-6 md:px-12"
         style={{
           position: 'relative', zIndex: 5,
           width: '100%',
           maxWidth: 1280,
           margin: '0 auto',
-          padding: '0 48px',
           display: 'flex',
           alignItems: 'center',
           height: '100%',
@@ -235,7 +236,8 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.1, delay: 1.85, ease: cubicBezier(0.25, 0.1, 0, 1) }}
-            style={{ display: 'flex', alignItems: 'center', gap: 40, marginTop: 52 }}
+            className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10"
+            style={{ marginTop: 52 }}
           >
             <a
               href="#intro"
