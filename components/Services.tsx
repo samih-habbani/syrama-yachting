@@ -57,8 +57,8 @@ export default function Services() {
       style={{ position: 'relative', background: 'var(--noir)', overflow: 'hidden' }}
     >
       {/* Header */}
-      <div style={{ paddingTop: 160, paddingBottom: 80, paddingLeft: 'clamp(32px, 6vw, 96px)', paddingRight: 'clamp(32px, 6vw, 96px)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'end' }}>
+      <div className="pt-24 pb-12 md:pt-40 md:pb-20" style={{ paddingLeft: 'clamp(24px, 6vw, 96px)', paddingRight: 'clamp(24px, 6vw, 96px)' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-20 items-end">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -91,17 +91,17 @@ export default function Services() {
       </div>
 
       {/* Experience Grid - NO MARQUEE */}
-      <div style={{ width: '100%', padding: '0 clamp(32px, 6vw, 96px) 160px' }}>
+      <div style={{ width: '100%', padding: '0 clamp(24px, 6vw, 96px)' }} className="pb-24 md:pb-40">
         {/* Row 1: large left + one tall right */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 12, marginBottom: 12 }}>
-          <ServiceCard exp={services[0]} height={580} delay={0} />
-          <ServiceCard exp={services[1]} height={580} delay={0.1} />
+        <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-3 mb-3">
+          <ServiceCard exp={services[0]} size="lg" delay={0} />
+          <ServiceCard exp={services[1]} size="lg" delay={0.1} />
         </div>
 
         {/* Row 2: 4 equal cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 12 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[services[2], services[3], services[4], services[5], services[6]].slice(0, 4).map((exp, i) => (
-            <ServiceCard key={exp.title} exp={exp} height={420} delay={i * 0.08} />
+            <ServiceCard key={exp.title} exp={exp} delay={i * 0.08} />
           ))}
         </div>
       </div>
@@ -116,7 +116,8 @@ export default function Services() {
   )
 }
 
-function ServiceCard({ exp, height, delay }: { exp: typeof services[0], height: number, delay: number }) {
+function ServiceCard({ exp, size = 'sm', delay }: { exp: typeof services[0], size?: 'lg' | 'sm', delay: number }) {
+  const height = size === 'lg' ? 'clamp(260px, 46vw, 580px)' : 'clamp(220px, 34vw, 420px)'
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}

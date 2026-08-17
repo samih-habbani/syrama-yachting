@@ -53,7 +53,7 @@ function ActivityCard({ activity, delay }: { activity: typeof activities[0], del
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.9, delay, ease: cubicBezier(0.25, 0.1, 0, 1) }}
       viewport={{ once: true, margin: '-40px' }}
-      style={{ position: 'relative', overflow: 'hidden', height: 420 }}
+      style={{ position: 'relative', overflow: 'hidden', height: 'clamp(260px, 40vw, 420px)' }}
     >
       {/* Background Image */}
       <img
@@ -156,7 +156,7 @@ function ActivityCard({ activity, delay }: { activity: typeof activities[0], del
 
 export default function Experiences() {
   return (
-    <section id="experiences" style={{ background: '#06090f', paddingTop: 100, paddingBottom: 100, position: 'relative', overflow: 'hidden' }}>
+    <section id="experiences" className="py-16 md:py-[100px]" style={{ background: '#06090f', position: 'relative', overflow: 'hidden' }}>
       {/* Section number bg */}
       <div
         aria-hidden
@@ -177,16 +177,16 @@ export default function Experiences() {
         04
       </div>
 
-      <div style={{ paddingLeft: 'clamp(32px, 6vw, 96px)', paddingRight: 'clamp(32px, 6vw, 96px)', position: 'relative', zIndex: 1 }}>
+      <div style={{ paddingLeft: 'clamp(24px, 6vw, 96px)', paddingRight: 'clamp(24px, 6vw, 96px)', position: 'relative', zIndex: 1 }}>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
           viewport={{ once: true }}
-          style={{ marginBottom: 80 }}
+          className="mb-12 md:mb-20"
         >
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'end' }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-20 items-end">
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 40 }}>
                 <div style={{ width: 32, height: 1, background: '#b8974a' }} />
@@ -205,8 +205,8 @@ export default function Experiences() {
           </div>
         </motion.div>
 
-        {/* Activities Grid - 3 columns */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 80 }}>
+        {/* Activities Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12 md:mb-20">
           {activities.map((activity, i) => (
             <ActivityCard key={activity.id} activity={activity} delay={i * 0.08} />
           ))}

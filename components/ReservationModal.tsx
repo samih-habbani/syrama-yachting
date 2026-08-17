@@ -107,7 +107,7 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
       `}</style>
 
       <div
-        className="modal-content bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-md w-full rounded-lg border border-[#b8974a] border-opacity-20 p-12 shadow-2xl"
+        className="modal-content bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-md w-full max-h-[90vh] overflow-y-auto rounded-lg border border-[#b8974a] border-opacity-20 p-6 sm:p-12 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {success ? (
@@ -136,7 +136,7 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Full Name *</label>
                   <input
@@ -177,7 +177,7 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Date *</label>
                   <input
