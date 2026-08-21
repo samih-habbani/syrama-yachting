@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface AvailabilityModalProps {
   isOpen: boolean
@@ -21,6 +21,29 @@ export default function AvailabilityModal({ isOpen, onClose, yacht }: Availabili
   const [guests, setGuests] = useState('')
   const [city, setCity] = useState('')
   const [date, setDate] = useState(todayISO)
+
+  // Verrouille le scroll vertical de la page tant que la popup est ouverte.
+  // Le root scroller est <html> ici (overflow-x: hidden y est défini globalement),
+  // donc il faut verrouiller html ET body pour couvrir tous les navigateurs.
+  useEffect(() => {
+    if (isOpen) {
+      const scrollY = window.scrollY
+      document.documentElement.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = '100%'
+
+      return () => {
+        document.documentElement.style.overflow = ''
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.width = ''
+        window.scrollTo({ top: scrollY, behavior: 'instant' })
+      }
+    }
+  }, [isOpen])
 
   if (!isOpen) return null
 
@@ -74,14 +97,15 @@ export default function AvailabilityModal({ isOpen, onClose, yacht }: Availabili
       `}</style>
 
       <div
-        className="availability-modal-content relative bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-md w-full max-h-[90vh] overflow-y-auto rounded-lg border border-[#b8974a] border-opacity-20 p-6 sm:p-10 shadow-2xl"
+        className="availability-modal-content relative bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden rounded-lg border border-[#b8974a] border-opacity-20 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Close button stays fixed to the card — not inside the scrollable body below */}
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-[#f5eedd] hover:bg-white/5 transition"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-[#06090f]/60 text-gray-300 hover:text-[#f5eedd] hover:bg-white/10 transition"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <line x1="1" y1="1" x2="13" y2="13" stroke="currentColor" strokeWidth="1.4" />
@@ -89,74 +113,76 @@ export default function AvailabilityModal({ isOpen, onClose, yacht }: Availabili
           </svg>
         </button>
 
-        {yacht.imageUrl && (
-          <div className="w-full h-36 sm:h-44 rounded-lg overflow-hidden mb-6">
-            <img
-              src={yacht.imageUrl}
-              alt={yacht.model}
-              className="w-full h-full object-cover"
-              style={{ filter: 'brightness(0.75)' }}
-            />
-          </div>
-        )}
+        <div className="overflow-y-auto min-h-0 p-6 sm:p-10">
+          {yacht.imageUrl && (
+            <div className="w-full h-36 sm:h-44 rounded-lg overflow-hidden mb-6">
+              <img
+                src={yacht.imageUrl}
+                alt={yacht.model}
+                className="w-full h-full object-cover"
+                style={{ filter: 'brightness(0.75)' }}
+              />
+            </div>
+          )}
 
-        <div className="mb-8 pr-8">
-          <h2 className="text-[#b8974a] text-sm tracking-widest uppercase mb-2">Check Availability</h2>
-          <h3 className="text-2xl text-white" style={{ fontFamily: 'var(--font-tenor)' }}>
-            {yachtLabel}
-          </h3>
+          <div className="mb-8 pr-8">
+            <h2 className="text-[#b8974a] text-sm tracking-widest uppercase mb-2">Check Availability</h2>
+            <h3 className="text-2xl text-white" style={{ fontFamily: 'var(--font-tenor)' }}>
+              {yachtLabel}
+            </h3>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Number of Guests *</label>
+              <input
+                type="number"
+                min="1"
+                value={guests}
+                onChange={(e) => setGuests(e.target.value)}
+                placeholder="e.g. 8"
+                className="w-full bg-[#f5eedd] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#06090f] focus:outline-none transition text-sm placeholder-gray-600"
+                style={{ colorScheme: 'light' }}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">City *</label>
+              <input
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="e.g. Cannes"
+                className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Date *</label>
+              <input
+                type="date"
+                value={date}
+                min={todayISO()}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full bg-[#f5eedd] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#06090f] focus:outline-none transition text-sm"
+                style={{ colorScheme: 'light' }}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full flex items-center justify-center gap-3 bg-[#25D366] text-[#06090f] rounded-lg px-6 py-3.5 transition font-medium text-sm tracking-wider uppercase hover:bg-[#1ebe5a] mt-2"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m0 1.67c2.2 0 4.26.86 5.82 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.19-.31a8.18 8.18 0 0 1-1.26-4.38c0-4.55 3.7-8.24 8.25-8.24m-4.53 4.7c-.16 0-.42.06-.64.3-.22.24-.85.83-.85 2.02s.87 2.35.99 2.51c.12.16 1.7 2.6 4.13 3.63.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.77.95-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.43-1.34-1.67-.14-.24-.02-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.33-.76-1.82-.2-.48-.4-.42-.55-.42h-.47Z" />
+              </svg>
+              Check on WhatsApp
+            </button>
+          </form>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Number of Guests *</label>
-            <input
-              type="number"
-              min="1"
-              value={guests}
-              onChange={(e) => setGuests(e.target.value)}
-              placeholder="e.g. 8"
-              className="w-full bg-[#f5eedd] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#06090f] focus:outline-none transition text-sm placeholder-gray-600"
-              style={{ colorScheme: 'light' }}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">City *</label>
-            <input
-              type="text"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="e.g. Cannes"
-              className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Date *</label>
-            <input
-              type="date"
-              value={date}
-              min={todayISO()}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full bg-[#f5eedd] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#06090f] focus:outline-none transition text-sm"
-              style={{ colorScheme: 'light' }}
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full flex items-center justify-center gap-3 bg-[#25D366] text-[#06090f] rounded-lg px-6 py-3.5 transition font-medium text-sm tracking-wider uppercase hover:bg-[#1ebe5a] mt-2"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m0 1.67c2.2 0 4.26.86 5.82 2.42a8.2 8.2 0 0 1 2.41 5.82c0 4.54-3.7 8.24-8.25 8.24a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.19-.31a8.18 8.18 0 0 1-1.26-4.38c0-4.55 3.7-8.24 8.25-8.24m-4.53 4.7c-.16 0-.42.06-.64.3-.22.24-.85.83-.85 2.02s.87 2.35.99 2.51c.12.16 1.7 2.6 4.13 3.63.58.25 1.03.4 1.38.51.58.18 1.11.16 1.53.1.47-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.77.95-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.43-1.34-1.67-.14-.24-.02-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.33-.76-1.82-.2-.48-.4-.42-.55-.42h-.47Z" />
-            </svg>
-            Check on WhatsApp
-          </button>
-        </form>
       </div>
     </div>
   )
