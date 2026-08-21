@@ -181,15 +181,25 @@ export default function Intro() {
                   fontSize: 11,
                   letterSpacing: '0.2em',
                   textTransform: 'uppercase',
-                  color: 'var(--or)',
+                  color: '#06090f',
                   textDecoration: 'none',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 12,
-                  transition: 'color 0.3s ease',
+                  transition: 'all 0.3s ease',
+                  background: 'var(--or)',
+                  padding: '16px 36px',
+                  border: 'none',
+                  cursor: 'pointer',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--or-clair)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'var(--or)')}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'var(--or-clair)'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'var(--or)'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                }}
               >
                 {item.link}
                 <svg width="16" height="1" viewBox="0 0 16 1" fill="none">
