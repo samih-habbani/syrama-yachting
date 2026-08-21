@@ -1,6 +1,12 @@
-'use client'
 import Navbar from '@/components/Navbar'
 import DestinationCards from '@/components/DestinationCards'
+
+export const metadata = {
+  title: 'Yachts for Sale | Syrama Yachting',
+  description: 'Browse luxury yachts for sale worldwide. Exclusive vessels available in Mediterranean, Caribbean, UAE, and premium destinations.',
+}
+
+export const revalidate = 3600
 
 export default function SalesPage() {
   return (

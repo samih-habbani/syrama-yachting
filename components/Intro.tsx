@@ -175,7 +175,7 @@ export default function Intro() {
                 {item.desc}
               </p>
               <a
-                href="#fleet"
+                href={item.label === 'CHARTER' ? '/charters' : '/sales'}
                 style={{
                   fontFamily: 'var(--font-lora)',
                   fontSize: 11,

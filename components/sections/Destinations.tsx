@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { motion, cubicBezier, AnimatePresence } from 'framer-motion'
+import Link from 'next/link'
 
 const destinations = [
   {
@@ -10,9 +11,9 @@ const destinations = [
     image: '/images/regions/French_Riviera.webp',
   },
   {
-    id: 'ibiza',
-    name: 'Ibiza',
-    subtitle: 'Balearic Islands · Spain',
+    id: 'balearic-islands',
+    name: 'Balearic Islands',
+    subtitle: 'Ibiza · Formentera · Spain',
     image: '/images/regions/Balearic_Islands.webp',
   },
   {
@@ -22,15 +23,15 @@ const destinations = [
     image: '/images/regions/Greece.webp',
   },
   {
-    id: 'dubai',
-    name: 'Dubai',
-    subtitle: 'UAE · Persian Gulf',
+    id: 'emirates',
+    name: 'Emirates',
+    subtitle: 'Dubai · Abu Dhabi · Persian Gulf',
     image: '/images/regions/Dubai.webp',
   },
   {
     id: 'italy',
     name: 'Italy',
-    subtitle: 'Amalfi · Sardinia · Sicily',
+    subtitle: 'Amalfi · Sicily · Mediterranean',
     image: '/images/regions/Italy.webp',
   },
   {
@@ -52,10 +53,10 @@ const destinations = [
     image: '/images/regions/Caribbean.webp',
   },
   {
-    id: 'monaco',
-    name: 'Monaco',
-    subtitle: 'French Riviera · Glamour',
-    image: '/images/regions/Monaco.webp',
+    id: 'sardinia',
+    name: 'Sardinia',
+    subtitle: 'Mediterranean · Italy',
+    image: '/images/regions/Sardinia.webp',
   },
   {
     id: 'miami',
@@ -67,7 +68,6 @@ const destinations = [
 
 export default function Destinations() {
   const [activeDestination, setActiveDestination] = useState<string | null>(null)
-  const [showMap, setShowMap] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -174,7 +174,7 @@ export default function Destinations() {
                     viewport={{ once: true, margin: '-40px' }}
                     onMouseEnter={() => setActiveDestination(dest.id)}
                     onMouseLeave={() => setActiveDestination(null)}
-                    onClick={() => { setActiveDestination(dest.id); setShowMap(true) }}
+                    onClick={() => setActiveDestination(dest.id)}
                     style={{ cursor: 'pointer', position: 'relative', height: 'clamp(280px, 45vw, 400px)', userSelect: 'none' }}
                   >
                     {/* Image container */}
@@ -212,35 +212,35 @@ export default function Destinations() {
                           {dest.subtitle}
                         </div>
 
-                        <motion.button
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: activeDestination === dest.id ? 1 : 0, y: activeDestination === dest.id ? 0 : 10 }}
-                          transition={{ duration: 0.3 }}
-                          onClick={() => setShowMap(true)}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 12,
-                            fontFamily: 'var(--font-tenor)',
-                            fontSize: 10,
-                            letterSpacing: '0.25em',
-                            textTransform: 'uppercase',
-                            color: '#06090f',
-                            background: '#b8974a',
-                            padding: '12px 20px',
-                            border: 'none',
-                            cursor: 'pointer',
-                            transition: 'background 0.3s ease',
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
-                          onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
-                        >
-                          Explore
-                          <svg width="14" height="4" viewBox="0 0 14 4" fill="none">
-                            <line x1="0" y1="2" x2="10" y2="2" stroke="currentColor" strokeWidth="0.8" />
-                            <polyline points="7.5,0.5 12,2 7.5,3.5" stroke="currentColor" strokeWidth="0.8" fill="none" />
-                          </svg>
-                        </motion.button>
+                        <Link href={`/yachting/fleet?region=${encodeURIComponent(dest.name)}`} style={{ textDecoration: 'none' }}>
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: activeDestination === dest.id ? 1 : 0, y: activeDestination === dest.id ? 0 : 10 }}
+                            transition={{ duration: 0.3 }}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 12,
+                              fontFamily: 'var(--font-tenor)',
+                              fontSize: 10,
+                              letterSpacing: '0.25em',
+                              textTransform: 'uppercase',
+                              color: '#06090f',
+                              background: '#b8974a',
+                              padding: '12px 20px',
+                              cursor: 'pointer',
+                              transition: 'background 0.3s ease',
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
+                          >
+                            Explore
+                            <svg width="14" height="4" viewBox="0 0 14 4" fill="none">
+                              <line x1="0" y1="2" x2="10" y2="2" stroke="currentColor" strokeWidth="0.8" />
+                              <polyline points="7.5,0.5 12,2 7.5,3.5" stroke="currentColor" strokeWidth="0.8" fill="none" />
+                            </svg>
+                          </motion.div>
+                        </Link>
                       </div>
                     </div>
                   </motion.div>
@@ -305,77 +305,6 @@ export default function Destinations() {
         </motion.div>
       </div>
 
-      {/* Interactive SVG Map Modal */}
-      <AnimatePresence>
-        {showMap && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowMap(false)}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(6,9,15,0.95)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 100,
-              cursor: 'pointer',
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                position: 'relative',
-                width: '90%',
-                height: '80vh',
-                maxWidth: 1200,
-                borderRadius: '2px',
-                overflow: 'hidden',
-                boxShadow: '0 0 80px rgba(184,151,74,0.2)',
-              }}
-            >
-              <svg
-                viewBox="0 0 400 250"
-                style={{ width: '100%', height: '100%', background: '#080c16' }}
-              >
-                <text x="200" y="125" textAnchor="middle" style={{ fontSize: '14px', fill: '#6a6a5e', opacity: 0.5 }}>
-                  WORLD MAP
-                </text>
-              </svg>
-
-              {/* Close button */}
-              <button
-                onClick={() => setShowMap(false)}
-                style={{
-                  position: 'absolute',
-                  top: 20,
-                  right: 20,
-                  background: '#b8974a',
-                  border: 'none',
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 10,
-                }}
-              >
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <line x1="5" y1="5" x2="15" y2="15" stroke="#06090f" strokeWidth="2" />
-                  <line x1="15" y1="5" x2="5" y2="15" stroke="#06090f" strokeWidth="2" />
-                </svg>
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   )
 }

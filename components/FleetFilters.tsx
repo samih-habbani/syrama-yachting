@@ -1,103 +1,76 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-interface FilterState {
+export interface FilterState {
   region: string | null
+  builder: string | null
   minLength: number
   maxLength: number
   minGuests: number
   maxGuests: number
-  builder: string | null
+  minPrice: number
+  maxPrice: number
+  sortBy: 'default' | 'price-asc' | 'price-desc' | 'length-asc' | 'length-desc'
+}
+
+export interface FilterBounds {
+  minLength: number
+  maxLength: number
+  minGuests: number
+  maxGuests: number
+  minPrice: number
+  maxPrice: number
 }
 
 interface FleetFiltersProps {
-  onFiltersChange: (filters: FilterState) => void
+  filters: FilterState
+  bounds: FilterBounds
+  regions: string[]
+  builders: string[]
   resultCount: number
+  onFiltersChange: (filters: FilterState) => void
+  onReset: () => void
 }
 
-export default function FleetFilters({ onFiltersChange, resultCount }: FleetFiltersProps) {
+const SORT_OPTIONS: { value: FilterState['sortBy']; label: string }[] = [
+  { value: 'default', label: 'Featured' },
+  { value: 'price-asc', label: 'Price: Low to High' },
+  { value: 'price-desc', label: 'Price: High to Low' },
+  { value: 'length-asc', label: 'Length: Shortest First' },
+  { value: 'length-desc', label: 'Length: Longest First' },
+]
+
+const labelStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-tenor)',
+  fontSize: 10,
+  letterSpacing: '0.2em',
+  textTransform: 'uppercase',
+  color: '#b8974a',
+  display: 'block',
+  marginBottom: 12,
+}
+
+// Composant purement contrôlé : toutes les données (yachts, bornes, régions,
+// builders) sont chargées UNE SEULE FOIS par le parent (Fleet.tsx). Ici, on ne
+// fait que lire/écrire l'état des filtres — aucun appel réseau, filtrage 100% côté DOM.
+export default function FleetFilters({ filters, bounds, regions, builders, resultCount, onFiltersChange, onReset }: FleetFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(true)
-  const [regions, setRegions] = useState<string[]>([])
-  const [builders, setBuilders] = useState<string[]>([])
-  const [minLength, setMinLength] = useState(0)
-  const [maxLength, setMaxLength] = useState(200)
-  const [minGuests, setMinGuests] = useState(0)
-  const [maxGuests, setMaxGuests] = useState(100)
 
-  const [filters, setFilters] = useState<FilterState>({
-    region: null,
-    minLength: 0,
-    maxLength: 200,
-    minGuests: 0,
-    maxGuests: 100,
-    builder: null,
-  })
-
-  // Charger les options de filtres depuis la BDD
-  useEffect(() => {
-    const fetchFilterOptions = async () => {
-      try {
-        const response = await fetch('/api/yachts')
-        const yachts = await response.json()
-
-        // Extraire les régions uniques
-        const uniqueRegions = Array.from(new Set(yachts.map((y: any) => y.region).filter(Boolean)))
-          .sort()
-        setRegions(uniqueRegions as string[])
-
-        // Extraire les constructeurs uniques
-        const uniqueBuilders = Array.from(new Set(yachts.map((y: any) => y.builder).filter(Boolean)))
-          .sort()
-        setBuilders(uniqueBuilders as string[])
-
-        // Calculer les min/max
-        const lengths = yachts.map((y: any) => y.length).filter(Boolean)
-        const guests = yachts.map((y: any) => y.maxGuests).filter(Boolean)
-
-        if (lengths.length > 0) {
-          setMinLength(Math.floor(Math.min(...lengths)))
-          setMaxLength(Math.ceil(Math.max(...lengths)))
-        }
-
-        if (guests.length > 0) {
-          setMinGuests(Math.floor(Math.min(...guests)))
-          setMaxGuests(Math.ceil(Math.max(...guests)))
-        }
-      } catch (error) {
-        console.error('Error fetching filter options:', error)
-      }
-    }
-
-    fetchFilterOptions()
-  }, [])
-
-  const handleFilterChange = useCallback((newFilters: Partial<FilterState>) => {
-    const updated = { ...filters, ...newFilters }
-    setFilters(updated)
-    onFiltersChange(updated)
-  }, [filters, onFiltersChange])
-
-  const resetFilters = () => {
-    const defaultFilters: FilterState = {
-      region: null,
-      minLength,
-      maxLength,
-      minGuests,
-      maxGuests,
-      builder: null,
-    }
-    setFilters(defaultFilters)
-    onFiltersChange(defaultFilters)
+  const handleFilterChange = (newFilters: Partial<FilterState>) => {
+    onFiltersChange({ ...filters, ...newFilters })
   }
 
   const hasActiveFilters =
     filters.region !== null ||
     filters.builder !== null ||
-    filters.minLength > minLength ||
-    filters.maxLength < maxLength ||
-    filters.minGuests > minGuests ||
-    filters.maxGuests < maxGuests
+    filters.sortBy !== 'default' ||
+    filters.minLength > bounds.minLength ||
+    filters.maxLength < bounds.maxLength ||
+    filters.minGuests > bounds.minGuests ||
+    filters.maxGuests < bounds.maxGuests ||
+    filters.minPrice > bounds.minPrice ||
+    filters.maxPrice < bounds.maxPrice
 
   return (
     <motion.div
@@ -109,9 +82,9 @@ export default function FleetFilters({ onFiltersChange, resultCount }: FleetFilt
         border: '1px solid rgba(184,151,74,0.2)',
         borderRadius: 8,
         marginBottom: 60,
-        overflow: 'hidden',
       }}
     >
+      <style>{rangeInputStyles}</style>
       {/* Header */}
       <div
         onClick={() => setIsExpanded(!isExpanded)}
@@ -138,7 +111,7 @@ export default function FleetFilters({ onFiltersChange, resultCount }: FleetFilt
             <button
               onClick={(e) => {
                 e.stopPropagation()
-                resetFilters()
+                onReset()
               }}
               style={{
                 fontFamily: 'var(--font-tenor)',
@@ -152,19 +125,21 @@ export default function FleetFilters({ onFiltersChange, resultCount }: FleetFilt
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(184,151,74,0.1)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent'
-              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(184,151,74,0.1)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
             >
               Clear Filters
             </button>
           )}
-          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 16, color: '#b8974a' }}>
-            {isExpanded ? '−' : '+'}
-          </div>
+          <motion.div
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            transition={{ duration: 0.3 }}
+            style={{ color: '#b8974a', display: 'flex' }}
+          >
+            <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </motion.div>
         </div>
       </div>
 
@@ -172,101 +147,67 @@ export default function FleetFilters({ onFiltersChange, resultCount }: FleetFilt
       <AnimatePresence>
         {isExpanded && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+            animate={{ opacity: 1, height: 'auto', transitionEnd: { overflow: 'visible' } }}
+            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
             transition={{ duration: 0.3 }}
           >
-            <div style={{ padding: '32px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 32 }}>
-              {/* Region Filter */}
-              {regions.length > 0 && (
-                <div>
-                  <label style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', display: 'block', marginBottom: 12 }}>
-                    Destination
-                  </label>
-                  <select
-                    value={filters.region || ''}
-                    onChange={(e) => handleFilterChange({ region: e.target.value || null })}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      fontFamily: 'var(--font-tenor)',
-                      fontSize: 12,
-                      color: '#f5eedd',
-                      background: 'rgba(184,151,74,0.05)',
-                      border: '1px solid rgba(184,151,74,0.2)',
-                      borderRadius: 4,
-                    }}
-                  >
-                    <option value="">All Destinations</option>
-                    {regions.map(region => (
-                      <option key={region} value={region}>
-                        {region}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Length Filter */}
-              <div>
-                <label style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', display: 'block', marginBottom: 12 }}>
-                  Length: up to {filters.maxLength}m
-                </label>
-                <input
-                  type="range"
-                  min={minLength}
-                  max={maxLength}
-                  value={filters.maxLength}
-                  onChange={(e) => handleFilterChange({ maxLength: parseInt(e.target.value) })}
-                  style={{ width: '100%', accentColor: '#b8974a' }}
+            <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: 36 }}>
+              {/* Row 1 — selects */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <CustomSelect
+                  label="Destination"
+                  placeholder="All Destinations"
+                  value={filters.region}
+                  options={regions.map(r => ({ value: r, label: r }))}
+                  onChange={(v) => handleFilterChange({ region: v })}
+                />
+                <CustomSelect
+                  label="Builder"
+                  placeholder="All Builders"
+                  value={filters.builder}
+                  options={builders.map(b => ({ value: b, label: b }))}
+                  onChange={(v) => handleFilterChange({ builder: v })}
+                />
+                <CustomSelect
+                  label="Sort By"
+                  placeholder="Featured"
+                  value={filters.sortBy === 'default' ? null : filters.sortBy}
+                  options={SORT_OPTIONS.filter(o => o.value !== 'default')}
+                  onChange={(v) => handleFilterChange({ sortBy: (v || 'default') as FilterState['sortBy'] })}
                 />
               </div>
 
-              {/* Guests Filter */}
-              <div>
-                <label style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', display: 'block', marginBottom: 12 }}>
-                  Guests: up to {filters.maxGuests}
-                </label>
-                <input
-                  type="range"
-                  min={minGuests}
-                  max={maxGuests}
-                  value={filters.maxGuests}
-                  onChange={(e) => handleFilterChange({ maxGuests: parseInt(e.target.value) })}
-                  style={{ width: '100%', accentColor: '#b8974a' }}
+              {/* Row 2 — ranges */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <DualRangeSlider
+                  label="Length"
+                  min={bounds.minLength}
+                  max={bounds.maxLength}
+                  valueMin={filters.minLength}
+                  valueMax={filters.maxLength}
+                  format={(v) => `${v}m`}
+                  onChange={(minLength, maxLength) => handleFilterChange({ minLength, maxLength })}
+                />
+                <DualRangeSlider
+                  label="Guests"
+                  min={bounds.minGuests}
+                  max={bounds.maxGuests}
+                  valueMin={filters.minGuests}
+                  valueMax={filters.maxGuests}
+                  format={(v) => `${v}`}
+                  onChange={(minGuests, maxGuests) => handleFilterChange({ minGuests, maxGuests })}
+                />
+                <DualRangeSlider
+                  label="Budget"
+                  min={bounds.minPrice}
+                  max={bounds.maxPrice}
+                  valueMin={filters.minPrice}
+                  valueMax={filters.maxPrice}
+                  format={(v) => `€${v.toLocaleString('en-US')}`}
+                  onChange={(minPrice, maxPrice) => handleFilterChange({ minPrice, maxPrice })}
                 />
               </div>
-
-              {/* Builder Filter */}
-              {builders.length > 0 && (
-                <div>
-                  <label style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', display: 'block', marginBottom: 12 }}>
-                    Builder
-                  </label>
-                  <select
-                    value={filters.builder || ''}
-                    onChange={(e) => handleFilterChange({ builder: e.target.value || null })}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      fontFamily: 'var(--font-tenor)',
-                      fontSize: 12,
-                      color: '#f5eedd',
-                      background: 'rgba(184,151,74,0.05)',
-                      border: '1px solid rgba(184,151,74,0.2)',
-                      borderRadius: 4,
-                    }}
-                  >
-                    <option value="">All Builders</option>
-                    {builders.map(builder => (
-                      <option key={builder} value={builder}>
-                        {builder}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
             </div>
           </motion.div>
         )}
@@ -274,3 +215,229 @@ export default function FleetFilters({ onFiltersChange, resultCount }: FleetFilt
     </motion.div>
   )
 }
+
+// ─────────────────────────────────────────────────────────────
+// Custom styled select — fully themed trigger + option list
+// ─────────────────────────────────────────────────────────────
+function CustomSelect({
+  label, value, options, onChange, placeholder,
+}: {
+  label: string
+  value: string | null
+  options: { value: string; label: string }[]
+  onChange: (value: string | null) => void
+  placeholder: string
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const selectedLabel = options.find(o => o.value === value)?.label || placeholder
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <label style={labelStyle}>{label}</label>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          padding: '13px 16px',
+          fontFamily: 'var(--font-tenor)',
+          fontSize: 12,
+          textAlign: 'left',
+          color: value ? '#f5eedd' : 'rgba(245,238,221,0.5)',
+          background: open ? 'rgba(184,151,74,0.1)' : 'rgba(184,151,74,0.05)',
+          border: `1px solid ${open ? '#b8974a' : 'rgba(184,151,74,0.25)'}`,
+          borderRadius: 4,
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+        }}
+      >
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedLabel}</span>
+        <motion.svg
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+          width="10" height="6" viewBox="0 0 10 6" fill="none" style={{ flexShrink: 0 }}
+        >
+          <path d="M1 1L5 5L9 1" stroke="#b8974a" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+        </motion.svg>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.15 }}
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 6px)',
+              left: 0,
+              right: 0,
+              zIndex: 30,
+              maxHeight: 280,
+              overflowY: 'auto',
+              background: '#0b0e15',
+              border: '1px solid rgba(184,151,74,0.35)',
+              borderRadius: 4,
+              boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
+            }}
+          >
+            <div
+              onClick={() => { onChange(null); setOpen(false) }}
+              style={{
+                padding: '11px 16px',
+                fontFamily: 'var(--font-tenor)',
+                fontSize: 12,
+                color: value === null ? '#b8974a' : 'rgba(245,238,221,0.55)',
+                background: value === null ? 'rgba(184,151,74,0.1)' : 'transparent',
+                cursor: 'pointer',
+                transition: 'background 0.15s ease',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(184,151,74,0.1)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = value === null ? 'rgba(184,151,74,0.1)' : 'transparent')}
+            >
+              {placeholder}
+            </div>
+            {options.map(o => (
+              <div
+                key={o.value}
+                onClick={() => { onChange(o.value); setOpen(false) }}
+                style={{
+                  padding: '11px 16px',
+                  fontFamily: 'var(--font-tenor)',
+                  fontSize: 12,
+                  color: value === o.value ? '#b8974a' : 'rgba(245,238,221,0.8)',
+                  background: value === o.value ? 'rgba(184,151,74,0.1)' : 'transparent',
+                  cursor: 'pointer',
+                  borderTop: '1px solid rgba(184,151,74,0.08)',
+                  transition: 'background 0.15s ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(184,151,74,0.1)')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = value === o.value ? 'rgba(184,151,74,0.1)' : 'transparent')}
+              >
+                {o.label}
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Dual-thumb range slider — min & max on one styled track
+// ─────────────────────────────────────────────────────────────
+function DualRangeSlider({
+  label, min, max, valueMin, valueMax, format, onChange,
+}: {
+  label: string
+  min: number
+  max: number
+  valueMin: number
+  valueMax: number
+  format: (v: number) => string
+  onChange: (min: number, max: number) => void
+}) {
+  const span = Math.max(max - min, 1)
+  const percentMin = ((valueMin - min) / span) * 100
+  const percentMax = ((valueMax - min) / span) * 100
+
+  return (
+    <div>
+      <label style={labelStyle}>{label}</label>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14, fontFamily: 'var(--font-cormorant)', fontSize: 16, fontWeight: 300, color: '#d4b472' }}>
+        <span>{format(valueMin)}</span>
+        <span>{format(valueMax)}</span>
+      </div>
+      <div className="fleet-range" style={{ position: 'relative', height: 20, display: 'flex', alignItems: 'center' }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, height: 2, background: 'rgba(184,151,74,0.2)', borderRadius: 1 }} />
+        <div
+          style={{
+            position: 'absolute',
+            height: 2,
+            background: 'linear-gradient(to right, #b8974a, #d4b472)',
+            borderRadius: 1,
+            left: `${percentMin}%`,
+            width: `${Math.max(percentMax - percentMin, 0)}%`,
+          }}
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          value={valueMin}
+          onChange={(e) => onChange(Math.min(Number(e.target.value), valueMax), valueMax)}
+          className="fleet-range-input"
+          style={{ zIndex: valueMin > max - 5 ? 5 : 3 }}
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          value={valueMax}
+          onChange={(e) => onChange(valueMin, Math.max(Number(e.target.value), valueMin))}
+          className="fleet-range-input"
+          style={{ zIndex: 4 }}
+        />
+      </div>
+    </div>
+  )
+}
+
+const rangeInputStyles = `
+  .fleet-range-input {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin: 0;
+    background: transparent;
+    pointer-events: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .fleet-range-input::-webkit-slider-runnable-track {
+    -webkit-appearance: none;
+    background: transparent;
+  }
+  .fleet-range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    pointer-events: auto;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #d4b472;
+    border: 2px solid #06090f;
+    box-shadow: 0 0 0 1px rgba(184,151,74,0.6);
+    cursor: pointer;
+    margin-top: 0;
+  }
+  .fleet-range-input::-moz-range-track {
+    background: transparent;
+  }
+  .fleet-range-input::-moz-range-thumb {
+    pointer-events: auto;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #d4b472;
+    border: 2px solid #06090f;
+    box-shadow: 0 0 0 1px rgba(184,151,74,0.6);
+    cursor: pointer;
+  }
+`

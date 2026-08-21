@@ -3,10 +3,16 @@ import Link from 'next/link'
 import { motion, cubicBezier } from 'framer-motion'
 
 const destinations = [
-  { id: 'med', label: 'Mediterranean', sub: 'French Riviera · Italy · Greece', image: '/images/regions/French_Riviera.webp' },
-  { id: 'caribbean', label: 'Caribbean', sub: 'St. Barts · Antigua · BVI', image: '/images/regions/Caribbean.webp' },
-  { id: 'red-sea', label: 'Red Sea', sub: 'Dubai · Oman · Saudi Arabia', image: '/images/regions/Dubai.webp' },
-  { id: 'indian-ocean', label: 'Indian Ocean', sub: 'Maldives · Seychelles', image: '/images/regions/Maldives.webp' },
+  { id: 'French Riviera', label: 'French Riviera', sub: 'Saint-Tropez · Cannes · Monaco', image: '/images/regions/French_Riviera.webp' },
+  { id: 'Balearic Islands', label: 'Balearic Islands', sub: 'Ibiza · Formentera · Spain', image: '/images/regions/Balearic_Islands.webp' },
+  { id: 'Greece', label: 'Greece', sub: 'Cyclades · Santorini · Mykonos', image: '/images/regions/Greece.webp' },
+  { id: 'Emirates', label: 'Emirates', sub: 'Dubai · Abu Dhabi · Persian Gulf', image: '/images/regions/Dubai.webp' },
+  { id: 'Italy', label: 'Italy', sub: 'Amalfi · Sicily · Mediterranean', image: '/images/regions/Italy.webp' },
+  { id: 'Corsica', label: 'Corsica', sub: 'France · Mediterranean', image: '/images/regions/Corsica.webp' },
+  { id: 'Maldives', label: 'Maldives', sub: 'Indian Ocean · Tropical Paradise', image: '/images/regions/Maldives.webp' },
+  { id: 'Caribbean', label: 'Caribbean', sub: 'Virgin Islands · Bahamas', image: '/images/regions/Caribbean.webp' },
+  { id: 'Sardinia', label: 'Sardinia', sub: 'Mediterranean · Italy', image: '/images/regions/Sardinia.webp' },
+  { id: 'Miami', label: 'Miami', sub: 'Florida · USA', image: '/images/regions/Miami.webp' },
 ]
 
 interface DestinationCardsProps {

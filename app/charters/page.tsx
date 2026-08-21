@@ -1,6 +1,12 @@
-'use client'
 import Navbar from '@/components/Navbar'
 import DestinationCards from '@/components/DestinationCards'
+
+export const metadata = {
+  title: 'Yacht Charter Destinations | Syrama Yachting',
+  description: 'Explore luxury yacht charter destinations worldwide. French Riviera, Caribbean, Greece, Emirates, Maldives, and more.',
+}
+
+export const revalidate = 3600
 
 export default function ChartersPage() {
   return (

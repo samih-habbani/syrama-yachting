@@ -99,11 +99,45 @@ export default function Services() {
         </div>
 
         {/* Row 2: 4 equal cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-16 md:mb-20">
           {[services[2], services[3], services[4], services[5], services[6]].slice(0, 4).map((exp, i) => (
             <ServiceCard key={exp.title} exp={exp} delay={i * 0.08} />
           ))}
         </div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.4 }}
+          viewport={{ once: true }}
+          style={{ textAlign: 'center' }}
+        >
+          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#6a6a5e', maxWidth: 500, margin: '0 auto 32px' }}>
+            Customise every aspect of your charter experience. From dining and water sports to wellness and shore excursions, our team will craft the perfect itinerary for you.
+          </p>
+          <a
+            href="#contact"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 14,
+              fontFamily: 'var(--font-tenor)',
+              fontSize: 10,
+              letterSpacing: '0.28em',
+              textTransform: 'uppercase',
+              color: '#06090f',
+              background: '#b8974a',
+              padding: '16px 36px',
+              textDecoration: 'none',
+              transition: 'background 0.3s ease',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
+          >
+            CUSTOMIZE YOUR EXPERIENCE
+          </a>
+        </motion.div>
       </div>
 
       {/* Section number bg */}

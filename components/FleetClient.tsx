@@ -1,8 +1,6 @@
 'use client'
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import FleetFilters from './FleetFilters'
 
 interface Media {
   id: number
@@ -19,16 +17,8 @@ interface Yacht {
   cabins: number
   priceDay: number | null
   status: string | null
-  media?: Media[]
-}
-
-interface FilterState {
   region: string | null
-  minLength: number
-  maxLength: number
-  minGuests: number
-  maxGuests: number
-  builder: string | null
+  media?: Media[]
 }
 
 interface FleetClientProps {
@@ -36,11 +26,7 @@ interface FleetClientProps {
   showFilters?: boolean
 }
 
-export default function FleetClient({ yachts, showFilters = true }: FleetClientProps) {
-  const handleFiltersChange = (filters: FilterState) => {
-    // Handle filter changes if needed
-  }
-
+export default function FleetClient({ yachts }: FleetClientProps) {
   return (
     <section className="py-16 md:py-20" style={{ background: '#06090f', minHeight: '100vh' }}>
       <div style={{ paddingLeft: 'clamp(24px, 6vw, 96px)', paddingRight: 'clamp(24px, 6vw, 96px)' }}>
@@ -59,8 +45,6 @@ export default function FleetClient({ yachts, showFilters = true }: FleetClientP
             </div>
           </div>
         </div>
-
-        {showFilters && <FleetFilters onFiltersChange={handleFiltersChange} resultCount={yachts.length} />}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 mb-16 md:mb-20">
           {yachts.length === 0 ? (
@@ -109,6 +93,12 @@ export default function FleetClient({ yachts, showFilters = true }: FleetClientP
                     <div style={{ position: 'absolute', top: 20, right: 20, fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,238,221,0.6)', background: 'rgba(6,9,15,0.5)', padding: '6px 10px' }}>
                       View →
                     </div>
+
+                    {yacht.region && (
+                      <div style={{ position: 'absolute', bottom: 20, right: 20, fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '8px 12px' }}>
+                        {yacht.region}
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ padding: '18px 0', borderBottom: '1px solid rgba(184,151,74,0.12)' }}>
@@ -140,7 +130,47 @@ export default function FleetClient({ yachts, showFilters = true }: FleetClientP
           )}
         </div>
 
-        <div style={{ textAlign: 'center' }}>
+        {/* View All Yachts Button */}
+        <div style={{ textAlign: 'center', marginBottom: 60, marginTop: 40 }}>
+          <Link
+            href="/charters"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 14,
+              fontFamily: 'var(--font-tenor)',
+              fontSize: 10,
+              letterSpacing: '0.28em',
+              textTransform: 'uppercase',
+              color: '#f5eedd',
+              border: '1px solid #b8974a',
+              padding: '16px 36px',
+              textDecoration: 'none',
+              transition: 'all 0.3s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(184,151,74,0.1)'
+              e.currentTarget.style.borderColor = '#d4b472'
+              e.currentTarget.style.color = '#d4b472'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.borderColor = '#b8974a'
+              e.currentTarget.style.color = '#f5eedd'
+            }}
+          >
+            VIEW ALL YACHTS
+          </Link>
+        </div>
+
+        {/* CTA Banderolle */}
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(184,151,74,0.08) 0%, rgba(212,180,114,0.04) 100%)',
+          border: '1px solid rgba(184,151,74,0.2)',
+          borderRadius: '8px',
+          padding: '48px 32px',
+          textAlign: 'center',
+        }}>
           <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(24px, 3vw, 38px)', fontWeight: 300, color: '#f5eedd', marginBottom: 16 }}>
             Looking for something specific?
           </div>

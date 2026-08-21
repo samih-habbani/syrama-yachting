@@ -1,9 +1,9 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import FleetFilters from './FleetFilters'
+import FleetFilters, { FilterState } from './FleetFilters'
 
 interface Media {
   id: number
@@ -31,15 +31,6 @@ interface Yacht {
   media?: Media[]
 }
 
-interface FilterState {
-  region: string | null
-  minLength: number
-  maxLength: number
-  minGuests: number
-  maxGuests: number
-  builder: string | null
-}
-
 interface FleetProps {
   showFilters?: boolean
   limit?: number
@@ -51,45 +42,79 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
   const tabParam = searchParams.get('tab')
 
   const [activeTab, setActiveTab] = useState<'charter' | 'sale'>(tabParam === 'sale' ? 'sale' : 'charter')
-  const [yachts, setYachts] = useState<Yacht[]>([])
+  const [allYachts, setAllYachts] = useState<Yacht[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Un seul appel réseau pour toute la flotte — tout le filtrage / tri qui suit
+  // se fait ensuite en mémoire, côté client, sans jamais retoucher la BDD.
+  useEffect(() => {
+    const fetchAllYachts = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/yachts?type=all&limit=500')
+        const data = await response.json()
+        setAllYachts(Array.isArray(data) ? data : [])
+      } catch (error) {
+        console.error('Error fetching yachts:', error)
+        setAllYachts([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchAllYachts()
+  }, [])
+
+  const bounds = useMemo(() => {
+    const lengths = allYachts.map(y => y.length).filter((v): v is number => typeof v === 'number')
+    const guests = allYachts.map(y => y.maxGuests).filter((v): v is number => typeof v === 'number')
+    const prices = allYachts.map(y => y.priceDay).filter((v): v is number => typeof v === 'number')
+    return {
+      minLength: lengths.length ? Math.floor(Math.min(...lengths)) : 0,
+      maxLength: lengths.length ? Math.ceil(Math.max(...lengths)) : 200,
+      minGuests: guests.length ? Math.floor(Math.min(...guests)) : 0,
+      maxGuests: guests.length ? Math.ceil(Math.max(...guests)) : 100,
+      minPrice: prices.length ? Math.floor(Math.min(...prices)) : 0,
+      maxPrice: prices.length ? Math.ceil(Math.max(...prices)) : 50000,
+    }
+  }, [allYachts])
+
+  const regions = useMemo(
+    () => Array.from(new Set(allYachts.map(y => y.region).filter(Boolean))).sort() as string[],
+    [allYachts]
+  )
+  const builders = useMemo(
+    () => Array.from(new Set(allYachts.map(y => y.builder).filter(Boolean))).sort() as string[],
+    [allYachts]
+  )
+
   const [filters, setFilters] = useState<FilterState>({
     region: regionParam,
+    builder: null,
     minLength: 0,
     maxLength: 200,
     minGuests: 0,
     maxGuests: 100,
-    builder: null,
+    minPrice: 0,
+    maxPrice: 0,
+    sortBy: 'default',
   })
 
+  // Une fois les bornes réelles connues, on initialise les curseurs dessus (une seule fois)
+  const boundsInitialized = useRef(false)
   useEffect(() => {
-    fetchYachts()
-  }, [activeTab, filters])
-
-  const fetchYachts = async () => {
-    try {
-      setLoading(true)
-      const params = new URLSearchParams({
-        type: activeTab,
-        ...(filters.region && { region: filters.region }),
-        ...(filters.builder && { builder: filters.builder }),
-        minLength: filters.minLength.toString(),
-        maxLength: filters.maxLength.toString(),
-        minGuests: filters.minGuests.toString(),
-        maxGuests: filters.maxGuests.toString(),
-        ...(limit && { limit: limit.toString() }),
-      })
-
-      const response = await fetch(`/api/yachts?${params}`)
-      const data = await response.json()
-      setYachts(Array.isArray(data) ? data : [])
-    } catch (error) {
-      console.error('Error fetching yachts:', error)
-      setYachts([])
-    } finally {
-      setLoading(false)
+    if (!boundsInitialized.current && allYachts.length > 0) {
+      boundsInitialized.current = true
+      setFilters(prev => ({
+        ...prev,
+        minLength: bounds.minLength,
+        maxLength: bounds.maxLength,
+        minGuests: bounds.minGuests,
+        maxGuests: bounds.maxGuests,
+        minPrice: bounds.minPrice,
+        maxPrice: bounds.maxPrice,
+      }))
     }
-  }
+  }, [allYachts, bounds])
 
   useEffect(() => {
     if (tabParam === 'sale') {
@@ -102,6 +127,48 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
       setFilters(prev => ({ ...prev, region: regionParam }))
     }
   }, [regionParam])
+
+  const yachts = useMemo(() => {
+    const statusMatches = (status: string | null) => {
+      const s = (status || '').toLowerCase()
+      return activeTab === 'charter' ? s === 'location' : s === 'vente'
+    }
+
+    const filtered = allYachts.filter(y => {
+      if (!statusMatches(y.status)) return false
+      if (filters.region && (y.region || '').toLowerCase() !== filters.region.toLowerCase()) return false
+      if (filters.builder && (y.builder || '').toLowerCase() !== filters.builder.toLowerCase()) return false
+      if (filters.minLength && y.length < filters.minLength) return false
+      if (filters.maxLength && y.length > filters.maxLength) return false
+      if (filters.minGuests && (y.maxGuests ?? 0) < filters.minGuests) return false
+      if (filters.maxGuests && (y.maxGuests ?? 0) > filters.maxGuests) return false
+      if (filters.minPrice && (y.priceDay ?? 0) < filters.minPrice) return false
+      if (filters.maxPrice && (y.priceDay ?? Infinity) > filters.maxPrice) return false
+      return true
+    })
+
+    const sorted = [...filtered]
+    if (filters.sortBy === 'price-asc') sorted.sort((a, b) => (a.priceDay ?? Infinity) - (b.priceDay ?? Infinity))
+    else if (filters.sortBy === 'price-desc') sorted.sort((a, b) => (b.priceDay ?? -Infinity) - (a.priceDay ?? -Infinity))
+    else if (filters.sortBy === 'length-asc') sorted.sort((a, b) => a.length - b.length)
+    else if (filters.sortBy === 'length-desc') sorted.sort((a, b) => b.length - a.length)
+
+    return limit ? sorted.slice(0, limit) : sorted
+  }, [allYachts, activeTab, filters, limit])
+
+  const resetFilters = () => {
+    setFilters({
+      region: null,
+      builder: null,
+      minLength: bounds.minLength,
+      maxLength: bounds.maxLength,
+      minGuests: bounds.minGuests,
+      maxGuests: bounds.maxGuests,
+      minPrice: bounds.minPrice,
+      maxPrice: bounds.maxPrice,
+      sortBy: 'default',
+    })
+  }
 
   return (
     <section style={{ background: '#06090f', minHeight: '100vh', paddingTop: 80, paddingBottom: 80 }}>
@@ -122,6 +189,11 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'end', marginBottom: 40 }}>
             <div>
               <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(48px, 6vw, 88px)', lineHeight: 1.0, color: '#f5eedd', margin: 0 }}>Our vessels.</h2>
+              {filters.region && (
+                <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#b8974a', margin: '12px 0 0 0' }}>
+                  {filters.region}
+                </p>
+              )}
             </div>
             <div>
               <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#6a6a5e', margin: '0 0 20px' }}>Handpicked superyachts for charter and acquisition. Each vessel represents the pinnacle of maritime luxury, impeccably maintained and staffed by elite crews.</p>
@@ -155,7 +227,17 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
         </motion.div>
 
         {/* Filters */}
-        {showFilters && <FleetFilters onFiltersChange={setFilters} resultCount={yachts.length} />}
+        {showFilters && (
+          <FleetFilters
+            filters={filters}
+            bounds={bounds}
+            regions={regions}
+            builders={builders}
+            resultCount={yachts.length}
+            onFiltersChange={setFilters}
+            onReset={resetFilters}
+          />
+        )}
 
         {/* Yacht Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 40, marginBottom: 80 }}>
@@ -209,6 +291,12 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                     <div style={{ position: 'absolute', top: 20, right: 20, fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,238,221,0.6)', background: 'rgba(6,9,15,0.5)', padding: '6px 10px' }}>
                       View →
                     </div>
+
+                    {yacht.region && (
+                      <div style={{ position: 'absolute', bottom: 20, right: 20, fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '8px 12px' }}>
+                        {yacht.region}
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ padding: '18px 0', borderBottom: '1px solid rgba(184,151,74,0.12)' }}>
@@ -226,10 +314,14 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                           <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>{yacht.maxGuests}</div>
                         </div>
                       )}
-                      {activeTab === 'charter' && yacht.priceDay && (
+                      {yacht.priceDay && (
                         <div>
-                          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>Rate</div>
-                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>€{yacht.priceDay.toLocaleString()}/day</div>
+                          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>
+                            {activeTab === 'charter' ? 'Rate' : 'Price'}
+                          </div>
+                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>
+                            €{yacht.priceDay.toLocaleString()}{activeTab === 'charter' ? '/day' : ''}
+                          </div>
                         </div>
                       )}
                     </div>

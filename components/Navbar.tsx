@@ -297,7 +297,7 @@ export default function Navbar() {
                   </span>
                 </a>
                 <a
-                  href="mailto:contact@syrama.ae"
+                  href="mailto:contact@syrama-services.com"
                   onClick={closeMenu}
                   className="flex flex-col gap-1.5 group"
                 >
@@ -305,7 +305,7 @@ export default function Navbar() {
                     Email
                   </span>
                   <span className="font-[var(--font-cormorant)] text-2xl font-light text-[#d4b472] group-hover:text-[#e8c98a] transition-colors">
-                    contact@syrama.ae
+                    contact@syrama-services.com
                   </span>
                 </a>
               </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Lora } from "next/font/google";
 import "./globals.css";
+import WhatsappButton from "@/components/WhatsappButton";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-heading",
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="bg-[#06090f] text-[#f5eedd] antialiased">
         {children}
+        <WhatsappButton />
       </body>
     </html>
   );

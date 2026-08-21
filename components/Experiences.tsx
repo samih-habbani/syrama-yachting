@@ -206,11 +206,45 @@ export default function Experiences() {
         </motion.div>
 
         {/* Activities Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12 md:mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16 md:mb-20">
           {activities.map((activity, i) => (
             <ActivityCard key={activity.id} activity={activity} delay={i * 0.08} />
           ))}
         </div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.4 }}
+          viewport={{ once: true }}
+          style={{ textAlign: 'center' }}
+        >
+          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#6a6a5e', maxWidth: 500, margin: '0 auto 32px' }}>
+            Add adventure to your yacht charter. Whether you're seeking adrenaline-fuelled water sports or serene underwater exploration, our team will arrange every detail.
+          </p>
+          <a
+            href="#contact"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 14,
+              fontFamily: 'var(--font-tenor)',
+              fontSize: 10,
+              letterSpacing: '0.28em',
+              textTransform: 'uppercase',
+              color: '#06090f',
+              background: '#b8974a',
+              padding: '16px 36px',
+              textDecoration: 'none',
+              transition: 'background 0.3s ease',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
+          >
+            PLAN YOUR ADVENTURE
+          </a>
+        </motion.div>
       </div>
     </section>
   )

@@ -97,7 +97,7 @@ export default function Contact() {
           >
             {[
               { label: 'WhatsApp', val: '+971 50 554 8034' },
-              { label: 'Email', val: 'contact@syrama.ae' },
+              { label: 'Email', val: 'contact@syrama-services.com' },
               { label: 'Availability', val: '24/7' },
             ].map(({ label, val }) => (
               <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '24px 0', borderBottom: '1px solid rgba(184,151,74,0.08)' }}>

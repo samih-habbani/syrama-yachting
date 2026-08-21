@@ -1,7 +1,10 @@
 import { prisma } from './prisma'
+import type { Prisma } from '@prisma/client'
+
+export type YachtSortBy = 'default' | 'price-asc' | 'price-desc' | 'length-asc' | 'length-desc'
 
 export async function getYachts(options: {
-  type?: 'charter' | 'sale'
+  type?: 'charter' | 'sale' | 'all'
   limit?: number
   region?: string | null
   builder?: string | null
@@ -9,19 +12,27 @@ export async function getYachts(options: {
   maxLength?: number
   minGuests?: number
   maxGuests?: number
+  minPrice?: number
+  maxPrice?: number
+  sortBy?: YachtSortBy
 } = {}) {
   const {
-    type = 'charter',
-    limit = 100,
+    type = 'all',
+    limit = 500,
     region = null,
     builder = null,
     minLength = 0,
     maxLength = 200,
     minGuests = 0,
     maxGuests = 100,
+    minPrice = 0,
+    maxPrice = 0,
+    sortBy = 'default',
   } = options
 
-  const where: any = {}
+  const where: any = {
+    available: true,
+  }
 
   if (type === 'charter') {
     where.status = { in: ['Location', 'location'] }
@@ -49,9 +60,22 @@ export async function getYachts(options: {
     if (maxGuests) where.maxGuests.lte = maxGuests
   }
 
+  if (minPrice || maxPrice) {
+    where.priceDay = {}
+    if (minPrice) where.priceDay.gte = minPrice
+    if (maxPrice) where.priceDay.lte = maxPrice
+  }
+
+  const orderBy: Prisma.YachtOrderByWithRelationInput =
+    sortBy === 'price-asc' ? { priceDay: { sort: 'asc', nulls: 'last' } } :
+    sortBy === 'price-desc' ? { priceDay: { sort: 'desc', nulls: 'last' } } :
+    sortBy === 'length-asc' ? { length: 'asc' } :
+    sortBy === 'length-desc' ? { length: 'desc' } :
+    { id: 'asc' }
+
   return prisma.yacht.findMany({
     where,
-    orderBy: { id: 'asc' },
+    orderBy,
     take: limit,
     select: {
       id: true,
@@ -62,6 +86,7 @@ export async function getYachts(options: {
       cabins: true,
       priceDay: true,
       status: true,
+      region: true,
       media: {
         take: 1,
         orderBy: { id: 'asc' },
