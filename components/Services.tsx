@@ -69,14 +69,14 @@ export default function Services() {
               <div style={{ width: 32, height: 1, background: 'var(--or)' }} />
               <span className="section-label">BEYOND THE YACHT</span>
             </div>
-            <h2 style={{
+            <h1 style={{
               fontFamily: 'var(--font-cormorant)', fontWeight: 300,
               fontSize: 'clamp(42px, 5vw, 72px)', lineHeight: 1.05,
               color: 'var(--champagne)', margin: 0,
             }}>
               Bespoke Yacht Charter<br />
               <em style={{ fontStyle: 'italic', color: 'var(--or-clair)' }}>Experiences.</em>
-            </h2>
+            </h1>
           </motion.div>
           <motion.p
             initial={{ opacity: 0, y: 20 }}

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Intro from '@/components/Intro';
@@ -11,6 +12,12 @@ import Footer from '@/components/Footer';
 import { getYachts } from '@/lib/yacht-service';
 
 export const revalidate = 3600
+
+export const metadata: Metadata = {
+  title: 'Luxury Yacht Charter & Sales Worldwide',
+  description: 'Charter or buy a luxury yacht with Syrama Yachting. Curated fleet, personal brokers and bespoke experiences across the French Riviera, Mediterranean, Dubai and worldwide.',
+  alternates: { canonical: '/' },
+};
 
 export default async function Home() {
   const yachts = await getYachts({ type: 'charter', limit: 6 })

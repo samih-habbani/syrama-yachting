@@ -1,7 +1,14 @@
+import type { Metadata } from 'next'
 import FleetWrapper from '@/components/FleetWrapper'
 import Navbar from '@/components/Navbar'
 import Contact from '@/components/Contact'
 import Footer from '@/components/Footer'
+
+export const metadata: Metadata = {
+  title: 'Our Fleet — Yachts for Charter & Sale',
+  description: 'Browse our curated fleet of luxury yachts. Filter by region, budget, guests and length to find the right vessel for charter or sale.',
+  alternates: { canonical: '/yachting/fleet' },
+}
 
 export default function FleetPage() {
   return (

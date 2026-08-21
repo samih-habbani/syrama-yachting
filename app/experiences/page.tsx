@@ -1,9 +1,15 @@
-'use client'
+import type { Metadata } from 'next'
 import Navbar from '@/components/Navbar'
 import Services from '@/components/Services'
 import Experiences from '@/components/Experiences'
 import Contact from '@/components/Contact'
 import Footer from '@/components/Footer'
+
+export const metadata: Metadata = {
+  title: 'Bespoke Yacht Charter Experiences',
+  description: 'Private dining, water sports, wellness on board and tailored itineraries. Discover the bespoke experiences Syrama Yachting arranges around every charter.',
+  alternates: { canonical: '/experiences' },
+}
 
 export default function ExperiencesPage() {
   return (
