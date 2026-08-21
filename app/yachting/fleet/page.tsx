@@ -1,5 +1,6 @@
 import FleetWrapper from '@/components/FleetWrapper'
 import Navbar from '@/components/Navbar'
+import Contact from '@/components/Contact'
 import Footer from '@/components/Footer'
 
 export default function FleetPage() {
@@ -8,6 +9,7 @@ export default function FleetPage() {
       <Navbar />
       <main className="flex-1 pt-20">
         <FleetWrapper />
+        <Contact />
       </main>
       <Footer />
     </div>

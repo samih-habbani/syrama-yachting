@@ -102,26 +102,26 @@ export default function FleetClient({ yachts }: FleetClientProps) {
                   </div>
 
                   <div style={{ padding: '18px 0', borderBottom: '1px solid rgba(184,151,74,0.12)' }}>
-                    <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 11, letterSpacing: '0.1em', color: '#6a6a5e', marginBottom: 12 }}>
+                    <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, letterSpacing: '0.1em', color: '#a0a090', marginBottom: 16 }}>
                       {yacht.maxGuests && `${yacht.maxGuests} guests`} {yacht.cabins && `· ${yacht.cabins} cabins`}
                     </div>
-                    <div style={{ display: 'flex', gap: 28 }}>
+                    <div style={{ display: 'flex', gap: 32 }}>
                       <div>
-                        <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>Length</div>
-                        <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>{yacht.length}m</div>
+                        <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,238,221,0.7)', marginBottom: 6, fontWeight: 600 }}>Length</div>
+                        <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 18, fontWeight: 300, color: '#d4b472' }}>{yacht.length}m</div>
                       </div>
                       {yacht.maxGuests && (
                         <div>
-                          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>Guests</div>
-                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>{yacht.maxGuests}</div>
+                          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,238,221,0.7)', marginBottom: 6, fontWeight: 600 }}>Guests</div>
+                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 18, fontWeight: 300, color: '#d4b472' }}>{yacht.maxGuests}</div>
                         </div>
                       )}
-                      {yacht.priceDay && (
-                        <div>
-                          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(106,106,94,0.5)', marginBottom: 4 }}>Rate</div>
-                          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 15, fontWeight: 300, color: '#d4b472' }}>€{yacht.priceDay.toLocaleString('fr-FR')}/day</div>
+                      <div>
+                        <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,238,221,0.7)', marginBottom: 6, fontWeight: 600 }}>Rate</div>
+                        <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 18, fontWeight: 300, color: '#d4b472' }}>
+                          {yacht.priceDay ? `€${yacht.priceDay.toLocaleString('fr-FR')}/day` : 'Price on request'}
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </Link>
