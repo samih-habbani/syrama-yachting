@@ -199,7 +199,7 @@ export default function Experiences() {
               </h2>
             </div>
 
-            <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#6a6a5e', margin: 0 }}>
+            <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#8f8f7f', margin: 0 }}>
               Add another dimension to your charter with water sports, underwater exploration and experiences tailored to your destination.
             </p>
           </div>
@@ -220,7 +220,7 @@ export default function Experiences() {
           viewport={{ once: true }}
           style={{ textAlign: 'center' }}
         >
-          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#6a6a5e', maxWidth: 500, margin: '0 auto 32px' }}>
+          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#8f8f7f', maxWidth: 500, margin: '0 auto 32px' }}>
             Add adventure to your yacht charter. Whether you're seeking adrenaline-fuelled water sports or serene underwater exploration, our team will arrange every detail.
           </p>
           <a

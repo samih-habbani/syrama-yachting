@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Lora } from "next/font/google";
 import "./globals.css";
 import WhatsappButton from "@/components/WhatsappButton";
+import MotionProvider from "@/components/MotionProvider";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-heading",
@@ -64,8 +65,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
-        {children}
-        <WhatsappButton />
+        <a href="#main-content" className="skip-link">Skip to main content</a>
+        <MotionProvider>
+          {children}
+          <WhatsappButton />
+        </MotionProvider>
       </body>
     </html>
   );

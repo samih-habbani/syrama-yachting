@@ -138,7 +138,7 @@ export default function Destinations() {
             Luxury Yacht Charter Destinations.
           </h2>
 
-          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#6a6a5e', maxWidth: 600, margin: '0 auto' }}>
+          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#8f8f7f', maxWidth: 600, margin: '0 auto' }}>
             From Cannes, Saint-Tropez and Monaco to Ibiza, Greece and Dubai, discover exceptional yachting destinations across the Mediterranean and beyond.
           </p>
         </motion.div>
@@ -278,7 +278,7 @@ export default function Destinations() {
           transition={{ duration: 1, delay: 0.4 }}
           viewport={{ once: true }}
           style={{ textAlign: 'center' }}>
-          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#6a6a5e', maxWidth: 500, margin: '0 auto 32px' }}>
+          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#8f8f7f', maxWidth: 500, margin: '0 auto 32px' }}>
             Not sure where to charter? Tell us the experience you're looking for and our team will recommend the right destination, yacht and itinerary.
           </p>
           <a

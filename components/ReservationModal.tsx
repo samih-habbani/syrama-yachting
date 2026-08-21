@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { useModalA11y } from '@/lib/useModalA11y'
 
 interface ReservationModalProps {
   yachtId: number
@@ -21,6 +22,9 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  useModalA11y(isOpen, onClose, modalRef)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -107,13 +111,17 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
       `}</style>
 
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reservation-modal-title"
         className="modal-content bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-md w-full max-h-[90vh] overflow-y-auto rounded-lg border border-[#b8974a] border-opacity-20 p-6 sm:p-12 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {success ? (
-          <div className="text-center py-12">
-            <div className="text-[#b8974a] mb-4 text-4xl">✓</div>
-            <h3 className="text-xl text-white mb-2" style={{ fontFamily: 'var(--font-tenor)' }}>
+          <div className="text-center py-12" role="status">
+            <div className="text-[#b8974a] mb-4 text-4xl" aria-hidden="true">✓</div>
+            <h3 id="reservation-modal-title" className="text-xl text-white mb-2" style={{ fontFamily: 'var(--font-tenor)' }}>
               Request Received
             </h3>
             <p className="text-gray-400 text-sm leading-relaxed">
@@ -123,7 +131,7 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
         ) : (
           <>
             <div className="mb-8">
-              <h2 className="text-[#b8974a] text-sm tracking-widest uppercase mb-2">Charter Request</h2>
+              <h2 id="reservation-modal-title" className="text-[#b8974a] text-sm tracking-widest uppercase mb-2">Charter Request</h2>
               <h3 className="text-2xl text-white" style={{ fontFamily: 'var(--font-tenor)' }}>
                 {yachtModel}
               </h3>
@@ -138,8 +146,9 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Full Name *</label>
+                  <label htmlFor="reservation-fullName" className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Full Name *</label>
                   <input
+                    id="reservation-fullName"
                     type="text"
                     name="fullName"
                     value={formData.fullName}
@@ -151,8 +160,9 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
                 </div>
 
                 <div>
-                  <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Phone *</label>
+                  <label htmlFor="reservation-phone" className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Phone *</label>
                   <input
+                    id="reservation-phone"
                     type="tel"
                     name="phone"
                     value={formData.phone}
@@ -165,8 +175,9 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
               </div>
 
               <div>
-                <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Email *</label>
+                <label htmlFor="reservation-email" className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Email *</label>
                 <input
+                  id="reservation-email"
                   type="email"
                   name="email"
                   value={formData.email}
@@ -179,8 +190,9 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Date *</label>
+                  <label htmlFor="reservation-date" className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Date *</label>
                   <input
+                    id="reservation-date"
                     type="date"
                     name="date"
                     value={formData.date}
@@ -191,8 +203,9 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
                 </div>
 
                 <div>
-                  <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Guests *</label>
+                  <label htmlFor="reservation-guests" className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Guests *</label>
                   <input
+                    id="reservation-guests"
                     type="number"
                     name="numberOfPeople"
                     value={formData.numberOfPeople}
@@ -205,8 +218,9 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
               </div>
 
               <div>
-                <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Location *</label>
+                <label htmlFor="reservation-location" className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Location *</label>
                 <input
+                  id="reservation-location"
                   type="text"
                   name="location"
                   value={formData.location}

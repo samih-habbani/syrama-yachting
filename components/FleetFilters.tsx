@@ -87,32 +87,42 @@ export default function FleetFilters({ filters, bounds, regions, builders, resul
       <style>{rangeInputStyles}</style>
       {/* Header */}
       <div
-        onClick={() => setIsExpanded(!isExpanded)}
         style={{
           padding: '24px 32px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          cursor: 'pointer',
+          gap: 16,
           borderBottom: isExpanded ? '1px solid rgba(184,151,74,0.15)' : 'none',
         }}
       >
-        <div>
+        <button
+          type="button"
+          onClick={() => setIsExpanded(!isExpanded)}
+          aria-expanded={isExpanded}
+          aria-controls="fleet-filters-panel"
+          style={{
+            flex: 1,
+            textAlign: 'left',
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+          }}
+        >
           <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 4 }}>
             REFINE YOUR SEARCH
           </div>
-          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, color: '#6a6a5e' }}>
+          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, color: '#8f8f7f' }}>
             {resultCount} vessel{resultCount !== 1 ? 's' : ''} found
             {hasActiveFilters && <span style={{ color: '#b8974a' }}> • Filtered</span>}
           </div>
-        </div>
+        </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           {hasActiveFilters && (
             <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onReset()
-              }}
+              type="button"
+              onClick={onReset}
               style={{
                 fontFamily: 'var(--font-tenor)',
                 fontSize: 9,
@@ -131,15 +141,24 @@ export default function FleetFilters({ filters, bounds, regions, builders, resul
               Clear Filters
             </button>
           )}
-          <motion.div
-            animate={{ rotate: isExpanded ? 180 : 0 }}
-            transition={{ duration: 0.3 }}
-            style={{ color: '#b8974a', display: 'flex' }}
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            aria-label={isExpanded ? 'Collapse filters' : 'Expand filters'}
+            aria-expanded={isExpanded}
+            aria-controls="fleet-filters-panel"
+            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex' }}
           >
-            <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </motion.div>
+            <motion.div
+              animate={{ rotate: isExpanded ? 180 : 0 }}
+              transition={{ duration: 0.3 }}
+              style={{ color: '#b8974a', display: 'flex' }}
+            >
+              <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+                <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </motion.div>
+          </button>
         </div>
       </div>
 
@@ -147,6 +166,7 @@ export default function FleetFilters({ filters, bounds, regions, builders, resul
       <AnimatePresence>
         {isExpanded && (
           <motion.div
+            id="fleet-filters-panel"
             initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
             animate={{ opacity: 1, height: 'auto', transitionEnd: { overflow: 'visible' } }}
             exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
@@ -229,7 +249,10 @@ function CustomSelect({
   placeholder: string
 }) {
   const [open, setOpen] = useState(false)
+  const [focusIntent, setFocusIntent] = useState<'first' | 'last' | null>(null)
   const ref = useRef<HTMLDivElement>(null)
+  const triggerId = `select-${label.replace(/\s+/g, '-').toLowerCase()}`
+  const listboxId = `${triggerId}-listbox`
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -239,14 +262,67 @@ function CustomSelect({
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
+  // Move focus into the option list once it has mounted, after opening via keyboard
+  useEffect(() => {
+    if (!open || !focusIntent) return
+    const optionEls = Array.from(ref.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])
+    const target = focusIntent === 'last' ? optionEls[optionEls.length - 1] : optionEls[0]
+    target?.focus()
+    setFocusIntent(null)
+  }, [open, focusIntent])
+
   const selectedLabel = options.find(o => o.value === value)?.label || placeholder
 
   return (
-    <div ref={ref} style={{ position: 'relative' }}>
-      <label style={labelStyle}>{label}</label>
+    <div
+      ref={ref}
+      style={{ position: 'relative' }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          setOpen(false)
+          ref.current?.querySelector<HTMLButtonElement>('button')?.focus()
+          return
+        }
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault()
+          if (!open) {
+            setOpen(true)
+            setFocusIntent(e.key === 'ArrowDown' ? 'first' : 'last')
+            return
+          }
+          const optionEls = Array.from(ref.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])
+          if (optionEls.length === 0) return
+          const currentIndex = optionEls.indexOf(document.activeElement as HTMLButtonElement)
+          const nextIndex = e.key === 'ArrowDown'
+            ? (currentIndex + 1) % optionEls.length
+            : (currentIndex - 1 + optionEls.length) % optionEls.length
+          optionEls[nextIndex]?.focus()
+          return
+        }
+        if (open && (e.key === 'Home' || e.key === 'End')) {
+          e.preventDefault()
+          const optionEls = Array.from(ref.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])
+          const target = e.key === 'Home' ? optionEls[0] : optionEls[optionEls.length - 1]
+          target?.focus()
+        }
+      }}
+    >
+      <label id={`${triggerId}-label`} style={labelStyle}>{label}</label>
       <button
+        id={triggerId}
         type="button"
-        onClick={() => setOpen(o => !o)}
+        onClick={(e) => {
+          setOpen(o => {
+            const next = !o
+            if (next && e.detail === 0) setFocusIntent('first')
+            return next
+          })
+        }}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={listboxId}
+        aria-labelledby={`${triggerId}-label ${triggerId}`}
         style={{
           width: '100%',
           display: 'flex',
@@ -282,6 +358,9 @@ function CustomSelect({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
+            role="listbox"
+            id={listboxId}
+            aria-labelledby={`${triggerId}-label`}
             style={{
               position: 'absolute',
               top: 'calc(100% + 6px)',
@@ -296,9 +375,16 @@ function CustomSelect({
               boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
             }}
           >
-            <div
+            <button
+              type="button"
+              role="option"
+              aria-selected={value === null}
               onClick={() => { onChange(null); setOpen(false) }}
               style={{
+                width: '100%',
+                textAlign: 'left',
+                font: 'inherit',
+                border: 'none',
                 padding: '11px 16px',
                 fontFamily: 'var(--font-tenor)',
                 fontSize: 12,
@@ -311,26 +397,33 @@ function CustomSelect({
               onMouseLeave={(e) => (e.currentTarget.style.background = value === null ? 'rgba(184,151,74,0.1)' : 'transparent')}
             >
               {placeholder}
-            </div>
+            </button>
             {options.map(o => (
-              <div
+              <button
                 key={o.value}
+                type="button"
+                role="option"
+                aria-selected={value === o.value}
                 onClick={() => { onChange(o.value); setOpen(false) }}
                 style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  font: 'inherit',
+                  border: 'none',
+                  borderTop: '1px solid rgba(184,151,74,0.08)',
                   padding: '11px 16px',
                   fontFamily: 'var(--font-tenor)',
                   fontSize: 12,
                   color: value === o.value ? '#b8974a' : 'rgba(245,238,221,0.8)',
                   background: value === o.value ? 'rgba(184,151,74,0.1)' : 'transparent',
                   cursor: 'pointer',
-                  borderTop: '1px solid rgba(184,151,74,0.08)',
                   transition: 'background 0.15s ease',
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(184,151,74,0.1)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = value === o.value ? 'rgba(184,151,74,0.1)' : 'transparent')}
               >
                 {o.label}
-              </div>
+              </button>
             ))}
           </motion.div>
         )}

@@ -198,7 +198,7 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
               )}
             </div>
             <div>
-              <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#6a6a5e', margin: '0 0 20px' }}>Handpicked superyachts for charter and acquisition. Each vessel represents the pinnacle of maritime luxury, impeccably maintained and staffed by elite crews.</p>
+              <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#8f8f7f', margin: '0 0 20px' }}>Handpicked superyachts for charter and acquisition. Each vessel represents the pinnacle of maritime luxury, impeccably maintained and staffed by elite crews.</p>
             </div>
           </div>
 
@@ -216,7 +216,7 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                   background: 'transparent',
                   border: 'none',
                   padding: '12px 0',
-                  color: activeTab === tab ? '#b8974a' : '#6a6a5e',
+                  color: activeTab === tab ? '#b8974a' : '#8f8f7f',
                   cursor: 'pointer',
                   borderBottom: activeTab === tab ? '2px solid #b8974a' : '2px solid transparent',
                   transition: 'all 0.3s ease',
@@ -249,7 +249,7 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
             </div>
           ) : yachts.length === 0 ? (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px' }}>
-              <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, color: '#6a6a5e' }}>No yachts found matching your criteria.</div>
+              <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, color: '#8f8f7f' }}>No yachts found matching your criteria.</div>
             </div>
           ) : (
             yachts.map((yacht, i) => (
@@ -393,7 +393,7 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
           <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(24px, 3vw, 38px)', fontWeight: 300, color: '#f5eedd', marginBottom: 16 }}>
             {activeTab === 'charter' ? 'Ready to set sail?' : 'Interested in acquisition?'}
           </div>
-          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#6a6a5e', maxWidth: 480, margin: '0 auto 32px' }}>
+          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#8f8f7f', maxWidth: 480, margin: '0 auto 32px' }}>
             {activeTab === 'charter'
               ? 'Contact our concierge team to arrange your bespoke voyage.'
               : 'Speak with our brokers about purchasing opportunities and investment potential.'}

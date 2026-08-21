@@ -10,7 +10,7 @@ export default function Privacy() {
   return (
     <div className="flex flex-col min-h-screen bg-[#06090f]">
       <PageNavbar />
-      <main className="flex-1 pt-24">
+      <main id="main-content" className="flex-1 pt-24">
         <section className="max-w-4xl mx-auto px-8 py-20">
           <h1 className="font-[var(--font-cormorant)] text-5xl font-light text-[#f5eedd] mb-12">
             Privacy Policy

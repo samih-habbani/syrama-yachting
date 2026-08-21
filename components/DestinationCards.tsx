@@ -40,7 +40,7 @@ export default function DestinationCards({ isSale = false }: DestinationCardsPro
         <h1 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(20px, 4.4vw, 62px)', lineHeight: 1.05, color: '#f5eedd', margin: '0 0 20px', whiteSpace: 'nowrap' }}>
           {isSale ? 'Find Your Yacht, Worldwide.' : 'Explore by Destination.'}
         </h1>
-        <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.8, color: '#6a6a5e', margin: 0, maxWidth: 640 }}>
+        <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.8, color: '#8f8f7f', margin: 0, maxWidth: 640 }}>
           {isSale
             ? 'Browse yachts for sale across our worldwide network of premium destinations.'
             : 'Select a region to browse yachts available for charter.'}

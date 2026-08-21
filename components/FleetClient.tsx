@@ -45,7 +45,7 @@ export default function FleetClient({ yachts }: FleetClientProps) {
               <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(48px, 6vw, 88px)', lineHeight: 1.0, color: '#f5eedd', margin: 0 }}>Yachts for Charter.</h2>
             </div>
             <div>
-              <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#6a6a5e', margin: '0 0 20px' }}>Explore a selection of yachts available for charter through our trusted network. From elegant day yachts to crewed motor yachts and superyachts, we source the right vessel for every journey.</p>
+              <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#8f8f7f', margin: '0 0 20px' }}>Explore a selection of yachts available for charter through our trusted network. From elegant day yachts to crewed motor yachts and superyachts, we source the right vessel for every journey.</p>
             </div>
           </div>
         </div>
@@ -53,7 +53,7 @@ export default function FleetClient({ yachts }: FleetClientProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 mb-16 md:mb-20">
           {yachts.length === 0 ? (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px' }}>
-              <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, color: '#6a6a5e' }}>No yachts found matching your criteria.</div>
+              <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, color: '#8f8f7f' }}>No yachts found matching your criteria.</div>
             </div>
           ) : (
             yachts.map((yacht, i) => (
@@ -234,7 +234,7 @@ export default function FleetClient({ yachts }: FleetClientProps) {
           <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(24px, 3vw, 38px)', fontWeight: 300, color: '#f5eedd', marginBottom: 16 }}>
             Looking for something specific?
           </div>
-          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#6a6a5e', maxWidth: 480, margin: '0 auto 32px' }}>
+          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#8f8f7f', maxWidth: 480, margin: '0 auto 32px' }}>
             Tell us your destination, dates and preferences. Our brokers will source a tailored selection of available yachts.
           </p>
           <a

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useModalA11y } from '@/lib/useModalA11y'
 
 interface AvailabilityModalProps {
   isOpen: boolean
@@ -21,6 +22,9 @@ export default function AvailabilityModal({ isOpen, onClose, yacht }: Availabili
   const [guests, setGuests] = useState('')
   const [city, setCity] = useState('')
   const [date, setDate] = useState(todayISO)
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  useModalA11y(isOpen, onClose, modalRef)
 
   // Verrouille le scroll vertical de la page tant que la popup est ouverte.
   // Le root scroller est <html> ici (overflow-x: hidden y est défini globalement),
@@ -97,6 +101,10 @@ export default function AvailabilityModal({ isOpen, onClose, yacht }: Availabili
       `}</style>
 
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="availability-modal-title"
         className="availability-modal-content relative bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden rounded-lg border border-[#b8974a] border-opacity-20 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -126,7 +134,7 @@ export default function AvailabilityModal({ isOpen, onClose, yacht }: Availabili
           )}
 
           <div className="mb-8 pr-8">
-            <h2 className="text-[#b8974a] text-sm tracking-widest uppercase mb-2">Check Availability</h2>
+            <h2 id="availability-modal-title" className="text-[#b8974a] text-sm tracking-widest uppercase mb-2">Check Availability</h2>
             <h3 className="text-2xl text-white" style={{ fontFamily: 'var(--font-tenor)' }}>
               {yachtLabel}
             </h3>
@@ -134,8 +142,9 @@ export default function AvailabilityModal({ isOpen, onClose, yacht }: Availabili
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Number of Guests *</label>
+              <label htmlFor="availability-guests" className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Number of Guests *</label>
               <input
+                id="availability-guests"
                 type="number"
                 min="1"
                 value={guests}
@@ -148,8 +157,9 @@ export default function AvailabilityModal({ isOpen, onClose, yacht }: Availabili
             </div>
 
             <div>
-              <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">City *</label>
+              <label htmlFor="availability-city" className="text-gray-500 text-xs tracking-widest uppercase block mb-3">City *</label>
               <input
+                id="availability-city"
                 type="text"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
@@ -160,8 +170,9 @@ export default function AvailabilityModal({ isOpen, onClose, yacht }: Availabili
             </div>
 
             <div>
-              <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Date *</label>
+              <label htmlFor="availability-date" className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Date *</label>
               <input
+                id="availability-date"
                 type="date"
                 value={date}
                 min={todayISO()}

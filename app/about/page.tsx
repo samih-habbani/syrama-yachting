@@ -11,7 +11,7 @@ export default function About() {
   return (
     <div className="flex flex-col min-h-screen bg-[#06090f]">
       <PageNavbar />
-      <main className="flex-1 pt-24">
+      <main id="main-content" className="flex-1 pt-24">
         {/* Hero section */}
         <section className="max-w-4xl mx-auto px-8 py-20">
           <div className="text-center mb-16">

@@ -119,7 +119,7 @@ export default function Testimonials() {
                   fontSize: 10,
                   letterSpacing: '0.2em',
                   textTransform: 'uppercase',
-                  color: '#6a6a5e',
+                  color: '#8f8f7f',
                 }}>
                   {testimonial.location}
                 </div>

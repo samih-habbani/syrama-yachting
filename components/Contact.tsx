@@ -30,8 +30,9 @@ export default function Contact() {
     fontSize: 14,
     color: 'var(--champagne)',
     outline: 'none',
+    boxShadow: focused === name ? '0 0 0 2px rgba(184,151,74,0.3)' : 'none',
     letterSpacing: '0.05em',
-    transition: 'border-color 0.3s ease',
+    transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
   })
 
   return (
@@ -276,10 +277,11 @@ export default function Contact() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
+                    <label htmlFor="contact-prenom" style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
                       First Name
                     </label>
                     <input
+                      id="contact-prenom"
                       type="text"
                       required
                       value={formData.prenom}
@@ -291,10 +293,11 @@ export default function Contact() {
                     />
                   </div>
                   <div>
-                    <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
+                    <label htmlFor="contact-nom" style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
                       Last Name
                     </label>
                     <input
+                      id="contact-nom"
                       type="text"
                       required
                       value={formData.nom}
@@ -309,10 +312,11 @@ export default function Contact() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
-                    <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
+                    <label htmlFor="contact-email" style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
                       Email
                     </label>
                     <input
+                      id="contact-email"
                       type="email"
                       required
                       value={formData.email}
@@ -324,10 +328,11 @@ export default function Contact() {
                     />
                   </div>
                   <div>
-                    <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
+                    <label htmlFor="contact-phone" style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
                       Phone / WhatsApp
                     </label>
                     <input
+                      id="contact-phone"
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -340,10 +345,11 @@ export default function Contact() {
                 </div>
 
                 <div>
-                  <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
+                  <label htmlFor="contact-type" style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
                     Request Type
                   </label>
                   <select
+                    id="contact-type"
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                     onFocus={() => setFocused('type')}
@@ -358,10 +364,11 @@ export default function Contact() {
                 </div>
 
                 <div>
-                  <label style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
+                  <label htmlFor="contact-msg" style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'var(--gris)' }}>
                     Tell us what you're looking for
                   </label>
                   <textarea
+                    id="contact-msg"
                     rows={4}
                     required
                     value={formData.msg}

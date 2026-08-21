@@ -113,7 +113,7 @@ export default function Services() {
           viewport={{ once: true }}
           style={{ textAlign: 'center' }}
         >
-          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#6a6a5e', maxWidth: 500, margin: '0 auto 32px' }}>
+          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#8f8f7f', maxWidth: 500, margin: '0 auto 32px' }}>
             Customise every aspect of your charter experience. From dining and water sports to wellness and shore excursions, our team will craft the perfect itinerary for you.
           </p>
           <a

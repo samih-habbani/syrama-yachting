@@ -79,6 +79,7 @@ export default function Navbar() {
             {showBackButton && (
               <button
                 onClick={() => router.back()}
+                aria-label="Go back"
                 className="text-[#f5eedd]/60 hover:text-[#b8974a] transition-colors duration-300 flex items-center gap-2"
               >
                 <svg width="20" height="1" viewBox="0 0 20 1" fill="none">
@@ -96,7 +97,7 @@ export default function Navbar() {
                 <span className="text-[#f5eedd] font-[var(--font-cormorant)] text-xl font-light tracking-widest">
                   SYRAMA
                 </span>
-                <span className="text-[#6a6a5e] font-[var(--font-tenor)] text-xs tracking-widest mt-1">
+                <span className="text-[#8f8f7f] font-[var(--font-tenor)] text-xs tracking-widest mt-1">
                   YACHTING
                 </span>
               </motion.div>
@@ -216,7 +217,7 @@ export default function Navbar() {
                 <span className="text-[#f5eedd] font-[var(--font-cormorant)] text-xl font-light tracking-widest">
                   SYRAMA
                 </span>
-                <span className="text-[#6a6a5e] font-[var(--font-tenor)] text-xs tracking-widest mt-1">
+                <span className="text-[#8f8f7f] font-[var(--font-tenor)] text-xs tracking-widest mt-1">
                   YACHTING
                 </span>
               </Link>

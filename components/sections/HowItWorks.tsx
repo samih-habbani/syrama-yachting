@@ -72,7 +72,7 @@ export default function HowItWorks() {
             fontFamily: 'var(--font-tenor)',
             fontSize: 13,
             lineHeight: 1.9,
-            color: '#6a6a5e',
+            color: '#8f8f7f',
             maxWidth: 600,
             margin: '0 auto',
           }}>
@@ -159,7 +159,7 @@ export default function HowItWorks() {
                   fontFamily: 'var(--font-tenor)',
                   fontSize: 12,
                   lineHeight: 1.7,
-                  color: '#6a6a5e',
+                  color: '#8f8f7f',
                   margin: 0,
                 }}>
                   {step.description}
@@ -188,7 +188,7 @@ export default function HowItWorks() {
             fontFamily: 'var(--font-tenor)',
             fontSize: 12,
             lineHeight: 1.8,
-            color: '#6a6a5e',
+            color: '#8f8f7f',
             maxWidth: 500,
             margin: '0 auto 32px',
           }}>
