@@ -1,6 +1,8 @@
 'use client'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import AvailabilityModal from './AvailabilityModal'
 
 interface Media {
   id: number
@@ -27,6 +29,8 @@ interface FleetClientProps {
 }
 
 export default function FleetClient({ yachts }: FleetClientProps) {
+  const [availabilityYacht, setAvailabilityYacht] = useState<Yacht | null>(null)
+
   return (
     <section className="py-16 md:py-20" style={{ background: '#06090f', minHeight: '100vh' }}>
       <div style={{ paddingLeft: 'clamp(24px, 6vw, 96px)', paddingRight: 'clamp(24px, 6vw, 96px)' }}>
@@ -125,10 +129,66 @@ export default function FleetClient({ yachts }: FleetClientProps) {
                     </div>
                   </div>
                 </Link>
+
+                <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+                  <button
+                    type="button"
+                    onClick={() => setAvailabilityYacht(yacht)}
+                    style={{
+                      flex: 1,
+                      fontFamily: 'var(--font-tenor)',
+                      fontSize: 10,
+                      letterSpacing: '0.2em',
+                      textTransform: 'uppercase',
+                      color: '#06090f',
+                      background: '#b8974a',
+                      border: 'none',
+                      padding: '13px 16px',
+                      cursor: 'pointer',
+                      transition: 'background 0.3s ease',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
+                  >
+                    Check Availability
+                  </button>
+                  <Link
+                    href={`/yachting/fleet/${yacht.id}`}
+                    style={{
+                      flex: 1,
+                      textAlign: 'center',
+                      fontFamily: 'var(--font-tenor)',
+                      fontSize: 10,
+                      letterSpacing: '0.2em',
+                      textTransform: 'uppercase',
+                      color: '#b8974a',
+                      background: 'transparent',
+                      border: '1px solid rgba(184,151,74,0.4)',
+                      padding: '13px 16px',
+                      textDecoration: 'none',
+                      transition: 'all 0.3s ease',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(184,151,74,0.1)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    View Details
+                  </Link>
+                </div>
               </motion.div>
             ))
           )}
         </div>
+
+        <AvailabilityModal
+          isOpen={availabilityYacht !== null}
+          onClose={() => setAvailabilityYacht(null)}
+          yacht={availabilityYacht ? {
+            model: availabilityYacht.model,
+            builder: availabilityYacht.builder,
+            length: availabilityYacht.length,
+            imageUrl: availabilityYacht.media?.[0]?.url ? `/uploads/yachts/${availabilityYacht.media[0].url}` : null,
+          } : { model: '' }}
+        />
 
         {/* View All Yachts Button */}
         <div style={{ textAlign: 'center', marginBottom: 60, marginTop: 40 }}>

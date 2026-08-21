@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import FleetFilters, { FilterState } from './FleetFilters'
+import AvailabilityModal from './AvailabilityModal'
 
 interface Media {
   id: number
@@ -44,6 +45,7 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
   const [activeTab, setActiveTab] = useState<'charter' | 'sale'>(tabParam === 'sale' ? 'sale' : 'charter')
   const [allYachts, setAllYachts] = useState<Yacht[]>([])
   const [loading, setLoading] = useState(true)
+  const [availabilityYacht, setAvailabilityYacht] = useState<Yacht | null>(null)
 
   // Un seul appel réseau pour toute la flotte — tout le filtrage / tri qui suit
   // se fait ensuite en mémoire, côté client, sans jamais retoucher la BDD.
@@ -325,10 +327,66 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                     </div>
                   </div>
                 </Link>
+
+                <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+                  <button
+                    type="button"
+                    onClick={() => setAvailabilityYacht(yacht)}
+                    style={{
+                      flex: 1,
+                      fontFamily: 'var(--font-tenor)',
+                      fontSize: 10,
+                      letterSpacing: '0.2em',
+                      textTransform: 'uppercase',
+                      color: '#06090f',
+                      background: '#b8974a',
+                      border: 'none',
+                      padding: '13px 16px',
+                      cursor: 'pointer',
+                      transition: 'background 0.3s ease',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
+                  >
+                    Check Availability
+                  </button>
+                  <Link
+                    href={`/yachting/fleet/${yacht.id}`}
+                    style={{
+                      flex: 1,
+                      textAlign: 'center',
+                      fontFamily: 'var(--font-tenor)',
+                      fontSize: 10,
+                      letterSpacing: '0.2em',
+                      textTransform: 'uppercase',
+                      color: '#b8974a',
+                      background: 'transparent',
+                      border: '1px solid rgba(184,151,74,0.4)',
+                      padding: '13px 16px',
+                      textDecoration: 'none',
+                      transition: 'all 0.3s ease',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(184,151,74,0.1)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    View Details
+                  </Link>
+                </div>
               </motion.div>
             ))
           )}
         </div>
+
+        <AvailabilityModal
+          isOpen={availabilityYacht !== null}
+          onClose={() => setAvailabilityYacht(null)}
+          yacht={availabilityYacht ? {
+            model: availabilityYacht.model,
+            builder: availabilityYacht.builder,
+            length: availabilityYacht.length,
+            imageUrl: availabilityYacht.media?.[0]?.url ? `/uploads/yachts/${availabilityYacht.media[0].url}` : null,
+          } : { model: '' }}
+        />
 
         {/* CTA */}
         <div style={{ textAlign: 'center' }}>
