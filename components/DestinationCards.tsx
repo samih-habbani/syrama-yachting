@@ -61,14 +61,28 @@ export default function DestinationCards({ isSale = false }: DestinationCardsPro
                 whileHover={{ y: -6 }}
                 transition={{ duration: 0.3 }}
                 style={{ position: 'relative', height: 'clamp(240px, 32vw, 320px)', overflow: 'hidden', cursor: 'pointer' }}
+                onMouseEnter={(e) => {
+                  const img = e.currentTarget.querySelector('img')
+                  if (img) img.style.transform = 'scale(1.08)'
+                }}
+                onMouseLeave={(e) => {
+                  const img = e.currentTarget.querySelector('img')
+                  if (img) img.style.transform = 'scale(1)'
+                }}
               >
                 <img
                   src={dest.image}
                   alt={dest.label}
                   loading="lazy"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.6)' }}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    filter: 'brightness(0.6)',
+                    transition: 'transform 0.9s cubic-bezier(0.25, 0.1, 0, 1)',
+                  }}
                 />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(6,9,15,0.92) 0%, rgba(6,9,15,0.35) 55%, transparent 100%)' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(6,9,15,0.92) 0%, rgba(6,9,15,0.35) 55%, transparent 100%)', pointerEvents: 'none' }} />
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 20px' }}>
                   <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 26, fontWeight: 300, color: '#f5eedd', lineHeight: 1.2, marginBottom: 6 }}>
                     {dest.label}

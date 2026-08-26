@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import FleetFilters, { FilterState } from './FleetFilters'
 import AvailabilityModal from './AvailabilityModal'
 
@@ -39,6 +39,8 @@ interface FleetProps {
 
 export default function Fleet({ showFilters = true, limit }: FleetProps) {
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
   const regionParam = searchParams.get('region')
   const tabParam = searchParams.get('tab')
 
@@ -119,15 +121,11 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
   }, [allYachts, bounds])
 
   useEffect(() => {
-    if (tabParam === 'sale') {
-      setActiveTab('sale')
-    }
+    setActiveTab(tabParam === 'sale' ? 'sale' : 'charter')
   }, [tabParam])
 
   useEffect(() => {
-    if (regionParam) {
-      setFilters(prev => ({ ...prev, region: regionParam }))
-    }
+    setFilters(prev => ({ ...prev, region: regionParam }))
   }, [regionParam])
 
   const yachts = useMemo(() => {
@@ -172,6 +170,17 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
     })
   }
 
+  // Répercute le choix charter/vente dans l'URL (?tab=) pour que la nav
+  // du haut (CHARTERS / SALES) reste synchronisée avec ce toggle.
+  const handleTabChange = (tab: 'charter' | 'sale') => {
+    setActiveTab(tab)
+    const params = new URLSearchParams(searchParams.toString())
+    if (tab === 'sale') params.set('tab', 'sale')
+    else params.delete('tab')
+    const query = params.toString()
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+  }
+
   return (
     <section style={{ background: '#06090f', minHeight: '100vh', paddingTop: 80, paddingBottom: 80 }}>
       <div style={{ paddingLeft: 'clamp(32px, 6vw, 96px)', paddingRight: 'clamp(32px, 6vw, 96px)' }}>
@@ -207,7 +216,7 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
             {(['charter', 'sale'] as const).map(tab => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => handleTabChange(tab)}
                 style={{
                   fontFamily: 'var(--font-tenor)',
                   fontSize: 11,
@@ -261,7 +270,21 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                 viewport={{ once: true, margin: '-40px' }}
               >
                 <Link href={`/yachting/fleet/${yacht.id}`} style={{ textDecoration: 'none', display: 'block' }}>
-                  <div style={{ position: 'relative', overflow: 'hidden', aspectRatio: '4/3', background: '#1a1a1a' }}>
+                  <div
+                    style={{ position: 'relative', overflow: 'hidden', aspectRatio: '4/3', background: '#1a1a1a' }}
+                    onMouseEnter={(e) => {
+                      const img = e.currentTarget.querySelector('img')
+                      if (img) img.style.transform = 'scale(1.05)'
+                      const badge = e.currentTarget.querySelector<HTMLDivElement>('.view-badge')
+                      if (badge) { badge.style.transform = 'translateX(0)'; badge.style.opacity = '1' }
+                    }}
+                    onMouseLeave={(e) => {
+                      const img = e.currentTarget.querySelector('img')
+                      if (img) img.style.transform = 'scale(1)'
+                      const badge = e.currentTarget.querySelector<HTMLDivElement>('.view-badge')
+                      if (badge) { badge.style.transform = 'translateX(130%)'; badge.style.opacity = '0' }
+                    }}
+                  >
                     {yacht.media?.[0]?.url && (
                       <img
                         src={`/uploads/yachts/${yacht.media[0].url}`}
@@ -275,11 +298,9 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                           transition: 'transform 0.9s cubic-bezier(0.25, 0.1, 0, 1)',
                           cursor: 'pointer',
                         }}
-                        onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                       />
                     )}
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(6,9,15,0.85) 0%, transparent 60%)' }} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(6,9,15,0.85) 0%, transparent 60%)', pointerEvents: 'none' }} />
 
                     <div style={{ position: 'absolute', bottom: 20, left: 24, right: 24 }}>
                       <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 26, fontWeight: 300, color: '#f5eedd', lineHeight: 1.2 }}>
@@ -290,7 +311,17 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                       </div>
                     </div>
 
-                    <div style={{ position: 'absolute', top: 20, right: 20, fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,238,221,0.6)', background: 'rgba(6,9,15,0.5)', padding: '6px 10px' }}>
+                    <div
+                      className="view-badge"
+                      style={{
+                        position: 'absolute', top: 20, right: 20,
+                        fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase',
+                        color: 'rgba(245,238,221,0.6)', background: 'rgba(6,9,15,0.5)', padding: '6px 10px',
+                        transform: 'translateX(130%)', opacity: 0,
+                        transition: 'transform 0.4s cubic-bezier(0.25, 0.1, 0, 1), opacity 0.4s ease',
+                        pointerEvents: 'none',
+                      }}
+                    >
                       View →
                     </div>
 

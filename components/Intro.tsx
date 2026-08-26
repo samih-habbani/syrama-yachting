@@ -69,7 +69,7 @@ export default function Intro() {
           whileInView={{ opacity: 1, x: 0 }}
           transition={{ duration: 1 }}
           viewport={{ once: true }}
-          style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 48 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 40 }}
         >
           <div style={{ width: 32, height: 1, background: 'var(--or)' }} />
           <span className="section-label">PRIVATE YACHT CHARTER & SALES</span>
@@ -85,9 +85,9 @@ export default function Intro() {
             fontFamily: 'var(--font-cormorant)',
             fontWeight: 300,
             fontSize: 'clamp(48px, 6vw, 80px)',
-            lineHeight: 1.1,
+            lineHeight: 1.3,
             color: 'var(--champagne)',
-            margin: '0 0 56px',
+            margin: '0 0 60px',
             maxWidth: 900,
           }}
         >
@@ -104,7 +104,7 @@ export default function Intro() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.4 }}
           viewport={{ once: true }}
-          className="mb-16 md:mb-[120px]"
+          className="mb-16 md:mb-20"
           style={{
             fontFamily: 'var(--font-lora)',
             fontSize: 14,
@@ -140,7 +140,7 @@ export default function Intro() {
               viewport={{ once: true }}
               style={{
                 position: 'relative',
-                padding: '40px 0',
+                padding: '48px 0',
                 borderTop: '1px solid rgba(184,151,74,0.2)',
               }}
             >
@@ -150,7 +150,7 @@ export default function Intro() {
                 letterSpacing: '0.3em',
                 textTransform: 'uppercase',
                 color: 'var(--or)',
-                marginBottom: 24,
+                marginBottom: 28,
               }}>
                 {item.label}
               </div>
@@ -160,7 +160,7 @@ export default function Intro() {
                 fontWeight: 300,
                 color: 'var(--champagne)',
                 lineHeight: 1.2,
-                margin: '0 0 16px',
+                margin: '0 0 20px',
               }}>
                 {item.title}
               </h3>
@@ -169,7 +169,7 @@ export default function Intro() {
                 fontSize: 13,
                 color: 'rgba(245,238,221,0.6)',
                 lineHeight: 1.8,
-                margin: '0 0 36px',
+                margin: '0 0 40px',
                 maxWidth: 340,
               }}>
                 {item.desc}

@@ -27,24 +27,6 @@ const steps = [
 export default function HowItWorks() {
   return (
     <section className="py-16 md:py-[100px]" style={{ background: '#06090f', position: 'relative', overflow: 'hidden' }}>
-      {/* Section number bg */}
-      <div
-        aria-hidden
-        style={{
-          position: 'absolute',
-          left: -20,
-          top: '20%',
-          fontFamily: 'var(--font-cormorant)',
-          fontSize: '20vw',
-          fontWeight: 300,
-          color: 'rgba(184,151,74,0.12)',
-          lineHeight: 1,
-          userSelect: 'none',
-          pointerEvents: 'none',
-        }}
-      >
-        05
-      </div>
 
       <div style={{ paddingLeft: 'clamp(24px, 6vw, 96px)', paddingRight: 'clamp(24px, 6vw, 96px)', position: 'relative', zIndex: 1 }}>
         {/* Header */}

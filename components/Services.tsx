@@ -159,6 +159,14 @@ function ServiceCard({ exp, size = 'sm', delay }: { exp: typeof services[0], siz
       transition={{ duration: 0.9, delay, ease: cubicBezier(0.25, 0.1, 0, 1) }}
       viewport={{ once: true, margin: '-40px' }}
       style={{ position: 'relative', overflow: 'hidden', height, cursor: 'pointer' }}
+      onMouseEnter={(e) => {
+        const img = e.currentTarget.querySelector('img')
+        if (img) img.style.transform = 'scale(1.05)'
+      }}
+      onMouseLeave={(e) => {
+        const img = e.currentTarget.querySelector('img')
+        if (img) img.style.transform = 'scale(1)'
+      }}
     >
       <img
         src={exp.img}
@@ -170,13 +178,12 @@ function ServiceCard({ exp, size = 'sm', delay }: { exp: typeof services[0], siz
           transition: 'transform 1.2s cubic-bezier(0.25, 0.1, 0, 1)',
           filter: 'brightness(0.55) contrast(1.1)',
         }}
-        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.05)')}
-        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
       />
       {/* gradient bottom */}
       <div style={{
         position: 'absolute', inset: 0,
         background: 'linear-gradient(to top, rgba(6,9,15,0.92) 0%, rgba(6,9,15,0.3) 45%, transparent 75%)',
+        pointerEvents: 'none',
       }} />
       {/* Content */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '28px 28px 24px' }}>

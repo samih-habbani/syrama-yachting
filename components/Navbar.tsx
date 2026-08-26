@@ -2,14 +2,33 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { smoothScrollToId } from '@/lib/scroll';
+
+// pathname seul ne suffit pas : /yachting/fleet sert à la fois le parcours
+// charter et vente (distingués par ?tab=sale), donc le param est nécessaire aussi.
+function isNavItemActive(href: string, pathname: string, tabParam: string | null) {
+  const isFleetPage = pathname === '/yachting/fleet';
+  if (href === '/charters') return pathname === '/charters' || (isFleetPage && tabParam !== 'sale');
+  if (href === '/sales') return pathname === '/sales' || (isFleetPage && tabParam === 'sale');
+  return pathname === href;
+}
+
+// Composant invisible dont le seul rôle est de lire ?tab= et de le faire
+// remonter au parent. Isolé ici pour que le seul appel à useSearchParams
+// de tout le Navbar reste sous une Suspense minimale (exigence Next.js).
+function TabParamReader({ onChange }: { onChange: (tab: string | null) => void }) {
+  const tabParam = useSearchParams().get('tab');
+  useEffect(() => { onChange(tabParam); }, [tabParam, onChange]);
+  return null;
+}
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [tabParam, setTabParam] = useState<string | null>(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -72,6 +91,10 @@ export default function Navbar() {
       animate={{ y: 0 }}
       transition={{ duration: 0.8 }}
     >
+      <Suspense fallback={null}>
+        <TabParamReader onChange={setTabParam} />
+      </Suspense>
+
       <div className="max-w-7xl mx-auto px-5 md:px-8 py-5">
         <div className="flex items-center justify-between">
           {/* Left: Back button (if not on main pages) + Logo */}
@@ -107,7 +130,7 @@ export default function Navbar() {
           {/* Center Nav Items */}
           <div className="hidden lg:flex items-center gap-6 xl:gap-12">
             {navItems.map((item, idx) => {
-              const isActive = pathname === item.href;
+              const isActive = isNavItemActive(item.href, pathname, tabParam);
               return (
                 <motion.div
                   key={idx}
@@ -226,7 +249,7 @@ export default function Navbar() {
             {/* Nav links */}
             <nav className="relative z-10 flex-1 flex flex-col justify-center px-8 gap-1 min-h-0 overflow-y-auto">
               {navItems.map((item, idx) => {
-                const isActive = pathname === item.href;
+                const isActive = isNavItemActive(item.href, pathname, tabParam);
                 return (
                   <motion.div
                     key={idx}

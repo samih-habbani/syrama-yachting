@@ -54,6 +54,14 @@ function ActivityCard({ activity, delay }: { activity: typeof activities[0], del
       transition={{ duration: 0.9, delay, ease: cubicBezier(0.25, 0.1, 0, 1) }}
       viewport={{ once: true, margin: '-40px' }}
       style={{ position: 'relative', overflow: 'hidden', height: 'clamp(260px, 40vw, 420px)' }}
+      onMouseEnter={(e) => {
+        const img = e.currentTarget.querySelector('img')
+        if (img) img.style.transform = 'scale(1.05)'
+      }}
+      onMouseLeave={(e) => {
+        const img = e.currentTarget.querySelector('img')
+        if (img) img.style.transform = 'scale(1)'
+      }}
     >
       {/* Background Image */}
       <img
@@ -69,8 +77,6 @@ function ActivityCard({ activity, delay }: { activity: typeof activities[0], del
           filter: 'brightness(0.6) contrast(1.1)',
           transition: 'transform 1.2s cubic-bezier(0.25, 0.1, 0, 1)',
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-        onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
       />
 
       {/* Gradient Overlay */}
@@ -79,6 +85,7 @@ function ActivityCard({ activity, delay }: { activity: typeof activities[0], del
           position: 'absolute',
           inset: 0,
           background: 'linear-gradient(to top, rgba(6,9,15,0.92) 0%, rgba(6,9,15,0.5) 40%, transparent 70%)',
+          pointerEvents: 'none',
         }}
       />
 
