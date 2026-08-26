@@ -37,6 +37,8 @@ interface FleetProps {
   limit?: number
 }
 
+const PAGE_SIZE = 12
+
 export default function Fleet({ showFilters = true, limit }: FleetProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -48,6 +50,8 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
   const [allYachts, setAllYachts] = useState<Yacht[]>([])
   const [loading, setLoading] = useState(true)
   const [availabilityYacht, setAvailabilityYacht] = useState<Yacht | null>(null)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
   // Un seul appel réseau pour toute la flotte — tout le filtrage / tri qui suit
   // se fait ensuite en mémoire, côté client, sans jamais retoucher la BDD.
@@ -156,6 +160,31 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
     return limit ? sorted.slice(0, limit) : sorted
   }, [allYachts, activeTab, filters, limit])
 
+  const visibleYachts = useMemo(() => yachts.slice(0, visibleCount), [yachts, visibleCount])
+  const hasMore = visibleCount < yachts.length
+
+  // Réinitialise la pagination à chaque changement de résultats (tab, filtres...)
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE)
+  }, [yachts])
+
+  // Charge 12 yachts de plus quand la sentinelle en bas de grille devient visible
+  useEffect(() => {
+    if (!hasMore) return
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount(prev => Math.min(prev + PAGE_SIZE, yachts.length))
+        }
+      },
+      { rootMargin: '600px 0px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasMore, yachts.length])
+
   const resetFilters = () => {
     setFilters({
       region: null,
@@ -261,13 +290,12 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
               <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, color: '#8f8f7f' }}>No yachts found matching your criteria.</div>
             </div>
           ) : (
-            yachts.map((yacht, i) => (
+            visibleYachts.map((yacht, i) => (
               <motion.div
                 key={yacht.id}
-                initial={{ opacity: 1, y: 0 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0 }}
-                viewport={{ once: true, margin: '-40px' }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: (i % PAGE_SIZE) * 0.04, ease: 'easeOut' }}
               >
                 <Link href={`/yachting/fleet/${yacht.id}`} style={{ textDecoration: 'none', display: 'block' }}>
                   <div
@@ -407,6 +435,14 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
             ))
           )}
         </div>
+
+        {hasMore && (
+          <div ref={sentinelRef} style={{ textAlign: 'center', padding: '20px 0 60px' }}>
+            <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(184,151,74,0.5)' }}>
+              Loading more vessels...
+            </div>
+          </div>
+        )}
 
         <AvailabilityModal
           isOpen={availabilityYacht !== null}
