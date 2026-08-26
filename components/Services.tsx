@@ -1,6 +1,7 @@
 'use client'
 import { useRef } from 'react'
 import { motion, cubicBezier } from 'framer-motion'
+import { smoothScrollToId } from '@/lib/scroll'
 
 const services = [
   {
@@ -159,6 +160,7 @@ function ServiceCard({ exp, size = 'sm', delay }: { exp: typeof services[0], siz
       transition={{ duration: 0.9, delay, ease: cubicBezier(0.25, 0.1, 0, 1) }}
       viewport={{ once: true, margin: '-40px' }}
       style={{ position: 'relative', overflow: 'hidden', height, cursor: 'pointer' }}
+      onClick={() => smoothScrollToId('contact')}
       onMouseEnter={(e) => {
         const img = e.currentTarget.querySelector('img')
         if (img) img.style.transform = 'scale(1.05)'

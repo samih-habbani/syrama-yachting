@@ -1,5 +1,6 @@
 'use client'
 import { motion, cubicBezier } from 'framer-motion'
+import { smoothScrollToId } from '@/lib/scroll'
 
 const activities = [
   {
@@ -53,7 +54,8 @@ function ActivityCard({ activity, delay }: { activity: typeof activities[0], del
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.9, delay, ease: cubicBezier(0.25, 0.1, 0, 1) }}
       viewport={{ once: true, margin: '-40px' }}
-      style={{ position: 'relative', overflow: 'hidden', height: 'clamp(260px, 40vw, 420px)' }}
+      style={{ position: 'relative', overflow: 'hidden', height: 'clamp(260px, 40vw, 420px)', cursor: 'pointer' }}
+      onClick={() => smoothScrollToId('contact')}
       onMouseEnter={(e) => {
         const img = e.currentTarget.querySelector('img')
         if (img) img.style.transform = 'scale(1.05)'

@@ -191,7 +191,7 @@ export default function Hero() {
             animate="visible"
             style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, lineHeight: 1.0, margin: 0 }}
           >
-            {['Luxury Yacht', 'Charter,'].map((text, i) => (
+            {['Luxury Yacht'].map((text, i) => (
               <motion.div key={i} variants={line} style={{ overflow: 'hidden' }}>
                 <span style={{
                   display: 'block',
@@ -228,7 +228,7 @@ export default function Hero() {
               marginTop: 32,
             }}
           >
-            Discover exceptional yachts for charter across the French Riviera, Mediterranean, Dubai and the world's most sought-after destinations.
+            Discover exceptional yachts for charter and sale across the French Riviera, Mediterranean, Dubai and the world's most sought-after destinations.
           </motion.p>
 
           {/* CTAs */}
