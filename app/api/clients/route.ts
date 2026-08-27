@@ -1,4 +1,13 @@
 import { prisma } from '@/lib/prisma'
+import { cookies } from 'next/headers'
+
+async function checkAuth() {
+  const cookieStore = await cookies()
+  const userId = cookieStore.get('userId')?.value
+  if (!userId) {
+    throw new Error('Unauthorized')
+  }
+}
 
 // GET clients
 export async function GET(request: Request) {
@@ -67,6 +76,35 @@ export async function GET(request: Request) {
     console.error('Error fetching clients:', error)
     return Response.json(
       { error: 'Failed to fetch clients' },
+      { status: 500 }
+    )
+  }
+}
+
+// PUT update client
+export async function PUT(request: Request) {
+  try {
+    await checkAuth()
+    const data = await request.json()
+    const { id, fullName, email, phone } = data
+
+    if (!id) {
+      return Response.json({ error: 'Client ID is required' }, { status: 400 })
+    }
+
+    const client = await prisma.client.update({
+      where: { id: parseInt(id) },
+      data: { fullName, email, phone }
+    })
+
+    return Response.json(client)
+  } catch (error: any) {
+    if (error?.code === 'P2002') {
+      return Response.json({ error: 'A client with this email already exists' }, { status: 409 })
+    }
+    console.error('Update client error:', error)
+    return Response.json(
+      { error: 'Failed to update client' },
       { status: 500 }
     )
   }

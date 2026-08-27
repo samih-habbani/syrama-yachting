@@ -1,6 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { MessageSquare, Mail, Phone, CalendarDays, Check, Trash2 } from 'lucide-react'
+import PageHeader from '@/components/admin/ui/PageHeader'
+import Card from '@/components/admin/ui/Card'
+import Button from '@/components/admin/ui/Button'
+import Pagination from '@/components/admin/ui/Pagination'
+import EmptyState from '@/components/admin/ui/EmptyState'
 
 interface Message {
   id: number
@@ -21,14 +27,6 @@ export default function MessagesPage() {
   const [statusFilter, setStatusFilter] = useState('unread')
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
 
-  useEffect(() => {
-    fetchMessages(1)
-  }, [statusFilter])
-
-  useEffect(() => {
-    fetchMessages(currentPage)
-  }, [currentPage])
-
   const fetchMessages = async (page: number) => {
     try {
       setIsLoading(true)
@@ -45,12 +43,22 @@ export default function MessagesPage() {
     }
   }
 
+  useEffect(() => {
+    fetchMessages(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter])
+
+  useEffect(() => {
+    fetchMessages(currentPage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage])
+
   const handleMarkAsRead = async (id: number) => {
     try {
       await fetch('/api/messages', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: 'read' })
+        body: JSON.stringify({ id, status: 'read' }),
       })
       fetchMessages(currentPage)
       setSelectedMessage(null)
@@ -61,12 +69,11 @@ export default function MessagesPage() {
 
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this message?')) return
-
     try {
       await fetch('/api/messages', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
+        body: JSON.stringify({ id }),
       })
       fetchMessages(currentPage)
       setSelectedMessage(null)
@@ -76,148 +83,102 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* Messages List */}
-      <div className="lg:col-span-2">
-        <div className="mb-8">
-          <h2 className="text-lg tracking-wider text-gray-500 mb-4">MESSAGES</h2>
+    <div>
+      <PageHeader
+        title="Messages"
+        description="Enquiries submitted through the contact form."
+        breadcrumbs={[{ label: 'Overview', href: '/admin/dashboard' }, { label: 'Messages' }]}
+      />
 
-          <div className="flex gap-3 mb-6">
-            <button
-              onClick={() => {
-                setStatusFilter('unread')
-                setCurrentPage(1)
-              }}
-              className={`px-4 py-2 text-xs tracking-wider uppercase transition ${
-                statusFilter === 'unread'
-                  ? 'bg-[#b8974a] text-[#06090f]'
-                  : 'border border-[#b8974a] text-[#b8974a] hover:bg-[#b8974a] hover:bg-opacity-10'
-              }`}
-            >
-              Unread
-            </button>
-            <button
-              onClick={() => {
-                setStatusFilter('read')
-                setCurrentPage(1)
-              }}
-              className={`px-4 py-2 text-xs tracking-wider uppercase transition ${
-                statusFilter === 'read'
-                  ? 'bg-[#b8974a] text-[#06090f]'
-                  : 'border border-[#b8974a] text-[#b8974a] hover:bg-[#b8974a] hover:bg-opacity-10'
-              }`}
-            >
-              Read
-            </button>
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="text-center py-12 text-gray-500">Loading messages...</div>
-        ) : messages.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">No messages</div>
-        ) : (
-          <div className="space-y-3">
-            {messages.map(msg => (
-              <button
-                key={msg.id}
-                onClick={() => setSelectedMessage(msg)}
-                className={`w-full text-left p-4 rounded-lg border transition ${
-                  selectedMessage?.id === msg.id
-                    ? 'bg-[#0f1419] border-[#b8974a] border-opacity-50'
-                    : `border-[#b8974a] border-opacity-10 hover:border-opacity-30 ${
-                        msg.status === 'unread' ? 'bg-[#0f1419]' : 'bg-[#06090f] opacity-75'
-                      }`
-                }`}
-              >
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-[#b8974a] font-semibold">{msg.name}</p>
-                      {msg.status === 'unread' && (
-                        <span className="inline-block w-2 h-2 bg-[#b8974a] rounded-full"></span>
-                      )}
-                    </div>
-                    <p className="text-gray-500 text-sm mb-2">{msg.subject}</p>
-                    <p className="text-gray-600 text-xs">{msg.email}</p>
-                  </div>
-                  <p className="text-gray-600 text-xs whitespace-nowrap">
-                    {new Date(msg.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-between items-center mt-8 pt-8 border-t border-[#b8974a] border-opacity-10">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
-              className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-4 py-2 transition text-xs tracking-wider font-light disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              ← PREVIOUS
-            </button>
-
-            <span className="text-gray-500 text-sm">
-              Page {currentPage} of {totalPages}
-            </span>
-
-            <button
-              onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-4 py-2 transition text-xs tracking-wider font-light disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              NEXT →
-            </button>
-          </div>
-        )}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
+        <Button variant={statusFilter === 'unread' ? 'primary' : 'secondary'} size="sm" onClick={() => { setStatusFilter('unread'); setCurrentPage(1) }}>
+          Unread
+        </Button>
+        <Button variant={statusFilter === 'read' ? 'primary' : 'secondary'} size="sm" onClick={() => { setStatusFilter('read'); setCurrentPage(1) }}>
+          Read
+        </Button>
       </div>
 
-      {/* Message Details */}
-      {selectedMessage && (
-        <div className="lg:col-span-1">
-          <div className="bg-[#0f1419] border border-[#b8974a] border-opacity-20 rounded-lg p-6 sticky top-8">
-            <div className="mb-6">
-              <h3 className="text-[#b8974a] font-semibold mb-2" style={{ fontFamily: 'var(--font-tenor)' }}>
-                {selectedMessage.name}
-              </h3>
-              <p className="text-gray-500 text-sm mb-4">{selectedMessage.subject}</p>
-
-              <div className="space-y-2 text-sm text-gray-400 mb-6">
-                <p>📧 {selectedMessage.email}</p>
-                {selectedMessage.phone && <p>📞 {selectedMessage.phone}</p>}
-                <p>📅 {new Date(selectedMessage.createdAt).toLocaleString()}</p>
-              </div>
-
-              <div className="bg-[#06090f] rounded p-4 mb-6">
-                <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
-                  {selectedMessage.message}
-                </p>
-              </div>
-
-              <div className="flex gap-2 flex-wrap">
-                {selectedMessage.status === 'unread' && (
-                  <button
-                    onClick={() => handleMarkAsRead(selectedMessage.id)}
-                    className="flex-1 px-3 py-2 bg-[#b8974a] text-[#06090f] text-xs tracking-wider uppercase rounded transition hover:bg-[#d4af7a]"
-                  >
-                    Mark as Read
-                  </button>
-                )}
+      <div style={{ display: 'grid', gridTemplateColumns: selectedMessage ? '1.6fr 1fr' : '1fr', gap: 24, alignItems: 'start' }}>
+        {isLoading ? (
+          <Card style={{ textAlign: 'center', padding: '60px 20px' }}>
+            <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#8f8f7f' }}>Loading messages…</div>
+          </Card>
+        ) : messages.length === 0 ? (
+          <Card><EmptyState icon={MessageSquare} title="No messages" description="Nothing here for this filter yet." /></Card>
+        ) : (
+          <Card style={{ overflow: 'hidden' }}>
+            {messages.map((msg, i) => {
+              const active = selectedMessage?.id === msg.id
+              return (
                 <button
-                  onClick={() => handleDelete(selectedMessage.id)}
-                  className="flex-1 px-3 py-2 border border-red-500 text-red-400 text-xs tracking-wider uppercase rounded transition hover:bg-red-500 hover:bg-opacity-10"
+                  key={msg.id}
+                  onClick={() => setSelectedMessage(msg)}
+                  style={{
+                    width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16,
+                    padding: '18px 24px', border: 'none', cursor: 'pointer',
+                    borderBottom: i < messages.length - 1 ? '1px solid rgba(184,151,74,0.08)' : 'none',
+                    background: active ? 'rgba(184,151,74,0.08)' : 'transparent',
+                    transition: 'background 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'rgba(245,238,221,0.03)' }}
+                  onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent' }}
                 >
-                  Delete
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontFamily: 'var(--font-lora)', fontSize: 13.5, fontWeight: 600, color: '#f5eedd' }}>{msg.name}</span>
+                      {msg.status === 'unread' && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#d4b472', flexShrink: 0 }} />}
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-lora)', fontSize: 12.5, color: '#a8a89a', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {msg.subject}
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-lora)', fontSize: 11.5, color: '#6b6b60', marginTop: 3 }}>{msg.email}</div>
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-lora)', fontSize: 11, color: '#6b6b60', whiteSpace: 'nowrap' }}>
+                    {new Date(msg.createdAt).toLocaleDateString()}
+                  </div>
                 </button>
-              </div>
+              )
+            })}
+
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+          </Card>
+        )}
+
+        {selectedMessage && (
+          <Card style={{ padding: 26, position: 'sticky', top: 24 }}>
+            <h3 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 400, fontSize: 22, color: '#f5eedd', margin: '0 0 4px' }}>
+              {selectedMessage.name}
+            </h3>
+            <p style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#8f8f7f', margin: '0 0 18px' }}>{selectedMessage.subject}</p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20, fontFamily: 'var(--font-lora)', fontSize: 12.5, color: '#a8a89a' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><Mail size={13} strokeWidth={1.75} />{selectedMessage.email}</span>
+              {selectedMessage.phone && <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><Phone size={13} strokeWidth={1.75} />{selectedMessage.phone}</span>}
+              <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><CalendarDays size={13} strokeWidth={1.75} />{new Date(selectedMessage.createdAt).toLocaleString()}</span>
             </div>
-          </div>
-        </div>
-      )}
+
+            <div style={{ background: 'rgba(6,9,15,0.5)', border: '1px solid rgba(184,151,74,0.1)', borderRadius: 8, padding: 16, marginBottom: 22 }}>
+              <p style={{ fontFamily: 'var(--font-lora)', fontSize: 13, lineHeight: 1.7, color: '#d8d8cc', margin: 0, whiteSpace: 'pre-wrap' }}>
+                {selectedMessage.message}
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              {selectedMessage.status === 'unread' && (
+                <Button variant="primary" size="sm" onClick={() => handleMarkAsRead(selectedMessage.id)} style={{ flex: 1 }}>
+                  <Check size={13} strokeWidth={2} />
+                  Mark as Read
+                </Button>
+              )}
+              <Button variant="danger" size="sm" onClick={() => handleDelete(selectedMessage.id)} style={{ flex: 1 }}>
+                <Trash2 size={13} strokeWidth={1.75} />
+                Delete
+              </Button>
+            </div>
+          </Card>
+        )}
+      </div>
     </div>
   )
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { ArrowLeft, Lock } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -20,7 +21,7 @@ export default function LoginPage() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       })
 
       if (!response.ok) {
@@ -30,8 +31,8 @@ export default function LoginPage() {
       }
 
       // Wait a bit for cookie to be set, then redirect
-      await new Promise(resolve => setTimeout(resolve, 500))
-      router.push('/admin/dashboard/yachts')
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      router.push('/admin/dashboard')
     } catch (err) {
       setError('An error occurred. Please try again.')
       console.error(err)
@@ -40,39 +41,106 @@ export default function LoginPage() {
     }
   }
 
+  const fieldStyle: React.CSSProperties = {
+    width: '100%',
+    fontFamily: 'var(--font-lora)',
+    fontSize: 13,
+    color: '#f5eedd',
+    background: 'rgba(6,9,15,0.5)',
+    border: '1px solid rgba(184,151,74,0.2)',
+    borderRadius: 7,
+    padding: '12px 14px',
+    outline: 'none',
+    transition: 'border-color 0.2s ease',
+  }
+
   return (
-    <div className="min-h-screen bg-[#06090f] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="bg-[#0f1419] border border-[#b8974a] border-opacity-20 rounded-lg p-8">
-          <h1 className="text-2xl font-bold text-white text-center mb-8" style={{ fontFamily: 'var(--font-tenor)' }}>
-            Admin Login
+    <div
+      style={{
+        minHeight: '100vh', background: '#06090f', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', padding: 24, position: 'relative', overflow: 'hidden',
+      }}
+    >
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)',
+          width: 600, height: 600, borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(184,151,74,0.08) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }}
+      />
+
+      <div style={{ width: '100%', maxWidth: 400, position: 'relative', zIndex: 1 }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 28, fontWeight: 400, letterSpacing: '0.08em', color: '#f5eedd' }}>
+            SYRAMA
+          </div>
+          <div style={{ fontFamily: 'var(--font-lora)', fontSize: 10, letterSpacing: '0.28em', color: '#8f8f7f', marginTop: 4 }}>
+            ADMINISTRATION
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: 'linear-gradient(135deg, rgba(184,151,74,0.06) 0%, rgba(212,180,114,0.02) 100%)',
+            border: '1px solid rgba(184,151,74,0.15)',
+            borderRadius: 12,
+            padding: 36,
+          }}
+        >
+          <div
+            style={{
+              width: 40, height: 40, borderRadius: 9, margin: '0 auto 20px',
+              background: 'rgba(184,151,74,0.1)', border: '1px solid rgba(184,151,74,0.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Lock size={17} color="#d4b472" strokeWidth={1.75} />
+          </div>
+
+          <h1 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 400, fontSize: 24, color: '#f5eedd', textAlign: 'center', margin: '0 0 28px' }}>
+            Sign in to continue
           </h1>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm text-[#b8974a] mb-2">Email</label>
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: 18 }}>
+              <label style={{ fontFamily: 'var(--font-lora)', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#8f8f7f', display: 'block', marginBottom: 8 }}>
+                Email
+              </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-30 rounded px-4 py-2 text-white focus:outline-none focus:border-opacity-100"
+                style={fieldStyle}
+                onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(184,151,74,0.6)')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(184,151,74,0.2)')}
                 required
               />
             </div>
 
-            <div>
-              <label className="block text-sm text-[#b8974a] mb-2">Password</label>
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ fontFamily: 'var(--font-lora)', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#8f8f7f', display: 'block', marginBottom: 8 }}>
+                Password
+              </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-30 rounded px-4 py-2 text-white focus:outline-none focus:border-opacity-100"
+                style={fieldStyle}
+                onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(184,151,74,0.6)')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(184,151,74,0.2)')}
                 required
               />
             </div>
 
             {error && (
-              <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-200 px-4 py-3 rounded">
+              <div
+                style={{
+                  background: 'rgba(196,94,94,0.1)', border: '1px solid rgba(196,94,94,0.35)', color: '#e08080',
+                  padding: '11px 14px', borderRadius: 7, fontFamily: 'var(--font-lora)', fontSize: 12.5, marginBottom: 20,
+                }}
+              >
                 {error}
               </div>
             )}
@@ -80,20 +148,30 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#b8974a] text-[#06090f] font-bold py-2 rounded hover:bg-opacity-90 disabled:opacity-50"
+              style={{
+                width: '100%', fontFamily: 'var(--font-lora)', fontSize: 12.5, fontWeight: 700, letterSpacing: '0.04em',
+                color: '#06090f', background: '#b8974a', border: 'none', borderRadius: 7,
+                padding: '13px', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.6 : 1,
+                transition: 'background 0.2s ease',
+              }}
+              onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.background = '#d4b472' }}
+              onMouseLeave={(e) => { if (!isLoading) e.currentTarget.style.background = '#b8974a' }}
             >
-              {isLoading ? 'Logging in...' : 'Login'}
+              {isLoading ? 'Signing in…' : 'Sign In'}
             </button>
           </form>
+        </div>
 
-          <div className="mt-8 text-center">
-            <Link
-              href="/"
-              className="text-gray-400 hover:text-[#b8974a] text-sm transition"
-            >
-              ← Back to Home
-            </Link>
-          </div>
+        <div style={{ textAlign: 'center', marginTop: 24 }}>
+          <Link
+            href="/"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: 'var(--font-lora)', fontSize: 12.5, color: '#6b6b60', textDecoration: 'none' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#d4b472')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = '#6b6b60')}
+          >
+            <ArrowLeft size={13} strokeWidth={2} />
+            Back to home
+          </Link>
         </div>
       </div>
     </div>

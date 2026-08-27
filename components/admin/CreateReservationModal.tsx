@@ -188,8 +188,8 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-6">
-          <h2 className="text-[#b8974a] text-sm tracking-widest uppercase mb-2">Create Reservation</h2>
-          <h3 className="text-2xl text-white" style={{ fontFamily: 'var(--font-tenor)' }}>
+          <h2 className="text-[#b8974a] text-sm tracking-widest uppercase mb-2" style={{ fontFamily: 'var(--font-lora)' }}>Create Reservation</h2>
+          <h3 className="text-2xl text-[#f5eedd]" style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 400 }}>
             New Charter Request
           </h3>
         </div>

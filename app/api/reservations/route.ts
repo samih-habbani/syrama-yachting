@@ -1,4 +1,13 @@
 import { prisma } from '@/lib/prisma'
+import { cookies } from 'next/headers'
+
+async function checkAuth() {
+  const cookieStore = await cookies()
+  const userId = cookieStore.get('userId')?.value
+  if (!userId) {
+    throw new Error('Unauthorized')
+  }
+}
 
 // POST create reservation
 export async function POST(request: Request) {
@@ -155,6 +164,42 @@ export async function GET(request: Request) {
     console.error('Error fetching reservations:', error)
     return Response.json(
       { error: 'Failed to fetch reservations' },
+      { status: 500 }
+    )
+  }
+}
+
+// PUT update reservation
+export async function PUT(request: Request) {
+  try {
+    await checkAuth()
+    const data = await request.json()
+    const { id, date, numberOfPeople, location, price, status } = data
+
+    if (!id) {
+      return Response.json({ error: 'Reservation ID is required' }, { status: 400 })
+    }
+
+    const reservation = await prisma.reservation.update({
+      where: { id: parseInt(id) },
+      data: {
+        ...(date && { date: new Date(date) }),
+        ...(numberOfPeople && { numberOfPeople: parseInt(numberOfPeople) }),
+        ...(location !== undefined && { location }),
+        ...(price !== undefined && { price: price === '' || price === null ? null : parseFloat(price) }),
+        ...(status && { status })
+      },
+      include: {
+        client: { select: { fullName: true, email: true, phone: true } },
+        yacht: { select: { model: true } }
+      }
+    })
+
+    return Response.json(reservation)
+  } catch (error) {
+    console.error('Update reservation error:', error)
+    return Response.json(
+      { error: 'Failed to update reservation' },
       { status: 500 }
     )
   }

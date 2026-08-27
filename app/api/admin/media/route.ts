@@ -12,6 +12,37 @@ async function checkAuth() {
   return parseInt(userId)
 }
 
+// GET all media for a yacht (the yachts list query only returns one
+// thumbnail per yacht, so the gallery needs its own full fetch)
+export async function GET(request: Request) {
+  try {
+    await checkAuth()
+    const { searchParams } = new URL(request.url)
+    const yachtId = searchParams.get('yachtId')
+
+    if (!yachtId) {
+      return Response.json(
+        { error: 'Yacht ID is required' },
+        { status: 400 }
+      )
+    }
+
+    const media = await prisma.media.findMany({
+      where: { yachtId: parseInt(yachtId) },
+      select: { id: true, url: true, alt: true },
+      orderBy: { id: 'asc' }
+    })
+
+    return Response.json(media)
+  } catch (error) {
+    console.error('Fetch media error:', error)
+    return Response.json(
+      { error: 'Failed to fetch media' },
+      { status: 500 }
+    )
+  }
+}
+
 // POST upload image
 export async function POST(request: Request) {
   try {

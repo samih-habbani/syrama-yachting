@@ -67,6 +67,18 @@ p, span, a, div {
   background-clip: text;
 }
 
+/* Native <select> dropdowns don't inherit the field's dark styling for their
+   open option list — without this, light option text renders on the
+   browser's default light popup background and becomes unreadable. */
+select {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #0b0e15;
+  color: #f5eedd;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   @apply w-2;

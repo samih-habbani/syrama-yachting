@@ -1,28 +1,39 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Contact, Mail, Phone, CalendarDays, Pencil, ArrowLeft, Save } from 'lucide-react'
 import ClientFilters from '@/components/admin/ClientFilters'
+import PageHeader from '@/components/admin/ui/PageHeader'
+import Card from '@/components/admin/ui/Card'
+import Badge from '@/components/admin/ui/Badge'
+import Button from '@/components/admin/ui/Button'
+import Pagination from '@/components/admin/ui/Pagination'
+import EmptyState from '@/components/admin/ui/EmptyState'
+import ActionsMenu from '@/components/admin/ui/ActionsMenu'
+import { FilterField, TextField } from '@/components/admin/ui/FilterBar'
+
+interface Client {
+  id: number
+  fullName: string
+  email: string
+  phone: string
+  createdAt: string
+  _count?: { reservations: number }
+}
+
+const EMPTY_FILTERS = { fullName: '', email: '', phone: '', dateFrom: '', dateTo: '' }
 
 export default function ClientsPage() {
-  const [clients, setClients] = useState([])
+  const [clients, setClients] = useState<Client[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [filters, setFilters] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    dateFrom: '',
-    dateTo: ''
-  })
+  const [filters, setFilters] = useState(EMPTY_FILTERS)
 
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [filters])
-
-  useEffect(() => {
-    fetchClients(currentPage)
-  }, [currentPage, filters])
+  const [editingClient, setEditingClient] = useState<Client | null>(null)
+  const [formData, setFormData] = useState({ fullName: '', email: '', phone: '' })
+  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState('')
 
   const fetchClients = async (page: number) => {
     try {
@@ -50,74 +61,153 @@ export default function ClientsPage() {
     }
   }
 
-  const handleFiltersChange = (newFilters: any) => {
-    setFilters(newFilters)
+  useEffect(() => {
+    setCurrentPage(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
+
+  useEffect(() => {
+    fetchClients(currentPage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, filters])
+
+  const handleEdit = (client: Client) => {
+    setEditingClient(client)
+    setFormData({ fullName: client.fullName, email: client.email, phone: client.phone })
+    setError('')
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingClient) return
+    setError('')
+    setIsSaving(true)
+
+    try {
+      const response = await fetch('/api/clients', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingClient.id, ...formData }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        setError(data.error || 'Failed to update client')
+        return
+      }
+
+      await fetchClients(currentPage)
+      setEditingClient(null)
+    } catch (error) {
+      console.error('Update client error:', error)
+      setError('An error occurred')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  if (editingClient) {
+    return (
+      <div>
+        <Button variant="ghost" size="sm" onClick={() => setEditingClient(null)} style={{ marginBottom: 24 }}>
+          <ArrowLeft size={14} strokeWidth={2} />
+          Back to clients
+        </Button>
+
+        <Card style={{ maxWidth: 480, padding: 36 }}>
+          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 400, fontSize: 26, color: '#f5eedd', margin: '0 0 6px' }}>
+            Edit Client
+          </h2>
+          <p style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#8f8f7f', margin: '0 0 28px' }}>
+            Update this client&apos;s contact details.
+          </p>
+
+          <form onSubmit={handleSubmit}>
+            {error && (
+              <div style={{ background: 'rgba(196,94,94,0.1)', border: '1px solid rgba(196,94,94,0.35)', color: '#e08080', padding: '12px 16px', borderRadius: 7, fontFamily: 'var(--font-lora)', fontSize: 13, marginBottom: 20 }}>
+                {error}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18, marginBottom: 28 }}>
+              <FilterField label="Full Name *">
+                <TextField required value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} />
+              </FilterField>
+              <FilterField label="Email *">
+                <TextField type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+              </FilterField>
+              <FilterField label="Phone *">
+                <TextField type="tel" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+              </FilterField>
+            </div>
+
+            <Button type="submit" variant="primary" disabled={isSaving}>
+              <Save size={14} strokeWidth={2} />
+              {isSaving ? 'Saving…' : 'Save Changes'}
+            </Button>
+          </form>
+        </Card>
+      </div>
+    )
   }
 
   return (
     <div>
-      <div className="mb-12">
-        <h2 className="text-lg tracking-wider text-gray-500 mb-2">CLIENTS</h2>
-        <p className="text-gray-600 text-sm">All clients who requested charter</p>
-      </div>
+      <PageHeader
+        title="Clients"
+        description="Everyone who has requested a charter."
+        breadcrumbs={[{ label: 'Overview', href: '/admin/dashboard' }, { label: 'Clients' }]}
+      />
 
-      <ClientFilters onFiltersChange={handleFiltersChange} />
+      <ClientFilters filters={filters} onFiltersChange={setFilters} />
 
       {isLoading ? (
-        <div className="text-center py-12">
-          <div className="text-gray-500" style={{ fontFamily: 'var(--font-tenor)' }}>Loading clients...</div>
-        </div>
+        <Card style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#8f8f7f' }}>Loading clients…</div>
+        </Card>
       ) : clients.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">No clients yet</div>
+        <Card><EmptyState icon={Contact} title="No clients yet" description="Clients appear here once they submit a reservation." /></Card>
       ) : (
-        <div className="space-y-2">
-          {clients.map((client: any) => (
+        <Card style={{ overflow: 'hidden' }}>
+          {clients.map((client, i) => (
             <div
               key={client.id}
-              className="bg-[#0f1419] border border-[#b8974a] border-opacity-10 hover:border-opacity-30 transition p-6 flex justify-between items-center"
+              style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20,
+                padding: '18px 24px', borderBottom: i < clients.length - 1 ? '1px solid rgba(184,151,74,0.08)' : 'none',
+              }}
             >
-              <div>
-                <p className="text-[#b8974a] font-semibold mb-1" style={{ fontFamily: 'var(--font-tenor)' }}>
-                  {client.fullName}
-                </p>
-                <div className="flex gap-6 text-sm text-gray-500">
-                  <p>📧 {client.email}</p>
-                  <p>📞 {client.phone}</p>
-                  <p>Added: {new Date(client.createdAt).toLocaleDateString()}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div
+                  style={{
+                    width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
+                    background: 'linear-gradient(135deg, rgba(184,151,74,0.18), rgba(184,151,74,0.06))',
+                    border: '1px solid rgba(184,151,74,0.25)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--font-lora)', fontSize: 13, fontWeight: 700, color: '#d4b472',
+                  }}
+                >
+                  {client.fullName.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13.5, fontWeight: 600, color: '#f5eedd' }}>{client.fullName}</div>
+                  <div style={{ display: 'flex', gap: 16, marginTop: 3, fontFamily: 'var(--font-lora)', fontSize: 11.5, color: '#8f8f7f' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Mail size={11} strokeWidth={1.75} />{client.email}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Phone size={11} strokeWidth={1.75} />{client.phone}</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><CalendarDays size={11} strokeWidth={1.75} />{new Date(client.createdAt).toLocaleDateString()}</span>
+                  </div>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-gray-600 text-xs mb-1">RESERVATIONS</p>
-                <p className="text-[#b8974a] text-lg font-semibold">{client._count?.reservations || 0}</p>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <Badge tone="gold">{client._count?.reservations || 0} reservation{(client._count?.reservations || 0) === 1 ? '' : 's'}</Badge>
+                <ActionsMenu items={[{ label: 'Edit', icon: <Pencil size={13.5} strokeWidth={1.75} />, onClick: () => handleEdit(client) }]} />
               </div>
             </div>
           ))}
-        </div>
-      )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-between items-center mt-12 pt-8 border-t border-[#b8974a] border-opacity-10">
-          <button
-            onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-            disabled={currentPage === 1}
-            className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-4 py-2 transition text-xs tracking-wider font-light disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            ← PREVIOUS
-          </button>
-
-          <span className="text-gray-500 text-sm">
-            Page {currentPage} of {totalPages}
-          </span>
-
-          <button
-            onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-            disabled={currentPage === totalPages}
-            className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-4 py-2 transition text-xs tracking-wider font-light disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            NEXT →
-          </button>
-        </div>
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        </Card>
       )}
     </div>
   )

@@ -55,7 +55,14 @@ export async function GET(request: Request) {
     }
 
     if (searchParams.has('status')) {
-      where.status = searchParams.get('status')
+      const status = searchParams.get('status')
+      if (status === 'charter') {
+        where.status = { in: ['Location', 'location'] }
+      } else if (status === 'sale') {
+        where.status = { in: ['Vente', 'vente'] }
+      } else {
+        where.status = status
+      }
     }
 
     const [yachts, total] = await Promise.all([

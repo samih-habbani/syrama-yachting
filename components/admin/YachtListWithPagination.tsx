@@ -1,202 +1,147 @@
 'use client'
 
 import { useState } from 'react'
+import { Pencil, Trash2, Images, Sailboat } from 'lucide-react'
 import MediaManager from './MediaManager'
+import Card from './ui/Card'
+import Badge from './ui/Badge'
+import Pagination from './ui/Pagination'
+import EmptyState from './ui/EmptyState'
+import ActionsMenu from './ui/ActionsMenu'
+
+interface Yacht {
+  id: number
+  model: string
+  builder?: string | null
+  length: number
+  cabins: number
+  maxGuests?: number | null
+  region?: string | null
+  priceDay?: number | null
+  currency?: string | null
+  status?: string | null
+  available: boolean
+  media?: { id: number; url: string; alt?: string | null }[]
+}
 
 interface YachtListProps {
-  yachts: any[]
+  yachts: Yacht[]
   currentPage: number
   totalPages: number
-  onEdit: (yacht: any) => void
+  onEdit: (yacht: Yacht) => void
   onDelete: (id: number) => void
   onPageChange: (page: number) => void
 }
 
+const GRID = '2.2fr 1fr 1fr 1fr 1fr 44px'
+
+function statusTone(status?: string | null): 'gold' | 'blue' {
+  return (status || '').toLowerCase() === 'vente' || (status || '').toLowerCase() === 'sale' ? 'blue' : 'gold'
+}
+
 export default function YachtListWithPagination({
-  yachts,
-  currentPage,
-  totalPages,
-  onEdit,
-  onDelete,
-  onPageChange
+  yachts, currentPage, totalPages, onEdit, onDelete, onPageChange,
 }: YachtListProps) {
   const [expandedYachtId, setExpandedYachtId] = useState<number | null>(null)
 
+  if (yachts.length === 0) {
+    return (
+      <Card>
+        <EmptyState icon={Sailboat} title="No yachts found" description="Try adjusting your filters or add a new yacht." />
+      </Card>
+    )
+  }
+
   return (
-    <div className="space-y-8">
-      {yachts.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500">No yachts found</p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {yachts.map((yacht) => (
+    <Card style={{ overflow: 'hidden' }}>
+      {/* Header row */}
+      <div
+        style={{
+          display: 'grid', gridTemplateColumns: GRID, gap: 16, alignItems: 'center',
+          padding: '14px 24px', borderBottom: '1px solid rgba(184,151,74,0.12)',
+          fontFamily: 'var(--font-lora)', fontSize: 10.5, fontWeight: 700,
+          letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8f8f7f',
+        }}
+      >
+        <div>Yacht</div>
+        <div>Type</div>
+        <div>Length / Cabins</div>
+        <div>Region</div>
+        <div>Rate</div>
+        <div />
+      </div>
+
+      {yachts.map((yacht) => {
+        const expanded = expandedYachtId === yacht.id
+        return (
+          <div key={yacht.id} style={{ borderBottom: '1px solid rgba(184,151,74,0.08)' }}>
             <div
-              key={yacht.id}
-              className="bg-[#0f1419] border border-[#b8974a] border-opacity-10 hover:border-opacity-30 transition overflow-hidden"
+              style={{
+                display: 'grid', gridTemplateColumns: GRID, gap: 16, alignItems: 'center',
+                padding: '14px 24px',
+              }}
             >
-              <div className="p-8">
-                <div className="flex gap-8 items-start">
-                  {/* Image */}
-                  <div className="flex-shrink-0">
-                    {yacht.media && yacht.media[0]?.url ? (
-                      <div className="w-40 h-40 overflow-hidden border border-[#b8974a] border-opacity-20">
-                        <img
-                          src={`/uploads/yachts/${yacht.media[0].url}`}
-                          alt={yacht.model}
-                          className="w-full h-full object-cover hover:scale-105 transition duration-700"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-40 h-40 bg-[#06090f] border border-[#b8974a] border-opacity-20 flex items-center justify-center text-gray-600 text-sm">
-                        No image
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="flex-1">
-                        <h3 className="text-2xl text-[#b8974a] mb-1" style={{ fontFamily: 'var(--font-tenor)' }}>
-                          {yacht.model}
-                        </h3>
-                        <p className="text-gray-500 text-sm tracking-wider">{yacht.builder || '—'}</p>
-
-                        <div className="mt-6 grid grid-cols-3 gap-8 text-sm">
-                          <div>
-                            <p className="text-gray-600 uppercase tracking-wider text-xs mb-1">Length</p>
-                            <p className="text-white">{yacht.length}m</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-600 uppercase tracking-wider text-xs mb-1">Cabins</p>
-                            <p className="text-white">{yacht.cabins}</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-600 uppercase tracking-wider text-xs mb-1">Guests</p>
-                            <p className="text-white">{yacht.maxGuests || '—'}</p>
-                          </div>
-                          {yacht.region && (
-                            <div>
-                              <p className="text-gray-600 uppercase tracking-wider text-xs mb-1">Region</p>
-                              <p className="text-white">{yacht.region}</p>
-                            </div>
-                          )}
-                          {yacht.priceDay && (
-                            <div>
-                              <p className="text-gray-600 uppercase tracking-wider text-xs mb-1">Price/Day</p>
-                              <p className="text-white">{yacht.priceDay} {yacht.currency}</p>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-gray-600 uppercase tracking-wider text-xs mb-1">Type</p>
-                            <p className="text-white capitalize">{yacht.status}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex flex-col gap-2">
-                        <button
-                          onClick={() => onEdit(yacht)}
-                          className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-4 py-2 transition text-xs tracking-wider font-light whitespace-nowrap"
-                        >
-                          EDIT
-                        </button>
-                        <button
-                          onClick={() => onDelete(yacht.id)}
-                          className="text-red-600 hover:text-red-400 border border-red-600 hover:border-red-400 px-4 py-2 transition text-xs tracking-wider font-light whitespace-nowrap"
-                        >
-                          DELETE
-                        </button>
-                        <button
-                          onClick={() => setExpandedYachtId(expandedYachtId === yacht.id ? null : yacht.id)}
-                          className="text-gray-500 hover:text-[#b8974a] border border-gray-500 hover:border-[#b8974a] px-4 py-2 transition text-xs tracking-wider font-light whitespace-nowrap"
-                        >
-                          {expandedYachtId === yacht.id ? '▼ IMAGES' : '▶ IMAGES'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Expanded Images Section */}
-                {expandedYachtId === yacht.id && (
-                  <div className="mt-8 pt-8 border-t border-[#b8974a] border-opacity-10">
-                    <MediaManager yachtId={yacht.id} media={yacht.media || []} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+                {yacht.media?.[0]?.url ? (
+                  <img
+                    src={`/uploads/yachts/${yacht.media[0].url}`}
+                    alt={yacht.model}
+                    style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', border: '1px solid rgba(184,151,74,0.15)', flexShrink: 0 }}
+                  />
+                ) : (
+                  <div style={{ width: 44, height: 44, borderRadius: 8, background: 'rgba(184,151,74,0.06)', border: '1px solid rgba(184,151,74,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Sailboat size={16} color="#5a5a52" strokeWidth={1.5} />
                   </div>
                 )}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13.5, fontWeight: 600, color: '#f5eedd', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {yacht.model}
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-lora)', fontSize: 11.5, color: '#8f8f7f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {yacht.builder || '—'}
+                  </div>
+                </div>
               </div>
+
+              <div>
+                <Badge tone={statusTone(yacht.status)} dot>
+                  {statusTone(yacht.status) === 'blue' ? 'For Sale' : 'Charter'}
+                </Badge>
+              </div>
+
+              <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#d8d8cc' }}>
+                {yacht.length}m · {yacht.cabins} cab
+              </div>
+
+              <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#d8d8cc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {yacht.region || '—'}
+              </div>
+
+              <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#d8d8cc' }}>
+                {yacht.priceDay ? `${yacht.priceDay.toLocaleString()} ${yacht.currency || 'EUR'}` : '—'}
+              </div>
+
+              <ActionsMenu
+                items={[
+                  { label: 'Edit', icon: <Pencil size={13.5} strokeWidth={1.75} />, onClick: () => onEdit(yacht) },
+                  { label: expanded ? 'Hide Images' : 'Manage Images', icon: <Images size={13.5} strokeWidth={1.75} />, onClick: () => setExpandedYachtId(expanded ? null : yacht.id) },
+                  { label: 'Delete', icon: <Trash2 size={13.5} strokeWidth={1.75} />, onClick: () => onDelete(yacht.id), tone: 'danger' },
+                ]}
+              />
             </div>
-          ))}
-        </div>
-      )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-between items-center mt-12 pt-8 border-t border-[#b8974a] border-opacity-10">
-          <button
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-4 py-2 transition text-xs tracking-wider font-light disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            ← PREVIOUS
-          </button>
-
-          <div className="flex gap-1 items-center">
-            {/* First page */}
-            {currentPage > 2 && (
-              <>
-                <button
-                  onClick={() => onPageChange(1)}
-                  className="px-3 py-2 text-xs text-gray-600 hover:text-[#b8974a] transition"
-                >
-                  1
-                </button>
-                {currentPage > 3 && <span className="text-gray-600 px-1">...</span>}
-              </>
-            )}
-
-            {/* Current page and neighbors */}
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(page => Math.abs(page - currentPage) <= 1)
-              .map((page) => (
-                <button
-                  key={page}
-                  onClick={() => onPageChange(page)}
-                  className={`px-3 py-2 text-xs transition ${
-                    page === currentPage
-                      ? 'text-[#b8974a] border border-[#b8974a]'
-                      : 'text-gray-600 hover:text-[#b8974a]'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-
-            {/* Last page */}
-            {currentPage < totalPages - 1 && (
-              <>
-                {currentPage < totalPages - 2 && <span className="text-gray-600 px-1">...</span>}
-                <button
-                  onClick={() => onPageChange(totalPages)}
-                  className="px-3 py-2 text-xs text-gray-600 hover:text-[#b8974a] transition"
-                >
-                  {totalPages}
-                </button>
-              </>
+            {expanded && (
+              <div style={{ padding: '0 24px 24px' }}>
+                <div style={{ padding: 20, borderRadius: 8, background: 'rgba(6,9,15,0.4)', border: '1px solid rgba(184,151,74,0.1)' }}>
+                  <MediaManager yachtId={yacht.id} media={yacht.media || []} />
+                </div>
+              </div>
             )}
           </div>
+        )
+      })}
 
-          <button
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-4 py-2 transition text-xs tracking-wider font-light disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            NEXT →
-          </button>
-        </div>
-      )}
-    </div>
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
+    </Card>
   )
 }

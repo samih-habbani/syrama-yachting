@@ -1,5 +1,6 @@
 'use client'
 import { useRef, useState } from 'react'
+import Link from 'next/link'
 import { motion, cubicBezier, useScroll, useTransform } from 'framer-motion'
 
 export default function Contact() {
@@ -428,13 +429,22 @@ export default function Contact() {
             { label: 'Instagram', href: 'https://www.instagram.com/syrama_services/' },
             { label: 'WhatsApp', href: 'https://wa.me/971505548034' },
             { label: 'Privacy', href: '/privacy' },
-          ].map(l => (
-            <a key={l.label} href={l.href} target={l.href.startsWith('http') ? '_blank' : undefined} rel={l.href.startsWith('http') ? 'noopener noreferrer' : undefined} style={{ fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', textDecoration: 'none', transition: 'color 0.3s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--or)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}>
-              {l.label}
-            </a>
-          ))}
+          ].map(l => {
+            const linkStyle = { fontFamily: 'var(--font-lora)', fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase' as const, color: 'rgba(255,255,255,0.6)', textDecoration: 'none', transition: 'color 0.3s' }
+            const handlers = {
+              onMouseEnter: (e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.color = 'var(--or)'),
+              onMouseLeave: (e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)'),
+            }
+            return l.href.startsWith('http') ? (
+              <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer" style={linkStyle} {...handlers}>
+                {l.label}
+              </a>
+            ) : (
+              <Link key={l.label} href={l.href} style={linkStyle} {...handlers}>
+                {l.label}
+              </Link>
+            )
+          })}
         </div>
       </div>
     </section>

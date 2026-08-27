@@ -1,37 +1,70 @@
 'use client'
 
 import { useState } from 'react'
+import { Save } from 'lucide-react'
+import Card from './ui/Card'
+import Button from './ui/Button'
+import { FilterField, TextField, SelectField } from './ui/FilterBar'
+
+interface Yacht {
+  id?: number
+  model?: string
+  builder?: string | null
+  length?: number
+  cabins?: number
+  maxGuests?: number | null
+  year?: number | null
+  priceDay?: number | null
+  region?: string | null
+  city?: string | null
+  status?: string | null
+  available?: boolean
+}
 
 interface YachtFormProps {
-  yacht?: any
+  yacht?: Yacht | null
   onSaved: () => void
+}
+
+// La base stocke le statut en français ('Location' / 'Vente') — on garde ces
+// valeurs telles quelles pour rester lisible par les mêmes filtres que le site public.
+function normalizeStatus(status?: string | null) {
+  const s = (status || '').toLowerCase()
+  return s === 'vente' ? 'Vente' : 'Location'
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 32 }}>
+      <div style={{ fontFamily: 'var(--font-lora)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8f8f7f', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid rgba(184,151,74,0.1)' }}>
+        {title}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
+        {children}
+      </div>
+    </div>
+  )
 }
 
 export default function YachtForm({ yacht, onSaved }: YachtFormProps) {
   const [formData, setFormData] = useState({
     model: yacht?.model || '',
     builder: yacht?.builder || '',
-    length: yacht?.length || '',
-    cabins: yacht?.cabins || '',
-    maxGuests: yacht?.maxGuests || '',
-    year: yacht?.year || '',
-    priceDay: yacht?.priceDay || '',
+    length: yacht?.length ?? '',
+    cabins: yacht?.cabins ?? '',
+    maxGuests: yacht?.maxGuests ?? '',
+    year: yacht?.year ?? '',
+    priceDay: yacht?.priceDay ?? '',
     region: yacht?.region || '',
     city: yacht?.city || '',
-    status: yacht?.status || 'charter',
-    available: yacht?.available !== false
+    status: normalizeStatus(yacht?.status),
+    available: yacht?.available !== false,
   })
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    }))
-  }
+  const update = (patch: Partial<typeof formData>) => setFormData((prev) => ({ ...prev, ...patch }))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,16 +72,12 @@ export default function YachtForm({ yacht, onSaved }: YachtFormProps) {
     setIsLoading(true)
 
     try {
-      const url = yacht?.id ? '/api/admin/yachts' : '/api/admin/yachts'
       const method = yacht?.id ? 'PUT' : 'POST'
 
-      const response = await fetch(url, {
+      const response = await fetch('/api/admin/yachts', {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          ...(yacht?.id && { id: yacht.id })
-        })
+        body: JSON.stringify({ ...formData, ...(yacht?.id && { id: yacht.id }) }),
       })
 
       if (!response.ok) {
@@ -67,160 +96,85 @@ export default function YachtForm({ yacht, onSaved }: YachtFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-[#0f1419] border border-[#b8974a] border-opacity-10 p-12">
-      <h2 className="text-2xl text-[#b8974a] mb-2" style={{ fontFamily: 'var(--font-tenor)' }}>
+    <Card style={{ maxWidth: 760, padding: 36 }}>
+      <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 400, fontSize: 26, color: '#f5eedd', margin: '0 0 6px' }}>
         {yacht?.id ? 'Edit Yacht' : 'Add New Yacht'}
       </h2>
-      <p className="text-gray-600 text-sm tracking-wider mb-8">Fill in the yacht details below</p>
+      <p style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#8f8f7f', margin: '0 0 28px' }}>
+        {yacht?.id ? 'Update this listing\'s details.' : 'Fill in the details for this new listing.'}
+      </p>
 
       {error && (
-        <div className="bg-red-500 bg-opacity-10 border border-red-500 text-red-300 px-6 py-4 mb-8 text-sm">
+        <div style={{ background: 'rgba(196,94,94,0.1)', border: '1px solid rgba(196,94,94,0.35)', color: '#e08080', padding: '12px 16px', borderRadius: 7, fontFamily: 'var(--font-lora)', fontSize: 13, marginBottom: 24 }}>
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-          <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Model *</label>
-          <input
-            type="text"
-            name="model"
-            value={formData.model}
-            onChange={handleChange}
-            className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-3 text-white focus:outline-none transition"
-            required
-          />
-        </div>
+      <form onSubmit={handleSubmit}>
+        <Section title="Identity">
+          <FilterField label="Model *">
+            <TextField required value={formData.model} onChange={(e) => update({ model: e.target.value })} />
+          </FilterField>
+          <FilterField label="Builder">
+            <TextField value={formData.builder} onChange={(e) => update({ builder: e.target.value })} />
+          </FilterField>
+          <FilterField label="Type">
+            <SelectField value={formData.status} onChange={(v) => update({ status: v })}>
+              <option value="Location">Charter</option>
+              <option value="Vente">Sale</option>
+            </SelectField>
+          </FilterField>
+        </Section>
 
-        <div>
-          <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Builder</label>
-          <input
-            type="text"
-            name="builder"
-            value={formData.builder}
-            onChange={handleChange}
-            className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-3 text-white focus:outline-none transition"
-          />
-        </div>
+        <Section title="Specifications">
+          <FilterField label="Length (m) *">
+            <TextField type="number" step="0.1" required value={formData.length} onChange={(e) => update({ length: e.target.value })} />
+          </FilterField>
+          <FilterField label="Cabins *">
+            <TextField type="number" required value={formData.cabins} onChange={(e) => update({ cabins: e.target.value })} />
+          </FilterField>
+          <FilterField label="Max Guests">
+            <TextField type="number" value={formData.maxGuests} onChange={(e) => update({ maxGuests: e.target.value })} />
+          </FilterField>
+          <FilterField label="Year">
+            <TextField type="number" value={formData.year} onChange={(e) => update({ year: e.target.value })} />
+          </FilterField>
+        </Section>
 
-        <div>
-          <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Length (m) *</label>
-          <input
-            type="number"
-            step="0.1"
-            name="length"
-            value={formData.length}
-            onChange={handleChange}
-            className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-3 text-white focus:outline-none transition"
-            required
-          />
-        </div>
+        <Section title="Pricing & Location">
+          <FilterField label="Price per Day">
+            <TextField type="number" step="0.01" value={formData.priceDay} onChange={(e) => update({ priceDay: e.target.value })} />
+          </FilterField>
+          <FilterField label="Region">
+            <TextField value={formData.region} onChange={(e) => update({ region: e.target.value })} />
+          </FilterField>
+          <FilterField label="City">
+            <TextField value={formData.city} onChange={(e) => update({ city: e.target.value })} />
+          </FilterField>
+        </Section>
 
-        <div>
-          <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Cabins *</label>
-          <input
-            type="number"
-            name="cabins"
-            value={formData.cabins}
-            onChange={handleChange}
-            className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-3 text-white focus:outline-none transition"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Max Guests</label>
-          <input
-            type="number"
-            name="maxGuests"
-            value={formData.maxGuests}
-            onChange={handleChange}
-            className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-3 text-white focus:outline-none transition"
-          />
-        </div>
-
-        <div>
-          <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Year</label>
-          <input
-            type="number"
-            name="year"
-            value={formData.year}
-            onChange={handleChange}
-            className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-3 text-white focus:outline-none transition"
-          />
-        </div>
-
-        <div>
-          <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Price per Day</label>
-          <input
-            type="number"
-            step="0.01"
-            name="priceDay"
-            value={formData.priceDay}
-            onChange={handleChange}
-            className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-3 text-white focus:outline-none transition"
-          />
-        </div>
-
-        <div>
-          <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Region</label>
-          <input
-            type="text"
-            name="region"
-            value={formData.region}
-            onChange={handleChange}
-            className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-3 text-white focus:outline-none transition"
-          />
-        </div>
-
-        <div>
-          <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">City</label>
-          <input
-            type="text"
-            name="city"
-            value={formData.city}
-            onChange={handleChange}
-            className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-3 text-white focus:outline-none transition"
-          />
-        </div>
-
-        <div>
-          <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Type</label>
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-3 text-white focus:outline-none transition"
-          >
-            <option value="charter">Charter</option>
-            <option value="sale">Sale</option>
-          </select>
-        </div>
-
-        <div className="flex items-center pt-6">
+        <label
+          style={{
+            display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28, cursor: 'pointer',
+            padding: '14px 18px', borderRadius: 8, background: 'rgba(184,151,74,0.04)', border: '1px solid rgba(184,151,74,0.12)',
+          }}
+        >
           <input
             type="checkbox"
-            id="available"
-            name="available"
             checked={formData.available}
-            onChange={handleChange}
-            className="w-4 h-4 cursor-pointer"
+            onChange={(e) => update({ available: e.target.checked })}
+            style={{ width: 16, height: 16, accentColor: '#b8974a', cursor: 'pointer' }}
           />
-          <label htmlFor="available" className="text-gray-400 text-sm ml-3 cursor-pointer uppercase tracking-wider">
+          <span style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#d8d8cc' }}>
             Available for booking
-          </label>
-        </div>
-      </div>
+          </span>
+        </label>
 
-      <div className="mt-10 flex gap-4">
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-8 py-3 transition text-sm tracking-wider font-light disabled:opacity-50"
-        >
-          {isLoading ? 'SAVING...' : 'SAVE YACHT'}
-        </button>
-      </div>
-    </form>
+        <Button type="submit" variant="primary" disabled={isLoading}>
+          <Save size={14} strokeWidth={2} />
+          {isLoading ? 'Saving…' : 'Save Yacht'}
+        </Button>
+      </form>
+    </Card>
   )
 }

@@ -1,5 +1,6 @@
 'use client'
 import { useRef } from 'react'
+import Link from 'next/link'
 import { motion, cubicBezier } from 'framer-motion'
 
 export default function Intro() {
@@ -174,7 +175,7 @@ export default function Intro() {
               }}>
                 {item.desc}
               </p>
-              <a
+              <Link
                 href={item.label === 'CHARTER' ? '/charters' : '/sales'}
                 style={{
                   fontFamily: 'var(--font-lora)',
@@ -205,7 +206,7 @@ export default function Intro() {
                 <svg width="16" height="1" viewBox="0 0 16 1" fill="none">
                   <line x1="0" y1="0.5" x2="16" y2="0.5" stroke="currentColor" strokeWidth="1" />
                 </svg>
-              </a>
+              </Link>
             </motion.div>
           ))}
         </div>

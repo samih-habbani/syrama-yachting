@@ -1,18 +1,28 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Plus, ArrowLeft, Pencil, Trash2, ShieldUser } from 'lucide-react'
+import PageHeader from '@/components/admin/ui/PageHeader'
+import Card from '@/components/admin/ui/Card'
+import Button from '@/components/admin/ui/Button'
+import EmptyState from '@/components/admin/ui/EmptyState'
+import ActionsMenu from '@/components/admin/ui/ActionsMenu'
+import { FilterField, TextField } from '@/components/admin/ui/FilterBar'
+
+interface AdminUser {
+  id: number
+  email: string
+  name: string | null
+  createdAt: string
+}
 
 export default function UsersPage() {
-  const [users, setUsers] = useState([])
+  const [users, setUsers] = useState<AdminUser[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingUserId, setEditingUserId] = useState<number | null>(null)
   const [formData, setFormData] = useState({ id: '', email: '', password: '', name: '' })
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    fetchUsers()
-  }, [])
 
   const fetchUsers = async () => {
     try {
@@ -29,14 +39,13 @@ export default function UsersPage() {
     }
   }
 
-  const handleEdit = (user: any) => {
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  const handleEdit = (user: AdminUser) => {
     setEditingUserId(user.id)
-    setFormData({
-      id: String(user.id),
-      email: user.email,
-      password: '',
-      name: user.name || ''
-    })
+    setFormData({ id: String(user.id), email: user.email, password: '', name: user.name || '' })
     setShowForm(true)
     setError('')
   }
@@ -46,21 +55,15 @@ export default function UsersPage() {
     setError('')
 
     try {
-      const url = editingUserId ? '/api/admin/users' : '/api/admin/users'
       const method = editingUserId ? 'PUT' : 'POST'
       const payload = editingUserId
-        ? {
-            id: formData.id,
-            email: formData.email,
-            name: formData.name,
-            ...(formData.password && { password: formData.password })
-          }
+        ? { id: formData.id, email: formData.email, name: formData.name, ...(formData.password && { password: formData.password }) }
         : formData
 
-      const response = await fetch(url, {
+      const response = await fetch('/api/admin/users', {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
@@ -80,159 +83,121 @@ export default function UsersPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (confirm('Delete this user?')) {
-      try {
-        const response = await fetch(`/api/admin/users?id=${id}`, {
-          method: 'DELETE'
-        })
-
-        if (response.ok) {
-          await fetchUsers()
-        }
-      } catch (error) {
-        console.error('Delete user error:', error)
-      }
+    if (!confirm('Delete this user?')) return
+    try {
+      const response = await fetch(`/api/admin/users?id=${id}`, { method: 'DELETE' })
+      if (response.ok) await fetchUsers()
+    } catch (error) {
+      console.error('Delete user error:', error)
     }
   }
 
-  return (
-    <div>
-      {!showForm && (
-        <div className="flex justify-between items-start mb-12">
-          <div>
-            <h2 className="text-lg tracking-wider text-gray-500 mb-2">USER MANAGEMENT</h2>
-            <p className="text-gray-600 text-sm">Manage admin accounts</p>
-          </div>
-          <button
-            onClick={() => {
-              setEditingUserId(null)
-              setFormData({ id: '', email: '', password: '', name: '' })
-              setShowForm(true)
-              setError('')
-            }}
-            className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-6 py-2 transition text-sm tracking-wider font-light"
-          >
-            + ADD USER
-          </button>
-        </div>
-      )}
+  if (showForm) {
+    return (
+      <div>
+        <Button variant="ghost" size="sm" onClick={() => setShowForm(false)} style={{ marginBottom: 24 }}>
+          <ArrowLeft size={14} strokeWidth={2} />
+          Back to users
+        </Button>
 
-      {showForm && (
-        <div className="mb-12">
-          <button
-            onClick={() => setShowForm(false)}
-            className="text-gray-500 hover:text-[#b8974a] transition text-sm tracking-wider font-light mb-8"
-          >
-            ← BACK
-          </button>
-          <form onSubmit={handleSubmit} className="bg-[#0f1419] border border-[#b8974a] border-opacity-10 p-12">
-            <h2 className="text-2xl text-[#b8974a] mb-2" style={{ fontFamily: 'var(--font-tenor)' }}>
-              {editingUserId ? 'Edit User' : 'Add New User'}
-            </h2>
-            <p className="text-gray-600 text-sm tracking-wider mb-8">
-              {editingUserId ? 'Update user details' : 'Create a new admin account'}
-            </p>
+        <Card style={{ maxWidth: 560, padding: 36 }}>
+          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 400, fontSize: 26, color: '#f5eedd', margin: '0 0 6px' }}>
+            {editingUserId ? 'Edit User' : 'Add New User'}
+          </h2>
+          <p style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#8f8f7f', margin: '0 0 28px' }}>
+            {editingUserId ? 'Update this admin account.' : 'Create a new admin account.'}
+          </p>
 
+          <form onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-500 bg-opacity-10 border border-red-500 text-red-300 px-6 py-4 mb-8 text-sm">
+              <div style={{ background: 'rgba(196,94,94,0.1)', border: '1px solid rgba(196,94,94,0.35)', color: '#e08080', padding: '12px 16px', borderRadius: 7, fontFamily: 'var(--font-lora)', fontSize: 13, marginBottom: 20 }}>
                 {error}
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Email *</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-3 text-white focus:outline-none transition"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-3 text-white focus:outline-none transition"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">
-                  {editingUserId ? 'New Password (leave empty to keep current)' : 'Password *'}
-                </label>
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-3 text-white focus:outline-none transition"
-                  required={!editingUserId}
-                />
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 18 }}>
+              <FilterField label="Email *">
+                <TextField type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+              </FilterField>
+              <FilterField label="Name">
+                <TextField value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+              </FilterField>
             </div>
 
-            <div className="mt-10 flex gap-4">
-              <button
-                type="submit"
-                className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-8 py-3 transition text-sm tracking-wider font-light"
-              >
-                {editingUserId ? 'SAVE CHANGES' : 'CREATE USER'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="text-gray-600 hover:text-gray-400 border border-gray-600 hover:border-gray-400 px-8 py-3 transition text-sm tracking-wider font-light"
-              >
-                CANCEL
-              </button>
+            <div style={{ marginBottom: 28 }}>
+              <FilterField label={editingUserId ? 'New Password (leave empty to keep current)' : 'Password *'}>
+                <TextField type="password" required={!editingUserId} value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+              </FilterField>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <Button type="submit" variant="primary">{editingUserId ? 'Save Changes' : 'Create User'}</Button>
+              <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
             </div>
           </form>
-        </div>
-      )}
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <PageHeader
+        title="Admin Users"
+        description="Manage who has access to this dashboard."
+        breadcrumbs={[{ label: 'Overview', href: '/admin/dashboard' }, { label: 'Users' }]}
+        action={
+          <Button variant="primary" onClick={() => { setEditingUserId(null); setFormData({ id: '', email: '', password: '', name: '' }); setShowForm(true); setError('') }}>
+            <Plus size={14} strokeWidth={2.5} />
+            Add User
+          </Button>
+        }
+      />
 
       {isLoading ? (
-        <div className="text-center py-12">
-          <div className="text-gray-500" style={{ fontFamily: 'var(--font-tenor)' }}>Loading users...</div>
-        </div>
+        <Card style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#8f8f7f' }}>Loading users…</div>
+        </Card>
       ) : users.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">No users found</div>
+        <Card><EmptyState icon={ShieldUser} title="No users found" description="Add an admin account to get started." /></Card>
       ) : (
-        <div className="space-y-4">
-          {users.map((user: any) => (
+        <Card style={{ overflow: 'hidden' }}>
+          {users.map((user, i) => (
             <div
               key={user.id}
-              className="bg-[#0f1419] border border-[#b8974a] border-opacity-10 hover:border-opacity-30 transition p-8 flex justify-between items-center"
+              style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20,
+                padding: '18px 24px', borderBottom: i < users.length - 1 ? '1px solid rgba(184,151,74,0.08)' : 'none',
+              }}
             >
-              <div>
-                <p className="text-[#b8974a] mb-1" style={{ fontFamily: 'var(--font-tenor)' }}>
-                  {user.name || '—'}
-                </p>
-                <p className="text-gray-500 text-sm">{user.email}</p>
-                <p className="text-gray-600 text-xs mt-2">
-                  Created: {new Date(user.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleEdit(user)}
-                  className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-4 py-2 transition text-xs tracking-wider font-light"
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div
+                  style={{
+                    width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
+                    background: 'linear-gradient(135deg, #d4b472, #b8974a)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'var(--font-lora)', fontSize: 13, fontWeight: 700, color: '#06090f',
+                  }}
                 >
-                  EDIT
-                </button>
-                <button
-                  onClick={() => handleDelete(user.id)}
-                  className="text-red-600 hover:text-red-400 border border-red-600 hover:border-red-400 px-4 py-2 transition text-xs tracking-wider font-light"
-                >
-                  DELETE
-                </button>
+                  {(user.name || user.email).charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13.5, fontWeight: 600, color: '#f5eedd' }}>{user.name || '—'}</div>
+                  <div style={{ fontFamily: 'var(--font-lora)', fontSize: 11.5, color: '#8f8f7f', marginTop: 2 }}>
+                    {user.email} · Since {new Date(user.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
               </div>
+
+              <ActionsMenu
+                items={[
+                  { label: 'Edit', icon: <Pencil size={13.5} strokeWidth={1.75} />, onClick: () => handleEdit(user) },
+                  { label: 'Delete', icon: <Trash2 size={13.5} strokeWidth={1.75} />, onClick: () => handleDelete(user.id), tone: 'danger' },
+                ]}
+              />
             </div>
           ))}
-        </div>
+        </Card>
       )}
     </div>
   )

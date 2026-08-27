@@ -1,9 +1,20 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Plus, ArrowLeft, Sailboat, Tag, ShoppingBag } from 'lucide-react'
 import YachtListWithPagination from '@/components/admin/YachtListWithPagination'
 import YachtForm from '@/components/admin/YachtForm'
 import YachtFilters from '@/components/admin/YachtFilters'
+import PageHeader from '@/components/admin/ui/PageHeader'
+import StatCard from '@/components/admin/ui/StatCard'
+import Button from '@/components/admin/ui/Button'
+import Card from '@/components/admin/ui/Card'
+
+interface YachtStats {
+  total: number
+  charter: number
+  sale: number
+}
 
 export default function YachtsPage() {
   const [yachts, setYachts] = useState([])
@@ -12,24 +23,30 @@ export default function YachtsPage() {
   const [editingYacht, setEditingYacht] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [filters, setFilters] = useState({})
+  const [filters, setFilters] = useState<Record<string, string>>({})
+  const [stats, setStats] = useState<YachtStats | null>(null)
 
-  useEffect(() => {
-    fetchYachts(1, filters)
-  }, [filters])
+  const fetchStats = async () => {
+    try {
+      const [totalRes, charterRes, saleRes] = await Promise.all([
+        fetch('/api/admin/yachts?limit=1'),
+        fetch('/api/admin/yachts?limit=1&status=charter'),
+        fetch('/api/admin/yachts?limit=1&status=sale'),
+      ])
+      const [totalData, charterData, saleData] = await Promise.all([totalRes.json(), charterRes.json(), saleRes.json()])
+      setStats({ total: totalData.total ?? 0, charter: charterData.total ?? 0, sale: saleData.total ?? 0 })
+    } catch (error) {
+      console.error('Fetch yacht stats error:', error)
+    }
+  }
 
-  useEffect(() => {
-    fetchYachts(currentPage, filters)
-  }, [currentPage])
-
-  const fetchYachts = async (page: number, appliedFilters: any = {}) => {
+  const fetchYachts = async (page: number, appliedFilters: Record<string, string> = {}) => {
     try {
       setIsLoading(true)
       const params = new URLSearchParams()
       params.append('page', String(page))
       params.append('limit', '10')
 
-      // Add active filters to query
       if (appliedFilters.model) params.append('model', appliedFilters.model)
       if (appliedFilters.minLength) params.append('minLength', appliedFilters.minLength)
       if (appliedFilters.maxLength) params.append('maxLength', appliedFilters.maxLength)
@@ -53,8 +70,23 @@ export default function YachtsPage() {
     }
   }
 
+  useEffect(() => {
+    fetchYachts(1, filters)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
+
+  useEffect(() => {
+    fetchYachts(currentPage, filters)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage])
+
+  useEffect(() => {
+    fetchStats()
+  }, [])
+
   const handleYachtSaved = async () => {
     await fetchYachts(currentPage)
+    fetchStats()
     setShowForm(false)
     setEditingYacht(null)
   }
@@ -67,11 +99,10 @@ export default function YachtsPage() {
   const handleDelete = async (id: number) => {
     if (confirm('Are you sure you want to delete this yacht?')) {
       try {
-        const response = await fetch(`/api/admin/yachts?id=${id}`, {
-          method: 'DELETE'
-        })
+        const response = await fetch(`/api/admin/yachts?id=${id}`, { method: 'DELETE' })
         if (response.ok) {
           await fetchYachts(currentPage)
+          fetchStats()
         }
       } catch (error) {
         console.error('Delete error:', error)
@@ -79,54 +110,49 @@ export default function YachtsPage() {
     }
   }
 
+  if (showForm) {
+    return (
+      <div>
+        <Button variant="ghost" size="sm" onClick={() => setShowForm(false)} style={{ marginBottom: 24 }}>
+          <ArrowLeft size={14} strokeWidth={2} />
+          Back to fleet
+        </Button>
+        <YachtForm yacht={editingYacht} onSaved={handleYachtSaved} />
+      </div>
+    )
+  }
+
   return (
     <div>
-      {!showForm && (
-        <div className="flex justify-between items-start mb-12">
-          <div>
-            <h2 className="text-lg tracking-wider text-gray-500 mb-2">YOUR FLEET</h2>
-            <p className="text-gray-600 text-sm">Manage and edit your yachts</p>
-          </div>
-          <button
-            onClick={() => {
-              setEditingYacht(null)
-              setShowForm(true)
-            }}
-            className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-6 py-2 transition text-sm tracking-wider font-light"
-          >
-            + ADD YACHT
-          </button>
-        </div>
-      )}
+      <PageHeader
+        title="Yachts"
+        description="Manage your fleet — charter and sale listings."
+        breadcrumbs={[{ label: 'Overview', href: '/admin/dashboard' }, { label: 'Yachts' }]}
+        action={
+          <Button variant="primary" onClick={() => { setEditingYacht(null); setShowForm(true) }}>
+            <Plus size={14} strokeWidth={2.5} />
+            Add Yacht
+          </Button>
+        }
+      />
 
-      {!showForm && (
-        <YachtFilters
-          onFilterChange={(newFilters) => {
-            setFilters(newFilters)
-            setCurrentPage(1)
-          }}
-        />
-      )}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 18, marginBottom: 28 }}>
+        <StatCard label="Total Fleet" value={stats?.total ?? '—'} icon={Sailboat} tone="gold" />
+        <StatCard label="For Charter" value={stats?.charter ?? '—'} icon={Tag} tone="blue" />
+        <StatCard label="For Sale" value={stats?.sale ?? '—'} icon={ShoppingBag} tone="green" />
+      </div>
 
-      {showForm && (
-        <div className="mb-12">
-          <button
-            onClick={() => setShowForm(false)}
-            className="text-gray-500 hover:text-[#b8974a] transition text-sm tracking-wider font-light mb-8"
-          >
-            ← BACK
-          </button>
-          <YachtForm
-            yacht={editingYacht}
-            onSaved={handleYachtSaved}
-          />
-        </div>
-      )}
+      <YachtFilters
+        onFilterChange={(newFilters) => {
+          setFilters(newFilters)
+          setCurrentPage(1)
+        }}
+      />
 
       {isLoading ? (
-        <div className="text-center py-12">
-          <div className="text-gray-500" style={{ fontFamily: 'var(--font-tenor)' }}>Loading yachts...</div>
-        </div>
+        <Card style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#8f8f7f' }}>Loading yachts…</div>
+        </Card>
       ) : (
         <YachtListWithPagination
           yachts={yachts}

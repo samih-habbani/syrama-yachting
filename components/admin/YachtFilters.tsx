@@ -1,181 +1,74 @@
 'use client'
 
 import { useState } from 'react'
+import FilterBar, { FilterField, SearchField, TextField, SelectField } from './ui/FilterBar'
+
+const EMPTY_FILTERS = {
+  model: '',
+  minLength: '',
+  maxLength: '',
+  minGuests: '',
+  maxGuests: '',
+  region: '',
+  city: '',
+  status: '',
+}
 
 interface YachtFiltersProps {
-  onFilterChange: (filters: any) => void
+  onFilterChange: (filters: typeof EMPTY_FILTERS) => void
 }
 
 export default function YachtFilters({ onFilterChange }: YachtFiltersProps) {
-  const [showFilters, setShowFilters] = useState(false)
-  const [filters, setFilters] = useState({
-    model: '',
-    minLength: '',
-    maxLength: '',
-    minGuests: '',
-    maxGuests: '',
-    region: '',
-    city: '',
-    status: ''
-  })
+  const [filters, setFilters] = useState(EMPTY_FILTERS)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    const newFilters = {
-      ...filters,
-      [name]: value
-    }
-    setFilters(newFilters)
-    onFilterChange(newFilters)
+  const update = (patch: Partial<typeof EMPTY_FILTERS>) => {
+    const next = { ...filters, ...patch }
+    setFilters(next)
+    onFilterChange(next)
   }
 
   const handleReset = () => {
-    const emptyFilters = {
-      model: '',
-      minLength: '',
-      maxLength: '',
-      minGuests: '',
-      maxGuests: '',
-      region: '',
-      city: '',
-      status: ''
-    }
-    setFilters(emptyFilters)
-    onFilterChange(emptyFilters)
+    setFilters(EMPTY_FILTERS)
+    onFilterChange(EMPTY_FILTERS)
   }
 
-  const hasActiveFilters = Object.values(filters).some(v => v !== '')
+  const hasActiveFilters = Object.values(filters).some((v) => v !== '')
 
   return (
-    <div className="mb-8">
-      <button
-        onClick={() => setShowFilters(!showFilters)}
-        className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-4 py-2 transition text-sm tracking-wider font-light"
-      >
-        {showFilters ? '▼ HIDE FILTERS' : '▶ SHOW FILTERS'}
-        {hasActiveFilters && <span className="ml-2 text-xs">(Active)</span>}
-      </button>
+    <FilterBar hasActiveFilters={hasActiveFilters} onReset={handleReset}>
+      <FilterField label="Model">
+        <SearchField value={filters.model} onChange={(v) => update({ model: v })} placeholder="e.g. Gozzo" />
+      </FilterField>
 
-      {showFilters && (
-        <div className="mt-6 bg-[#0f1419] border border-[#b8974a] border-opacity-10 p-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            {/* Model */}
-            <div>
-              <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Model</label>
-              <input
-                type="text"
-                name="model"
-                placeholder="e.g., Gozzo"
-                value={filters.model}
-                onChange={handleChange}
-                className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-2 text-white focus:outline-none transition text-sm"
-              />
-            </div>
+      <FilterField label="Type">
+        <SelectField value={filters.status} onChange={(v) => update({ status: v })}>
+          <option value="">All types</option>
+          <option value="charter">Charter</option>
+          <option value="sale">Sale</option>
+        </SelectField>
+      </FilterField>
 
-            {/* Length Range */}
-            <div>
-              <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Min Length (m)</label>
-              <input
-                type="number"
-                step="0.1"
-                name="minLength"
-                placeholder="e.g., 10"
-                value={filters.minLength}
-                onChange={handleChange}
-                className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-2 text-white focus:outline-none transition text-sm"
-              />
-            </div>
+      <FilterField label="Region">
+        <TextField placeholder="e.g. Mediterranean" value={filters.region} onChange={(e) => update({ region: e.target.value })} />
+      </FilterField>
 
-            <div>
-              <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Max Length (m)</label>
-              <input
-                type="number"
-                step="0.1"
-                name="maxLength"
-                placeholder="e.g., 50"
-                value={filters.maxLength}
-                onChange={handleChange}
-                className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-2 text-white focus:outline-none transition text-sm"
-              />
-            </div>
+      <FilterField label="City">
+        <TextField placeholder="e.g. Monaco" value={filters.city} onChange={(e) => update({ city: e.target.value })} />
+      </FilterField>
 
-            {/* Guests Range */}
-            <div>
-              <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Min Guests</label>
-              <input
-                type="number"
-                name="minGuests"
-                placeholder="e.g., 6"
-                value={filters.minGuests}
-                onChange={handleChange}
-                className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-2 text-white focus:outline-none transition text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Max Guests</label>
-              <input
-                type="number"
-                name="maxGuests"
-                placeholder="e.g., 12"
-                value={filters.maxGuests}
-                onChange={handleChange}
-                className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-2 text-white focus:outline-none transition text-sm"
-              />
-            </div>
-
-            {/* Region */}
-            <div>
-              <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Region</label>
-              <input
-                type="text"
-                name="region"
-                placeholder="e.g., Mediterranean"
-                value={filters.region}
-                onChange={handleChange}
-                className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-2 text-white focus:outline-none transition text-sm"
-              />
-            </div>
-
-            {/* City */}
-            <div>
-              <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">City</label>
-              <input
-                type="text"
-                name="city"
-                placeholder="e.g., Monaco"
-                value={filters.city}
-                onChange={handleChange}
-                className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-2 text-white focus:outline-none transition text-sm"
-              />
-            </div>
-
-            {/* Status */}
-            <div>
-              <label className="text-gray-600 uppercase text-xs tracking-wider block mb-2">Type</label>
-              <select
-                name="status"
-                value={filters.status}
-                onChange={handleChange}
-                className="w-full bg-[#06090f] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 px-4 py-2 text-white focus:outline-none transition text-sm"
-              >
-                <option value="">All Types</option>
-                <option value="charter">Charter</option>
-                <option value="sale">Sale</option>
-              </select>
-            </div>
-          </div>
-
-          {hasActiveFilters && (
-            <button
-              onClick={handleReset}
-              className="text-red-600 hover:text-red-400 border border-red-600 hover:border-red-400 px-4 py-2 transition text-xs tracking-wider font-light"
-            >
-              RESET FILTERS
-            </button>
-          )}
+      <FilterField label="Length (m)">
+        <div style={{ display: 'flex', gap: 8 }}>
+          <TextField type="number" step="0.1" placeholder="Min" value={filters.minLength} onChange={(e) => update({ minLength: e.target.value })} />
+          <TextField type="number" step="0.1" placeholder="Max" value={filters.maxLength} onChange={(e) => update({ maxLength: e.target.value })} />
         </div>
-      )}
-    </div>
+      </FilterField>
+
+      <FilterField label="Guests">
+        <div style={{ display: 'flex', gap: 8 }}>
+          <TextField type="number" placeholder="Min" value={filters.minGuests} onChange={(e) => update({ minGuests: e.target.value })} />
+          <TextField type="number" placeholder="Max" value={filters.maxGuests} onChange={(e) => update({ maxGuests: e.target.value })} />
+        </div>
+      </FilterField>
+    </FilterBar>
   )
 }

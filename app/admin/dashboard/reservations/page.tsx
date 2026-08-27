@@ -1,30 +1,46 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Plus, CalendarCheck, Users as UsersIcon, MapPin, Euro, Pencil } from 'lucide-react'
 import ReservationFilters from '@/components/admin/ReservationFilters'
 import CreateReservationModal from '@/components/admin/CreateReservationModal'
+import EditReservationModal from '@/components/admin/EditReservationModal'
+import PageHeader from '@/components/admin/ui/PageHeader'
+import Button from '@/components/admin/ui/Button'
+import Card from '@/components/admin/ui/Card'
+import Badge from '@/components/admin/ui/Badge'
+import Pagination from '@/components/admin/ui/Pagination'
+import EmptyState from '@/components/admin/ui/EmptyState'
+import ActionsMenu from '@/components/admin/ui/ActionsMenu'
+
+interface Reservation {
+  id: number
+  date: string
+  numberOfPeople: number
+  location: string
+  price?: number | null
+  status: string
+  createdAt: string
+  client: { fullName: string; email: string; phone: string }
+  yacht: { model: string }
+}
+
+const EMPTY_FILTERS = { id: '', clientName: '', yachtModel: '', dateFrom: '', dateTo: '' }
+
+function statusTone(status: string): 'gold' | 'green' | 'red' {
+  if (status === 'confirmed') return 'green'
+  if (status === 'cancelled') return 'red'
+  return 'gold'
+}
 
 export default function ReservationsPage() {
-  const [reservations, setReservations] = useState([])
+  const [reservations, setReservations] = useState<Reservation[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [filters, setFilters] = useState({
-    id: '',
-    clientName: '',
-    yachtModel: '',
-    dateFrom: '',
-    dateTo: ''
-  })
-
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [filters])
-
-  useEffect(() => {
-    fetchReservations(currentPage)
-  }, [currentPage, filters])
+  const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
+  const [filters, setFilters] = useState(EMPTY_FILTERS)
 
   const fetchReservations = async (page: number) => {
     try {
@@ -52,123 +68,90 @@ export default function ReservationsPage() {
     }
   }
 
-  const handleFiltersChange = (newFilters: any) => {
-    setFilters(newFilters)
-  }
+  useEffect(() => {
+    setCurrentPage(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
 
-  const handleReservationCreated = () => {
-    fetchReservations(1)
-  }
+  useEffect(() => {
+    fetchReservations(currentPage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, filters])
 
   return (
     <div>
-      <div className="mb-12 flex justify-between items-start">
-        <div>
-          <h2 className="text-lg tracking-wider text-gray-500 mb-2">CHARTER REQUESTS</h2>
-          <p className="text-gray-600 text-sm">All incoming yacht charter reservations</p>
-        </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-[#b8974a] text-[#06090f] rounded-lg px-6 py-3 transition font-medium text-sm tracking-wider uppercase hover:bg-[#d4af7a]"
-        >
-          + CREATE RESERVATION
-        </button>
-      </div>
+      <PageHeader
+        title="Reservations"
+        description="All incoming yacht charter requests."
+        breadcrumbs={[{ label: 'Overview', href: '/admin/dashboard' }, { label: 'Reservations' }]}
+        action={
+          <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+            <Plus size={14} strokeWidth={2.5} />
+            Create Reservation
+          </Button>
+        }
+      />
 
-      <ReservationFilters onFiltersChange={handleFiltersChange} />
+      <ReservationFilters filters={filters} onFiltersChange={setFilters} />
 
       <CreateReservationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={handleReservationCreated}
+        onSuccess={() => fetchReservations(1)}
+      />
+
+      <EditReservationModal
+        reservation={editingReservation}
+        onClose={() => setEditingReservation(null)}
+        onSuccess={() => fetchReservations(currentPage)}
       />
 
       {isLoading ? (
-        <div className="text-center py-12">
-          <div className="text-gray-500" style={{ fontFamily: 'var(--font-tenor)' }}>Loading reservations...</div>
-        </div>
+        <Card style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#8f8f7f' }}>Loading reservations…</div>
+        </Card>
       ) : reservations.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">No reservations yet</div>
+        <Card><EmptyState icon={CalendarCheck} title="No reservations yet" description="Charter requests will appear here once submitted." /></Card>
       ) : (
-        <div className="space-y-4">
-          {reservations.map((res: any) => (
+        <Card style={{ overflow: 'hidden' }}>
+          {reservations.map((res, i) => (
             <div
               key={res.id}
-              className="bg-[#0f1419] border border-[#b8974a] border-opacity-10 hover:border-opacity-30 transition p-8"
+              style={{
+                display: 'grid', gridTemplateColumns: '1.4fr 1.4fr 1.8fr 1fr 44px', gap: 20, alignItems: 'center',
+                padding: '20px 24px', borderBottom: i < reservations.length - 1 ? '1px solid rgba(184,151,74,0.08)' : 'none',
+              }}
             >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Client Info */}
-                <div>
-                  <p className="text-gray-600 uppercase text-xs tracking-wider mb-2">Client</p>
-                  <p className="text-[#b8974a] mb-1" style={{ fontFamily: 'var(--font-tenor)' }}>
-                    {res.client.fullName}
-                  </p>
-                  <p className="text-gray-500 text-sm">{res.client.email}</p>
-                  <p className="text-gray-500 text-sm">{res.client.phone}</p>
-                </div>
+              <div>
+                <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13.5, fontWeight: 600, color: '#f5eedd' }}>{res.client.fullName}</div>
+                <div style={{ fontFamily: 'var(--font-lora)', fontSize: 11.5, color: '#8f8f7f', marginTop: 2 }}>{res.client.email}</div>
+              </div>
 
-                {/* Yacht & Reservation Info */}
-                <div>
-                  <p className="text-gray-600 uppercase text-xs tracking-wider mb-2">Yacht</p>
-                  <p className="text-white mb-4">{res.yacht.model}</p>
-
-                  <p className="text-gray-600 uppercase text-xs tracking-wider mb-2">Details</p>
-                  <div className="text-gray-400 text-sm space-y-1">
-                    <p>📅 {new Date(res.date).toLocaleDateString()}</p>
-                    <p>👥 {res.numberOfPeople} people</p>
-                    <p>📍 {res.location}</p>
-                    {res.price && <p>💰 €{res.price.toFixed(2)}</p>}
-                  </div>
-                </div>
-
-                {/* Status & Date */}
-                <div className="flex flex-col justify-between">
-                  <div>
-                    <p className="text-gray-600 uppercase text-xs tracking-wider mb-2">Status</p>
-                    <div className="inline-block">
-                      <span className={`px-3 py-1 rounded text-xs tracking-wider font-light ${
-                        res.status === 'pending'
-                          ? 'bg-yellow-500 bg-opacity-20 text-yellow-300'
-                          : 'bg-green-500 bg-opacity-20 text-green-300'
-                      }`}>
-                        {res.status.toUpperCase()}
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-gray-600 text-xs">
-                    Submitted: {new Date(res.createdAt).toLocaleDateString()}
-                  </p>
+              <div>
+                <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#d8d8cc' }}>{res.yacht.model}</div>
+                <div style={{ fontFamily: 'var(--font-lora)', fontSize: 11.5, color: '#8f8f7f', marginTop: 2 }}>
+                  {new Date(res.date).toLocaleDateString()}
                 </div>
               </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontFamily: 'var(--font-lora)', fontSize: 12, color: '#8f8f7f' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><UsersIcon size={12} strokeWidth={1.75} />{res.numberOfPeople} guests</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><MapPin size={12} strokeWidth={1.75} />{res.location}</span>
+                {res.price != null && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Euro size={12} strokeWidth={1.75} />{res.price.toFixed(2)}</span>
+                )}
+              </div>
+
+              <div style={{ textAlign: 'right' }}>
+                <Badge tone={statusTone(res.status)} dot>{res.status}</Badge>
+              </div>
+
+              <ActionsMenu items={[{ label: 'Edit', icon: <Pencil size={13.5} strokeWidth={1.75} />, onClick: () => setEditingReservation(res) }]} />
             </div>
           ))}
-        </div>
-      )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-between items-center mt-12 pt-8 border-t border-[#b8974a] border-opacity-10">
-          <button
-            onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-            disabled={currentPage === 1}
-            className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-4 py-2 transition text-xs tracking-wider font-light disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            ← PREVIOUS
-          </button>
-
-          <span className="text-gray-500 text-sm">
-            Page {currentPage} of {totalPages}
-          </span>
-
-          <button
-            onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
-            disabled={currentPage === totalPages}
-            className="text-[#b8974a] hover:text-white border border-[#b8974a] hover:border-white px-4 py-2 transition text-xs tracking-wider font-light disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            NEXT →
-          </button>
-        </div>
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        </Card>
       )}
     </div>
   )
