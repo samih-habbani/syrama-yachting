@@ -95,3 +95,42 @@ export async function getYachts(options: {
     }
   })
 }
+
+interface SimilarYachtRow {
+  id: number
+  builder: string | null
+  model: string
+  length: number
+  maxGuests: number | null
+  cabins: number
+  priceDay: number | null
+  status: string | null
+  region: string | null
+  media: { id: number; url: string | null; alt: string | null }[] | null
+}
+
+// Other yachts of the same kind (charter/sale) closest in length to the
+// given yacht — used for the "Similar Yachts" section on a yacht's page.
+// Sorted and limited in the database so only the `limit` winning rows (and
+// their thumbnail) are ever fetched, instead of pulling the whole fleet.
+export async function getSimilarYachts(yacht: { id: number; length: number; status: string | null }, limit = 3) {
+  const isCharter = (yacht.status || '').toLowerCase() === 'location'
+  const [statusA, statusB] = isCharter ? ['Location', 'location'] : ['Vente', 'vente']
+
+  const rows = await prisma.$queryRaw<SimilarYachtRow[]>`
+    SELECT
+      y.id, y.builder, y.model, y.length, y.max_guests as "maxGuests",
+      y.cabins, y.price_day as "priceDay", y.status, y.region,
+      (SELECT json_agg(t) FROM (
+        SELECT m.id, m.url, m.alt FROM media m WHERE m.yacht_id = y.id ORDER BY m.id ASC LIMIT 1
+      ) t) as media
+    FROM yacht y
+    WHERE y.available = true
+      AND y.id != ${yacht.id}
+      AND (y.status = ${statusA} OR y.status = ${statusB})
+    ORDER BY ABS(y.length - ${yacht.length})
+    LIMIT ${limit}
+  `
+
+  return rows.map((row) => ({ ...row, media: row.media || [] }))
+}

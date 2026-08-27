@@ -4,6 +4,7 @@ import Link from 'next/link'
 import ReservationModal from './ReservationModal'
 import AvailabilityModal from './AvailabilityModal'
 import { useWhatsappContext } from './WhatsappContext'
+import { yachtSlug } from '@/lib/slug'
 
 interface Media {
   id: number
@@ -26,11 +27,25 @@ interface Yacht {
   media?: Media[]
 }
 
-interface YachtDetailClientProps {
-  yacht: Yacht
+interface SimilarYacht {
+  id: number
+  model: string
+  builder: string | null
+  length: number
+  maxGuests: number | null
+  cabins: number
+  priceDay: number | null
+  region: string | null
+  status: string | null
+  media?: Media[]
 }
 
-export default function YachtDetailClient({ yacht }: YachtDetailClientProps) {
+interface YachtDetailClientProps {
+  yacht: Yacht
+  similarYachts?: SimilarYacht[]
+}
+
+export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDetailClientProps) {
   const [imgIndex, setImgIndex] = useState(0)
   const [isReservationOpen, setIsReservationOpen] = useState(false)
   const [isAvailabilityOpen, setIsAvailabilityOpen] = useState(false)
@@ -151,6 +166,60 @@ export default function YachtDetailClient({ yacht }: YachtDetailClientProps) {
           )}
         </div>
       </div>
+
+      {similarYachts.length > 0 && (
+        <div style={{ padding: '0 clamp(24px, 6vw, 96px) clamp(64px, 8vw, 120px)', borderTop: '1px solid rgba(184,151,74,0.12)' }}>
+          <div style={{ paddingTop: 64, marginBottom: 40 }}>
+            <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 12 }}>Explore</div>
+            <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(28px, 3.5vw, 40px)', fontWeight: 300, color: '#f5eedd', margin: 0, marginBottom: 12 }}>Similar Yachts</h2>
+            <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.8, color: '#8f8f7f', maxWidth: 560, margin: 0 }}>
+              Comparable in size to {yacht.model}, these yachts may also suit your plans.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 32 }}>
+            {similarYachts.map((sim) => (
+              <Link key={sim.id} href={`/yachting/fleet/${yachtSlug(sim)}`} style={{ textDecoration: 'none', display: 'block' }}>
+                <div
+                  style={{ position: 'relative', overflow: 'hidden', aspectRatio: '4/3', background: '#1a1a1a' }}
+                  onMouseEnter={(e) => {
+                    const img = e.currentTarget.querySelector('img')
+                    if (img) img.style.transform = 'scale(1.05)'
+                  }}
+                  onMouseLeave={(e) => {
+                    const img = e.currentTarget.querySelector('img')
+                    if (img) img.style.transform = 'scale(1)'
+                  }}
+                >
+                  {sim.media?.[0]?.url && (
+                    <img
+                      src={`/uploads/yachts/${sim.media[0].url}`}
+                      alt={sim.media[0].alt || sim.model}
+                      loading="lazy"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.75)', transition: 'transform 0.9s cubic-bezier(0.25, 0.1, 0, 1)' }}
+                    />
+                  )}
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(6,9,15,0.85) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                  <div style={{ position: 'absolute', bottom: 20, left: 24, right: 24 }}>
+                    <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 22, fontWeight: 300, color: '#f5eedd', lineHeight: 1.2 }}>{sim.model}</div>
+                    <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginTop: 4 }}>
+                      {sim.length}m{sim.builder ? ` · ${sim.builder}` : ''}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ padding: '16px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 11, letterSpacing: '0.05em', color: '#8f8f7f' }}>
+                    {sim.maxGuests && `${sim.maxGuests} guests`}{sim.cabins ? ` · ${sim.cabins} cabins` : ''}
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#d4b472' }}>
+                    {sim.priceDay ? `From €${sim.priceDay.toLocaleString('en-US')}${(sim.status || '').toLowerCase() === 'location' ? '/day' : ''}` : 'Price on request'}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <ReservationModal
         yachtId={yacht.id}

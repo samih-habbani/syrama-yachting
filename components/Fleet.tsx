@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import FleetFilters, { FilterState } from './FleetFilters'
 import AvailabilityModal from './AvailabilityModal'
+import { yachtSlug } from '@/lib/slug'
 
 interface Media {
   id: number
@@ -297,7 +298,7 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: (i % PAGE_SIZE) * 0.04, ease: 'easeOut' }}
               >
-                <Link href={`/yachting/fleet/${yacht.id}`} style={{ textDecoration: 'none', display: 'block' }}>
+                <Link href={`/yachting/fleet/${yachtSlug(yacht)}`} style={{ textDecoration: 'none', display: 'block' }}>
                   <div
                     style={{ position: 'relative', overflow: 'hidden', aspectRatio: '4/3', background: '#1a1a1a' }}
                     onMouseEnter={(e) => {
@@ -410,7 +411,7 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                     Check Availability
                   </button>
                   <Link
-                    href={`/yachting/fleet/${yacht.id}`}
+                    href={`/yachting/fleet/${yachtSlug(yacht)}`}
                     style={{
                       flex: 1,
                       textAlign: 'center',
