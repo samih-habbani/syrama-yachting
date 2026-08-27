@@ -21,12 +21,17 @@ export async function getYachts(options: {
     limit = 500,
     region = null,
     builder = null,
-    minLength = 0,
-    maxLength = 200,
-    minGuests = 0,
-    maxGuests = 100,
-    minPrice = 0,
-    maxPrice = 0,
+    // No default bounds here: a range filter must only be applied when the
+    // caller actually asks for one. Defaulting maxGuests to e.g. 100 would
+    // turn into a `lte: 100` clause, which in Postgres silently excludes
+    // every yacht with maxGuests = NULL (common on sale listings) even
+    // though no one asked to filter by guests.
+    minLength,
+    maxLength,
+    minGuests,
+    maxGuests,
+    minPrice,
+    maxPrice,
     sortBy = 'default',
   } = options
 

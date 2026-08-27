@@ -145,10 +145,15 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
       if (filters.builder && (y.builder || '').toLowerCase() !== filters.builder.toLowerCase()) return false
       if (filters.minLength && y.length < filters.minLength) return false
       if (filters.maxLength && y.length > filters.maxLength) return false
-      if (filters.minGuests && (y.maxGuests ?? 0) < filters.minGuests) return false
-      if (filters.maxGuests && (y.maxGuests ?? 0) > filters.maxGuests) return false
-      if (filters.minPrice && (y.priceDay ?? 0) < filters.minPrice) return false
-      if (filters.maxPrice && (y.priceDay ?? Infinity) > filters.maxPrice) return false
+      // Guests/price sliders only make sense for yachts that actually have
+      // that data (sale listings in particular rarely have a day rate, and
+      // often no guest count either). Coercing a missing value to 0 would
+      // make it fail the minimum bound and hide the yacht entirely — a
+      // yacht with no data on a field must never be excluded by that field.
+      if (filters.minGuests && y.maxGuests !== null && y.maxGuests < filters.minGuests) return false
+      if (filters.maxGuests && y.maxGuests !== null && y.maxGuests > filters.maxGuests) return false
+      if (filters.minPrice && y.priceDay !== null && y.priceDay < filters.minPrice) return false
+      if (filters.maxPrice && y.priceDay !== null && y.priceDay > filters.maxPrice) return false
       return true
     })
 
