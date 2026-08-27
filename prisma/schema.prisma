@@ -19,6 +19,7 @@ model Yacht {
   builder               String?
   model                 String
   engines               String?
+  engineHours           Int?     @map("engine_hours")
   length                Float
   beam                  Float?
   beamOpenPlatform      Float?   @map("beam_open_platform")
@@ -26,6 +27,7 @@ model Yacht {
   cruiseSpeed           Float?   @map("cruise_speed")
   maxSpeed              Float?   @map("max_speed")
   cabins                Int
+  bathrooms             Int?
   maxGuests             Int?     @map("max_guests")
   maxSleeping           Int?     @map("max_sleeping")
   consumption           String?
@@ -42,6 +44,7 @@ model Yacht {
   city                  String?
   providerId            Int?     @map("provider_id")
   priceDay              Float?   @map("price_day")
+  priceSale             Float?   @map("price_sale")
   year                  Int?
   region                String?
   currency              String
