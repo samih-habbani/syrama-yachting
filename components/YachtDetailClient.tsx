@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import ReservationModal from './ReservationModal'
+import AvailabilityModal from './AvailabilityModal'
 import { useWhatsappContext } from './WhatsappContext'
 
 interface Media {
@@ -32,23 +33,25 @@ interface YachtDetailClientProps {
 export default function YachtDetailClient({ yacht }: YachtDetailClientProps) {
   const [imgIndex, setImgIndex] = useState(0)
   const [isReservationOpen, setIsReservationOpen] = useState(false)
+  const [isAvailabilityOpen, setIsAvailabilityOpen] = useState(false)
   const images = yacht.media || []
   const prev = () => setImgIndex(i => (i - 1 + images.length) % images.length)
   const next = () => setImgIndex(i => (i + 1) % images.length)
 
   const isCharter = (yacht.status || '').toLowerCase() === 'location'
+  const availabilityYacht = {
+    model: yacht.model,
+    builder: yacht.builder,
+    length: yacht.length,
+    imageUrl: images[0]?.url ? `/uploads/yachts/${images[0].url}` : null,
+  }
   const { setAvailabilityYacht } = useWhatsappContext()
 
   // On a charter yacht's page, the floating WhatsApp button opens the same
   // "Check Availability" popup as the fleet cards instead of a plain link.
   useEffect(() => {
     if (!isCharter) return
-    setAvailabilityYacht({
-      model: yacht.model,
-      builder: yacht.builder,
-      length: yacht.length,
-      imageUrl: images[0]?.url ? `/uploads/yachts/${images[0].url}` : null,
-    })
+    setAvailabilityYacht(availabilityYacht)
     return () => setAvailabilityYacht(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [yacht.id, isCharter])
@@ -132,10 +135,20 @@ export default function YachtDetailClient({ yacht }: YachtDetailClientProps) {
         <div className="lg:sticky lg:top-[100px]" style={{ border: '1px solid rgba(184,151,74,0.2)', padding: 36, background: 'rgba(184,151,74,0.02)' }}>
           <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 24, fontWeight: 300, color: '#f5eedd', marginBottom: 8 }}>{yacht.model}</div>
           {yacht.priceDay && (
-            <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 32 }}>From €{yacht.priceDay.toLocaleString()}/day</div>
+            <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 32 }}>From €{yacht.priceDay.toLocaleString('en-US')}/day</div>
           )}
           <button onClick={() => setIsReservationOpen(true)} style={{ width: '100%', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '16px', border: 'none', cursor: 'pointer', marginBottom: 16 }}>Request charter</button>
-          <a href={`https://wa.me/971505548034?text=${encodeURIComponent(`Hello Syrama Yachting! I'd like to know more about the *${yacht.model}*.`)}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', border: '1px solid rgba(184,151,74,0.3)', padding: '14px', textDecoration: 'none' }}>WhatsApp us</a>
+          {isCharter ? (
+            <button
+              type="button"
+              onClick={() => setIsAvailabilityOpen(true)}
+              style={{ display: 'block', width: '100%', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', background: 'none', border: '1px solid rgba(184,151,74,0.3)', padding: '14px', cursor: 'pointer' }}
+            >
+              WhatsApp us
+            </button>
+          ) : (
+            <a href={`https://wa.me/971505548034?text=${encodeURIComponent(`Hello Syrama Yachting! I'd like to know more about the *${yacht.model}*.`)}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', border: '1px solid rgba(184,151,74,0.3)', padding: '14px', textDecoration: 'none' }}>WhatsApp us</a>
+          )}
         </div>
       </div>
 
@@ -145,6 +158,14 @@ export default function YachtDetailClient({ yacht }: YachtDetailClientProps) {
         isOpen={isReservationOpen}
         onClose={() => setIsReservationOpen(false)}
       />
+
+      {isCharter && (
+        <AvailabilityModal
+          isOpen={isAvailabilityOpen}
+          onClose={() => setIsAvailabilityOpen(false)}
+          yacht={availabilityYacht}
+        />
+      )}
     </main>
   )
 }
