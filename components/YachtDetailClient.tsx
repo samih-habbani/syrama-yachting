@@ -1,7 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import ReservationModal from './ReservationModal'
+import { useWhatsappContext } from './WhatsappContext'
 
 interface Media {
   id: number
@@ -20,6 +21,7 @@ interface Yacht {
   priceDay: number | null
   region: string | null
   city: string | null
+  status: string | null
   media?: Media[]
 }
 
@@ -33,6 +35,23 @@ export default function YachtDetailClient({ yacht }: YachtDetailClientProps) {
   const images = yacht.media || []
   const prev = () => setImgIndex(i => (i - 1 + images.length) % images.length)
   const next = () => setImgIndex(i => (i + 1) % images.length)
+
+  const isCharter = (yacht.status || '').toLowerCase() === 'location'
+  const { setAvailabilityYacht } = useWhatsappContext()
+
+  // On a charter yacht's page, the floating WhatsApp button opens the same
+  // "Check Availability" popup as the fleet cards instead of a plain link.
+  useEffect(() => {
+    if (!isCharter) return
+    setAvailabilityYacht({
+      model: yacht.model,
+      builder: yacht.builder,
+      length: yacht.length,
+      imageUrl: images[0]?.url ? `/uploads/yachts/${images[0].url}` : null,
+    })
+    return () => setAvailabilityYacht(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [yacht.id, isCharter])
 
   return (
     <main id="main-content" style={{ background: '#06090f', minHeight: '100vh' }}>

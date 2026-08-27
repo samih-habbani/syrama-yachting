@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Lora } from "next/font/google";
 import "./globals.css";
 import WhatsappButton from "@/components/WhatsappButton";
 import MotionProvider from "@/components/MotionProvider";
+import { WhatsappProvider } from "@/components/WhatsappContext";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-heading",
@@ -67,8 +68,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <MotionProvider>
-          {children}
-          <WhatsappButton />
+          <WhatsappProvider>
+            {children}
+            <WhatsappButton />
+          </WhatsappProvider>
         </MotionProvider>
       </body>
     </html>

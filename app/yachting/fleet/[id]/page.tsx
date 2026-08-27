@@ -20,6 +20,7 @@ interface Yacht {
   priceDay: number | null
   region: string | null
   city: string | null
+  status: string | null
   media?: Media[]
 }
 
@@ -35,7 +36,7 @@ async function getYacht(id: string) {
     SELECT
       y.id, y.model, y.builder, y.length, y.max_guests as "maxGuests",
       y.cabins, y.year, y.price_day as "priceDay",
-      y.region, y.city,
+      y.region, y.city, y.status,
       (SELECT json_agg(json_build_object('id', m.id, 'url', m.url, 'alt', m.alt) ORDER BY m.id)
        FROM media m WHERE m.yacht_id = y.id) as media
     FROM yacht y
