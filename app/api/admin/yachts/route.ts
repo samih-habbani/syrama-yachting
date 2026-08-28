@@ -77,6 +77,7 @@ export async function GET(request: Request) {
           cabins: true,
           year: true,
           priceDay: true,
+          priceSale: true,
           region: true,
           city: true,
           currency: true,
@@ -128,6 +129,7 @@ export async function POST(request: Request) {
         maxGuests: data.maxGuests ? parseInt(data.maxGuests) : null,
         year: data.year ? parseInt(data.year) : null,
         priceDay: data.priceDay ? parseFloat(data.priceDay) : null,
+        priceSale: data.priceSale ? parseFloat(data.priceSale) : null,
         region: data.region || null,
         city: data.city || null,
         currency: data.currency || 'EUR',
@@ -171,6 +173,7 @@ export async function PUT(request: Request) {
         maxGuests: data.maxGuests ? parseInt(data.maxGuests) : null,
         year: data.year ? parseInt(data.year) : null,
         priceDay: data.priceDay ? parseFloat(data.priceDay) : null,
+        priceSale: data.priceSale ? parseFloat(data.priceSale) : null,
         region: data.region || null,
         city: data.city || null
       },

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import FleetFilters, { FilterState } from './FleetFilters'
 import AvailabilityModal from './AvailabilityModal'
+import BrokerContactModal from './BrokerContactModal'
 import { yachtSlug } from '@/lib/slug'
 
 interface Media {
@@ -25,6 +26,7 @@ interface Yacht {
   region: string | null
   city: string | null
   priceDay: number | null
+  priceSale: number | null
   status: string | null
   available: boolean
   rating: number | null
@@ -51,6 +53,7 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
   const [allYachts, setAllYachts] = useState<Yacht[]>([])
   const [loading, setLoading] = useState(true)
   const [availabilityYacht, setAvailabilityYacht] = useState<Yacht | null>(null)
+  const [brokerYacht, setBrokerYacht] = useState<Yacht | null>(null)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const sentinelRef = useRef<HTMLDivElement>(null)
 
@@ -386,7 +389,9 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                           {activeTab === 'charter' ? 'Rate' : 'Price'}
                         </div>
                         <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 18, fontWeight: 300, color: '#d4b472' }}>
-                          {yacht.priceDay ? `€${yacht.priceDay.toLocaleString()}${activeTab === 'charter' ? '/day' : ''}` : 'Price on request'}
+                          {activeTab === 'charter'
+                            ? (yacht.priceDay ? `€${yacht.priceDay.toLocaleString('en-US')}/day` : 'Price on request')
+                            : (yacht.priceSale ? `€${yacht.priceSale.toLocaleString('en-US')}` : 'Price on request')}
                         </div>
                       </div>
                     </div>
@@ -394,27 +399,51 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                 </Link>
 
                 <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-                  <button
-                    type="button"
-                    onClick={() => setAvailabilityYacht(yacht)}
-                    style={{
-                      flex: 1,
-                      fontFamily: 'var(--font-tenor)',
-                      fontSize: 10,
-                      letterSpacing: '0.2em',
-                      textTransform: 'uppercase',
-                      color: '#06090f',
-                      background: '#b8974a',
-                      border: 'none',
-                      padding: '13px 16px',
-                      cursor: 'pointer',
-                      transition: 'background 0.3s ease',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
-                  >
-                    Check Availability
-                  </button>
+                  {activeTab === 'charter' ? (
+                    <button
+                      type="button"
+                      onClick={() => setAvailabilityYacht(yacht)}
+                      style={{
+                        flex: 1,
+                        fontFamily: 'var(--font-tenor)',
+                        fontSize: 10,
+                        letterSpacing: '0.2em',
+                        textTransform: 'uppercase',
+                        color: '#06090f',
+                        background: '#b8974a',
+                        border: 'none',
+                        padding: '13px 16px',
+                        cursor: 'pointer',
+                        transition: 'background 0.3s ease',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
+                    >
+                      Check Availability
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setBrokerYacht(yacht)}
+                      style={{
+                        flex: 1,
+                        fontFamily: 'var(--font-tenor)',
+                        fontSize: 10,
+                        letterSpacing: '0.2em',
+                        textTransform: 'uppercase',
+                        color: '#06090f',
+                        background: '#b8974a',
+                        border: 'none',
+                        padding: '13px 16px',
+                        cursor: 'pointer',
+                        transition: 'background 0.3s ease',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
+                    >
+                      Contact Broker
+                    </button>
+                  )}
                   <Link
                     href={`/yachting/fleet/${yachtSlug(yacht)}`}
                     style={{
@@ -458,6 +487,17 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
             builder: availabilityYacht.builder,
             length: availabilityYacht.length,
             imageUrl: availabilityYacht.media?.[0]?.url ? `/uploads/yachts/${availabilityYacht.media[0].url}` : null,
+          } : { model: '' }}
+        />
+
+        <BrokerContactModal
+          isOpen={brokerYacht !== null}
+          onClose={() => setBrokerYacht(null)}
+          yacht={brokerYacht ? {
+            model: brokerYacht.model,
+            builder: brokerYacht.builder,
+            length: brokerYacht.length,
+            imageUrl: brokerYacht.media?.[0]?.url ? `/uploads/yachts/${brokerYacht.media[0].url}` : null,
           } : { model: '' }}
         />
 

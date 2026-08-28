@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import ReservationModal from './ReservationModal'
 import AvailabilityModal from './AvailabilityModal'
+import BrokerContactModal from './BrokerContactModal'
 import { useWhatsappContext } from './WhatsappContext'
 import { yachtSlug } from '@/lib/slug'
 
@@ -21,6 +22,7 @@ interface Yacht {
   cabins: number
   year: number | null
   priceDay: number | null
+  priceSale: number | null
   region: string | null
   city: string | null
   status: string | null
@@ -35,6 +37,7 @@ interface SimilarYacht {
   maxGuests: number | null
   cabins: number
   priceDay: number | null
+  priceSale: number | null
   region: string | null
   status: string | null
   media?: Media[]
@@ -49,6 +52,7 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
   const [imgIndex, setImgIndex] = useState(0)
   const [isReservationOpen, setIsReservationOpen] = useState(false)
   const [isAvailabilityOpen, setIsAvailabilityOpen] = useState(false)
+  const [isBrokerOpen, setIsBrokerOpen] = useState(false)
   const images = yacht.media || []
   const prev = () => setImgIndex(i => (i - 1 + images.length) % images.length)
   const next = () => setImgIndex(i => (i + 1) % images.length)
@@ -76,14 +80,25 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
       <nav className="px-5 md:px-12" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 20, paddingBottom: 20, background: 'rgba(6,9,15,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(184,151,74,0.12)' }}>
         <Link href={yacht.region ? `/yachting/fleet?region=${encodeURIComponent(yacht.region)}` : '/yachting/fleet'} style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#8f8f7f', textDecoration: 'none' }}>← Our fleet</Link>
         <Link href="/#contact" className="hidden lg:inline-block" style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '12px 24px', textDecoration: 'none' }}>Contact Us</Link>
-        <button
-          type="button"
-          onClick={() => setIsReservationOpen(true)}
-          className="lg:hidden"
-          style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '12px 24px', border: 'none', cursor: 'pointer' }}
-        >
-          Request Charter
-        </button>
+        {isCharter ? (
+          <button
+            type="button"
+            onClick={() => setIsReservationOpen(true)}
+            className="lg:hidden"
+            style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '12px 24px', border: 'none', cursor: 'pointer' }}
+          >
+            Request Charter
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsBrokerOpen(true)}
+            className="lg:hidden"
+            style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '12px 24px', border: 'none', cursor: 'pointer' }}
+          >
+            Contact Broker
+          </button>
+        )}
       </nav>
 
       <div className="h-[56vh] md:h-[70vh]" style={{ position: 'relative', overflow: 'hidden', marginTop: 64, background: '#1a1a1a' }}>
@@ -144,15 +159,26 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
               </div>
             ))}
           </div>
-          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, lineHeight: 2, color: '#8f8f7f', marginBottom: 48 }}>Premium yacht available for charter. Experience luxury maritime travel with professional crew and world-class amenities.</p>
+          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, lineHeight: 2, color: '#8f8f7f', marginBottom: 48 }}>
+            {isCharter
+              ? 'Premium yacht available for charter. Experience luxury maritime travel with professional crew and world-class amenities.'
+              : 'Premium yacht available for sale. A rare opportunity to acquire a meticulously maintained vessel, backed by expert brokerage support from Syrama Yachting.'}
+          </p>
         </div>
 
         <div className="lg:sticky lg:top-[100px]" style={{ border: '1px solid rgba(184,151,74,0.2)', padding: 36, background: 'rgba(184,151,74,0.02)' }}>
           <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 24, fontWeight: 300, color: '#f5eedd', marginBottom: 8 }}>{yacht.model}</div>
-          {yacht.priceDay && (
+          {isCharter && yacht.priceDay && (
             <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 32 }}>From €{yacht.priceDay.toLocaleString('en-US')}/day</div>
           )}
-          <button onClick={() => setIsReservationOpen(true)} style={{ width: '100%', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '16px', border: 'none', cursor: 'pointer', marginBottom: 16 }}>Request charter</button>
+          {!isCharter && yacht.priceSale && (
+            <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 32 }}>Asking Price €{yacht.priceSale.toLocaleString('en-US')}</div>
+          )}
+          {isCharter ? (
+            <button onClick={() => setIsReservationOpen(true)} style={{ width: '100%', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '16px', border: 'none', cursor: 'pointer', marginBottom: 16 }}>Request charter</button>
+          ) : (
+            <button type="button" onClick={() => setIsBrokerOpen(true)} style={{ width: '100%', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '16px', border: 'none', cursor: 'pointer', marginBottom: 16 }}>Contact Broker</button>
+          )}
           {isCharter ? (
             <button
               type="button"
@@ -212,7 +238,9 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
                     {sim.maxGuests && `${sim.maxGuests} guests`}{sim.cabins ? ` · ${sim.cabins} cabins` : ''}
                   </div>
                   <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#d4b472' }}>
-                    {sim.priceDay ? `From €${sim.priceDay.toLocaleString('en-US')}${(sim.status || '').toLowerCase() === 'location' ? '/day' : ''}` : 'Price on request'}
+                    {(sim.status || '').toLowerCase() === 'location'
+                      ? (sim.priceDay ? `From €${sim.priceDay.toLocaleString('en-US')}/day` : 'Price on request')
+                      : (sim.priceSale ? `€${sim.priceSale.toLocaleString('en-US')}` : 'Price on request')}
                   </div>
                 </div>
               </Link>
@@ -221,17 +249,27 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
         </div>
       )}
 
-      <ReservationModal
-        yachtId={yacht.id}
-        yachtModel={yacht.model}
-        isOpen={isReservationOpen}
-        onClose={() => setIsReservationOpen(false)}
-      />
+      {isCharter && (
+        <ReservationModal
+          yachtId={yacht.id}
+          yachtModel={yacht.model}
+          isOpen={isReservationOpen}
+          onClose={() => setIsReservationOpen(false)}
+        />
+      )}
 
       {isCharter && (
         <AvailabilityModal
           isOpen={isAvailabilityOpen}
           onClose={() => setIsAvailabilityOpen(false)}
+          yacht={availabilityYacht}
+        />
+      )}
+
+      {!isCharter && (
+        <BrokerContactModal
+          isOpen={isBrokerOpen}
+          onClose={() => setIsBrokerOpen(false)}
           yacht={availabilityYacht}
         />
       )}

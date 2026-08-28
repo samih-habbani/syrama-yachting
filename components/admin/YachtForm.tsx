@@ -15,6 +15,7 @@ interface Yacht {
   maxGuests?: number | null
   year?: number | null
   priceDay?: number | null
+  priceSale?: number | null
   region?: string | null
   city?: string | null
   status?: string | null
@@ -55,6 +56,7 @@ export default function YachtForm({ yacht, onSaved }: YachtFormProps) {
     maxGuests: yacht?.maxGuests ?? '',
     year: yacht?.year ?? '',
     priceDay: yacht?.priceDay ?? '',
+    priceSale: yacht?.priceSale ?? '',
     region: yacht?.region || '',
     city: yacht?.city || '',
     status: normalizeStatus(yacht?.status),
@@ -144,6 +146,9 @@ export default function YachtForm({ yacht, onSaved }: YachtFormProps) {
         <Section title="Pricing & Location">
           <FilterField label="Price per Day">
             <TextField type="number" step="0.01" value={formData.priceDay} onChange={(e) => update({ priceDay: e.target.value })} />
+          </FilterField>
+          <FilterField label="Sale Price">
+            <TextField type="number" step="0.01" value={formData.priceSale} onChange={(e) => update({ priceSale: e.target.value })} />
           </FilterField>
           <FilterField label="Region">
             <TextField value={formData.region} onChange={(e) => update({ region: e.target.value })} />

@@ -20,6 +20,7 @@ interface Yacht {
   cabins: number
   year: number | null
   priceDay: number | null
+  priceSale: number | null
   region: string | null
   city: string | null
   status: string | null
@@ -35,7 +36,7 @@ async function getYacht(id: number) {
   const yacht = await prisma.$queryRaw<(Yacht & { media: Media[] | null })[]>`
     SELECT
       y.id, y.model, y.builder, y.length, y.max_guests as "maxGuests",
-      y.cabins, y.year, y.price_day as "priceDay",
+      y.cabins, y.year, y.price_day as "priceDay", y.price_sale as "priceSale",
       y.region, y.city, y.status,
       (SELECT json_agg(json_build_object('id', m.id, 'url', m.url, 'alt', m.alt) ORDER BY m.id)
        FROM media m WHERE m.yacht_id = y.id) as media
@@ -58,8 +59,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!yacht) return { title: 'Yacht Not Found' }
 
   const canonicalSlug = yachtSlug(yacht)
+  const isCharter = (yacht.status || '').toLowerCase() === 'location'
   const title = `${yacht.model}${yacht.builder ? ` by ${yacht.builder}` : ''} — ${yacht.length}m Yacht`
-  const description = `Charter the ${yacht.model}${yacht.builder ? ` by ${yacht.builder}` : ''}, a ${yacht.length}m yacht${yacht.maxGuests ? ` for up to ${yacht.maxGuests} guests` : ''}${yacht.region ? ` in ${yacht.region}` : ''}. Request availability with Syrama Yachting.`
+  const description = isCharter
+    ? `Charter the ${yacht.model}${yacht.builder ? ` by ${yacht.builder}` : ''}, a ${yacht.length}m yacht${yacht.maxGuests ? ` for up to ${yacht.maxGuests} guests` : ''}${yacht.region ? ` in ${yacht.region}` : ''}. Request availability with Syrama Yachting.`
+    : `${yacht.model}${yacht.builder ? ` by ${yacht.builder}` : ''} for sale — a ${yacht.length}m yacht${yacht.region ? ` in ${yacht.region}` : ''}. Contact Syrama Yachting to speak with a broker.`
   const imageUrl = yacht.media?.[0]?.url ? `/uploads/yachts/${yacht.media[0].url}` : undefined
 
   return {
@@ -97,6 +101,8 @@ export default async function YachtDetailPage({ params }: { params: Promise<{ sl
   }
 
   const similarYachts = await getSimilarYachts(yachtData)
+  const isCharter = (yachtData.status || '').toLowerCase() === 'location'
+  const offerPrice = isCharter ? yachtData.priceDay : yachtData.priceSale
 
   const productJsonLd = {
     '@context': 'https://schema.org',
@@ -105,10 +111,10 @@ export default async function YachtDetailPage({ params }: { params: Promise<{ sl
     brand: yachtData.builder || undefined,
     description: `${yachtData.model}${yachtData.builder ? ` by ${yachtData.builder}` : ''}, a ${yachtData.length}m yacht${yachtData.maxGuests ? ` for up to ${yachtData.maxGuests} guests` : ''}.`,
     image: yachtData.media?.[0]?.url ? `${SITE_URL}/uploads/yachts/${yachtData.media[0].url}` : undefined,
-    offers: yachtData.priceDay ? {
+    offers: offerPrice ? {
       '@type': 'Offer',
       priceCurrency: 'EUR',
-      price: yachtData.priceDay,
+      price: offerPrice,
       availability: 'https://schema.org/InStock',
       url: `${SITE_URL}/yachting/fleet/${canonicalSlug}`,
     } : undefined,
