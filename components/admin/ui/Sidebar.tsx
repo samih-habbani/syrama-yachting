@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Sailboat, CalendarCheck, Calendar, Contact,
-  MessageSquare, ShieldUser, ExternalLink, LogOut,
+  MessageSquare, ShieldUser, ExternalLink, LogOut, Building2,
 } from 'lucide-react'
 
 interface NavItem {
@@ -38,6 +38,12 @@ const NAV: NavGroup[] = [
     items: [
       { label: 'Clients', href: '/admin/dashboard/clients', icon: Contact, match: '/clients' },
       { label: 'Messages', href: '/admin/dashboard/messages', icon: MessageSquare, match: '/messages' },
+    ],
+  },
+  {
+    label: 'Network',
+    items: [
+      { label: 'Providers', href: '/admin/dashboard/providers', icon: Building2, match: '/providers' },
     ],
   },
   {

@@ -5,6 +5,7 @@ import ReservationModal from './ReservationModal'
 import AvailabilityModal from './AvailabilityModal'
 import BrokerContactModal from './BrokerContactModal'
 import ShareButtons from './ShareButtons'
+import YachtExperienceJourney from './YachtExperienceJourney'
 import { useWhatsappContext } from './WhatsappContext'
 import { yachtHref } from '@/lib/slug'
 
@@ -226,36 +227,59 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
           </p>
         </div>
 
-        <div className="lg:sticky lg:top-[100px]" style={{ border: '1px solid rgba(184,151,74,0.2)', padding: 36, background: 'rgba(184,151,74,0.02)' }}>
-          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 24, fontWeight: 300, color: '#f5eedd', marginBottom: 8 }}>{yacht.model}</div>
-          {isCharter && yacht.priceDay && (
-            <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 32 }}>From €{yacht.priceDay.toLocaleString('en-US')}/day</div>
-          )}
-          {!isCharter && yacht.priceSale && (
-            <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 32 }}>Asking Price €{yacht.priceSale.toLocaleString('en-US')}</div>
-          )}
-          {isCharter ? (
-            <button onClick={() => setIsReservationOpen(true)} style={{ width: '100%', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '16px', border: 'none', cursor: 'pointer', marginBottom: 16 }}>Request charter</button>
-          ) : (
-            <button type="button" onClick={() => setIsBrokerOpen(true)} style={{ width: '100%', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '16px', border: 'none', cursor: 'pointer', marginBottom: 16 }}>Contact Broker</button>
-          )}
-          {isCharter ? (
-            <button
-              type="button"
-              onClick={() => setIsAvailabilityOpen(true)}
-              style={{ display: 'block', width: '100%', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', background: 'none', border: '1px solid rgba(184,151,74,0.3)', padding: '14px', cursor: 'pointer' }}
-            >
-              WhatsApp us
-            </button>
-          ) : (
-            <a href={`https://wa.me/971505548034?text=${encodeURIComponent(`Hello Syrama Yachting! I'd like to know more about the *${yacht.model}*.`)}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', border: '1px solid rgba(184,151,74,0.3)', padding: '14px', textDecoration: 'none' }}>WhatsApp us</a>
-          )}
+        <div className="lg:sticky lg:top-[100px]">
+          <div style={{ border: '1px solid rgba(184,151,74,0.2)', padding: 36, background: 'rgba(184,151,74,0.02)' }}>
+            <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 24, fontWeight: 300, color: '#f5eedd', marginBottom: 8 }}>{yacht.model}</div>
+            {isCharter && yacht.priceDay && (
+              <div style={{ marginBottom: 32 }}>
+                <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#8f8f7f', marginBottom: 8 }}>From</div>
+                <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(24px, 2.4vw, 30px)', fontWeight: 300, color: '#d4b472', lineHeight: 1 }}>
+                  €{yacht.priceDay.toLocaleString('en-US')}
+                  <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8f8f7f' }}>/day</span>
+                </div>
+              </div>
+            )}
+            {!isCharter && yacht.priceSale && (
+              <div style={{ marginBottom: 32 }}>
+                <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#8f8f7f', marginBottom: 8 }}>Asking Price</div>
+                <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(24px, 2.4vw, 30px)', fontWeight: 300, color: '#d4b472', lineHeight: 1 }}>
+                  €{yacht.priceSale.toLocaleString('en-US')}
+                </div>
+              </div>
+            )}
+            {isCharter ? (
+              <button onClick={() => setIsReservationOpen(true)} style={{ width: '100%', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '16px', border: 'none', cursor: 'pointer', marginBottom: 16 }}>Request charter</button>
+            ) : (
+              <button type="button" onClick={() => setIsBrokerOpen(true)} style={{ width: '100%', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '16px', border: 'none', cursor: 'pointer', marginBottom: 16 }}>Contact Broker</button>
+            )}
+            {isCharter ? (
+              <button
+                type="button"
+                onClick={() => setIsAvailabilityOpen(true)}
+                style={{ display: 'block', width: '100%', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', background: 'none', border: '1px solid rgba(184,151,74,0.3)', padding: '14px', cursor: 'pointer' }}
+              >
+                WhatsApp us
+              </button>
+            ) : (
+              <a href={`https://wa.me/971505548034?text=${encodeURIComponent(`Hello Syrama Yachting! I'd like to know more about the *${yacht.model}*.`)}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', border: '1px solid rgba(184,151,74,0.3)', padding: '14px', textDecoration: 'none' }}>WhatsApp us</a>
+            )}
+          </div>
+
+          <div style={{ marginTop: 24 }}>
+            <ShareButtons title={yacht.model} />
+          </div>
         </div>
       </div>
 
-      <div style={{ padding: '0 clamp(24px, 6vw, 96px)' }}>
-        <ShareButtons title={yacht.model} />
-      </div>
+      {/* The full-experience storytelling section only makes sense for a
+          charter (itinerary, catering, water toys) — a buyer isn't booking
+          a day at sea, so this stays out of the sale yacht's page. */}
+      {isCharter && (
+        <YachtExperienceJourney
+          onRequestExperience={() => setIsReservationOpen(true)}
+          onWhatsApp={() => setIsAvailabilityOpen(true)}
+        />
+      )}
 
       {similarYachts.length > 0 && (
         <div style={{ padding: '0 clamp(24px, 6vw, 96px) clamp(64px, 8vw, 120px)', borderTop: '1px solid rgba(184,151,74,0.12)' }}>

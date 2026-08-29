@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { Mail, Link2, Check } from 'lucide-react'
+import { Mail } from 'lucide-react'
 
 interface ShareButtonsProps {
   // Label used in the pre-filled share text (e.g. the yacht's name).
@@ -18,8 +17,6 @@ function openSharePopup(url: string) {
 }
 
 export default function ShareButtons({ title }: ShareButtonsProps) {
-  const [copied, setCopied] = useState(false)
-
   const getPageUrl = () => (typeof window !== 'undefined' ? window.location.href : '')
 
   const shareText = `${title} — Syrama Yachting`
@@ -44,13 +41,11 @@ export default function ShareButtons({ title }: ShareButtonsProps) {
       ),
     },
     {
-      label: 'X',
-      onClick: () => openSharePopup(`https://twitter.com/intent/tweet?url=${encodeURIComponent(getPageUrl())}&text=${encodeURIComponent(shareText)}`),
-      icon: (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M18.9 2H22l-7.6 8.68L23.3 22h-6.87l-5.38-7.04L4.9 22H1.8l8.13-9.29L1 2h7.04l4.86 6.43L18.9 2Zm-1.2 18h1.7L7.4 3.9H5.58L17.7 20Z" />
-        </svg>
-      ),
+      label: 'Email',
+      onClick: () => {
+        window.location.href = `mailto:?subject=${encodeURIComponent(shareText)}&body=${encodeURIComponent(getPageUrl())}`
+      },
+      icon: <Mail size={15} strokeWidth={1.8} />,
     },
     {
       label: 'LinkedIn',
@@ -61,29 +56,11 @@ export default function ShareButtons({ title }: ShareButtonsProps) {
         </svg>
       ),
     },
-    {
-      label: 'Email',
-      onClick: () => {
-        window.location.href = `mailto:?subject=${encodeURIComponent(shareText)}&body=${encodeURIComponent(getPageUrl())}`
-      },
-      icon: <Mail size={15} strokeWidth={1.8} />,
-    },
   ]
 
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(getPageUrl())
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // Clipboard API unavailable (older browser, insecure context) — no
-      // safe fallback, the other share buttons still work regardless.
-    }
-  }
-
   const iconButtonStyle: React.CSSProperties = {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -94,11 +71,12 @@ export default function ShareButtons({ title }: ShareButtonsProps) {
     cursor: 'pointer',
     transition: 'all 0.25s ease',
     padding: 0,
+    flexShrink: 0,
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', padding: '32px 0', borderTop: '1px solid rgba(184,151,74,0.12)' }}>
-      <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#8f8f7f' }}>
+    <div>
+      <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#8f8f7f', marginBottom: 14 }}>
         Share this yacht
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
@@ -116,23 +94,7 @@ export default function ShareButtons({ title }: ShareButtonsProps) {
             {network.icon}
           </button>
         ))}
-        <button
-          type="button"
-          onClick={handleCopyLink}
-          aria-label={copied ? 'Link copied' : 'Copy link'}
-          title={copied ? 'Link copied' : 'Copy link'}
-          style={iconButtonStyle}
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(184,151,74,0.12)'; e.currentTarget.style.borderColor = 'rgba(184,151,74,0.6)' }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(184,151,74,0.3)' }}
-        >
-          {copied ? <Check size={15} strokeWidth={1.8} /> : <Link2 size={15} strokeWidth={1.8} />}
-        </button>
       </div>
-      {copied && (
-        <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#8fd19e' }}>
-          Link copied
-        </span>
-      )}
     </div>
   )
 }

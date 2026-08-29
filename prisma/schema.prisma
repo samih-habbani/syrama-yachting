@@ -119,6 +119,38 @@ model Reservation {
   @@map("reservation")
 }
 
+model Provider {
+  id           Int       @id @default(autoincrement())
+  name         String?
+  company      String?
+  email        String?
+  phone        String?
+  city         String?
+  country      String?
+  type         String?
+  services     String[]  @default([])
+  description  String?
+  isActive     Boolean?  @map("is_active")
+  website      String?
+  instagram    String?
+  notes        String?
+  position     String?
+  firstContact String?   @map("first_contact")
+  firstName    String?   @map("first_name")
+  region       String?
+  updatedAt    DateTime? @map("updated_at")
+  manager      String?
+  address      String?
+  postalCode   String?   @map("postal_code")
+
+  @@index([type])
+  @@index([region])
+  @@index([city])
+  @@index([country])
+  @@index([services], type: Gin)
+  @@map("provider")
+}
+
 model Message {
   id              Int      @id @default(autoincrement())
   name            String?
