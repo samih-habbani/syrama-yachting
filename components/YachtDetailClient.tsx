@@ -4,8 +4,9 @@ import Link from 'next/link'
 import ReservationModal from './ReservationModal'
 import AvailabilityModal from './AvailabilityModal'
 import BrokerContactModal from './BrokerContactModal'
+import ShareButtons from './ShareButtons'
 import { useWhatsappContext } from './WhatsappContext'
-import { yachtSlug } from '@/lib/slug'
+import { yachtHref } from '@/lib/slug'
 
 interface Media {
   id: number
@@ -20,12 +21,28 @@ interface Yacht {
   length: number
   maxGuests: number | null
   cabins: number
+  bathrooms: number | null
+  maxSleeping: number | null
   year: number | null
   priceDay: number | null
   priceSale: number | null
   region: string | null
   city: string | null
   status: string | null
+  engines: string | null
+  engineHours: number | null
+  beam: number | null
+  beamOpenPlatform: number | null
+  draft: number | null
+  cruiseSpeed: number | null
+  maxSpeed: number | null
+  consumption: string | null
+  autonomy: string | null
+  fuelCapacity: number | null
+  waterCapacity: number | null
+  navigationClass: string | null
+  dryWeight: number | null
+  hull: string | null
   media?: Media[]
 }
 
@@ -48,6 +65,11 @@ interface YachtDetailClientProps {
   similarYachts?: SimilarYacht[]
 }
 
+// A field with no real data (null/undefined/empty string, or 0 — some
+// imports store a missing number as 0 instead of null, e.g. year: 0) must
+// never be shown as if it were a value. Used everywhere a spec is rendered.
+const hasValue = (v: unknown): v is number | string => v !== null && v !== undefined && v !== '' && v !== 0
+
 export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDetailClientProps) {
   const [imgIndex, setImgIndex] = useState(0)
   const [isReservationOpen, setIsReservationOpen] = useState(false)
@@ -58,6 +80,49 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
   const next = () => setImgIndex(i => (i + 1) % images.length)
 
   const isCharter = (yacht.status || '').toLowerCase() === 'location'
+
+  // A charter guest planning a trip needs the essentials to picture the
+  // cruise — size, capacity/comfort, brand, and where to embark — not a
+  // full technical sheet (that's for a buyer, see saleSpecs below). Either
+  // way, a spec with no real data is dropped instead of being shown blank
+  // or as a misleading 0 (see hasValue above).
+  const charterSpecs: [string, number | string | null | undefined][] = [
+    ['Length', `${yacht.length}m`],
+    ['Builder', yacht.builder],
+    ['Year', yacht.year],
+    ['Cabins', yacht.cabins],
+    ['Bathrooms', yacht.bathrooms],
+    ['Guests', yacht.maxGuests],
+    ['Region', yacht.region],
+    ['City', yacht.city],
+  ]
+  const saleSpecs: [string, number | string | null | undefined][] = [
+    ['Length', `${yacht.length}m`],
+    ['Builder', yacht.builder],
+    ['Year', yacht.year],
+    ['Cabins', yacht.cabins],
+    ['Bathrooms', yacht.bathrooms],
+    ['Guests', yacht.maxGuests],
+    ['Max Sleeping', yacht.maxSleeping],
+    ['Region', yacht.region],
+    ['City', yacht.city],
+    ['Hull', yacht.hull],
+    ['Engines', yacht.engines],
+    ['Engine Hours', hasValue(yacht.engineHours) ? `${yacht.engineHours}h` : null],
+    ['Beam', hasValue(yacht.beam) ? `${yacht.beam}m` : null],
+    ['Beam (Open Platform)', hasValue(yacht.beamOpenPlatform) ? `${yacht.beamOpenPlatform}m` : null],
+    ['Draft', hasValue(yacht.draft) ? `${yacht.draft}m` : null],
+    ['Cruise Speed', hasValue(yacht.cruiseSpeed) ? `${yacht.cruiseSpeed} kn` : null],
+    ['Max Speed', hasValue(yacht.maxSpeed) ? `${yacht.maxSpeed} kn` : null],
+    ['Fuel Capacity', hasValue(yacht.fuelCapacity) ? `${yacht.fuelCapacity} L` : null],
+    ['Water Capacity', hasValue(yacht.waterCapacity) ? `${yacht.waterCapacity} L` : null],
+    ['Navigation Class', yacht.navigationClass],
+    ['Consumption', yacht.consumption],
+    ['Autonomy', yacht.autonomy],
+    ['Dry Weight', hasValue(yacht.dryWeight) ? `${yacht.dryWeight} kg` : null],
+  ]
+  const specs = (isCharter ? charterSpecs : saleSpecs).filter(([, value]) => hasValue(value))
+
   const availabilityYacht = {
     model: yacht.model,
     builder: yacht.builder,
@@ -120,7 +185,9 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
         )}
         <div style={{ position: 'absolute', bottom: 32, left: 'clamp(24px, 6vw, 96px)', right: 'clamp(24px, 6vw, 96px)' }}>
           <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 300, color: '#f5eedd', lineHeight: 1.1, margin: 0 }}>{yacht.model}</h1>
-          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginTop: 8 }}>{yacht.length}m · {yacht.builder} · {yacht.year}</div>
+          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginTop: 8 }}>
+            {[`${yacht.length}m`, yacht.builder, hasValue(yacht.year) ? yacht.year : null].filter(hasValue).join(' · ')}
+          </div>
         </div>
       </div>
 
@@ -145,14 +212,7 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
       >
         <div>
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 48, paddingBottom: 32, borderBottom: '1px solid rgba(184,151,74,0.12)' }}>
-            {[
-              ['Length', `${yacht.length}m`],
-              ['Cabins', yacht.cabins],
-              ['Guests', yacht.maxGuests],
-              ['Builder', yacht.builder],
-              ['Year', yacht.year],
-              ['Region', yacht.region]
-            ].filter(([_, value]) => value !== null && value !== undefined).map(([label, value]) => (
+            {specs.map(([label, value]) => (
               <div key={label}>
                 <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#8f8f7f', marginBottom: 8 }}>{label}</div>
                 <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 18, fontWeight: 300, color: '#d4b472' }}>{value}</div>
@@ -193,6 +253,10 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
         </div>
       </div>
 
+      <div style={{ padding: '0 clamp(24px, 6vw, 96px)' }}>
+        <ShareButtons title={yacht.model} />
+      </div>
+
       {similarYachts.length > 0 && (
         <div style={{ padding: '0 clamp(24px, 6vw, 96px) clamp(64px, 8vw, 120px)', borderTop: '1px solid rgba(184,151,74,0.12)' }}>
           <div style={{ paddingTop: 64, marginBottom: 40 }}>
@@ -205,7 +269,7 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 32 }}>
             {similarYachts.map((sim) => (
-              <Link key={sim.id} href={`/yachting/fleet/${yachtSlug(sim)}`} style={{ textDecoration: 'none', display: 'block' }}>
+              <Link key={sim.id} href={yachtHref(sim)} style={{ textDecoration: 'none', display: 'block' }}>
                 <div
                   style={{ position: 'relative', overflow: 'hidden', aspectRatio: '4/3', background: '#1a1a1a' }}
                   onMouseEnter={(e) => {

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import AvailabilityModal from './AvailabilityModal'
-import { yachtSlug } from '@/lib/slug'
+import { yachtHref } from '@/lib/slug'
 
 interface Media {
   id: number
@@ -65,7 +65,7 @@ export default function FleetClient({ yachts }: FleetClientProps) {
                 transition={{ duration: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
               >
-                <Link href={`/yachting/fleet/${yachtSlug(yacht)}`} style={{ textDecoration: 'none', display: 'block' }}>
+                <Link href={yachtHref(yacht)} style={{ textDecoration: 'none', display: 'block' }}>
                   <div
                     style={{ position: 'relative', overflow: 'hidden', aspectRatio: '4/3', background: '#1a1a1a' }}
                     onMouseEnter={(e) => {
@@ -103,7 +103,7 @@ export default function FleetClient({ yachts }: FleetClientProps) {
                         {yacht.model}
                       </div>
                       <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginTop: 4 }}>
-                        {yacht.length}m · {yacht.builder}
+                        {yacht.length}m{yacht.builder ? ` · ${yacht.builder}` : ''}
                       </div>
                     </div>
 
@@ -176,7 +176,7 @@ export default function FleetClient({ yachts }: FleetClientProps) {
                     Check Availability
                   </button>
                   <Link
-                    href={`/yachting/fleet/${yachtSlug(yacht)}`}
+                    href={yachtHref(yacht)}
                     style={{
                       flex: 1,
                       textAlign: 'center',

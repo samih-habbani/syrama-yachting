@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
-import { yachtSlug } from '@/lib/slug'
+import { yachtHref } from '@/lib/slug'
 
 const BASE_URL = 'https://www.syrama-yachting.com'
 
@@ -18,11 +18,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const yachts = await prisma.yacht.findMany({
       where: { available: true },
-      select: { id: true, model: true, builder: true, createdAt: true },
+      select: { id: true, model: true, builder: true, status: true, createdAt: true },
     })
 
     const yachtRoutes: MetadataRoute.Sitemap = yachts.map((yacht) => ({
-      url: `${BASE_URL}/yachting/fleet/${yachtSlug(yacht)}`,
+      url: `${BASE_URL}${yachtHref(yacht)}`,
       lastModified: yacht.createdAt,
       changeFrequency: 'weekly',
       priority: 0.8,

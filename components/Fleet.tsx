@@ -6,7 +6,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import FleetFilters, { FilterState } from './FleetFilters'
 import AvailabilityModal from './AvailabilityModal'
 import BrokerContactModal from './BrokerContactModal'
-import { yachtSlug } from '@/lib/slug'
+import { yachtHref } from '@/lib/slug'
 
 interface Media {
   id: number
@@ -306,7 +306,7 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: (i % PAGE_SIZE) * 0.04, ease: 'easeOut' }}
               >
-                <Link href={`/yachting/fleet/${yachtSlug(yacht)}`} style={{ textDecoration: 'none', display: 'block' }}>
+                <Link href={yachtHref(yacht)} style={{ textDecoration: 'none', display: 'block' }}>
                   <div
                     style={{ position: 'relative', overflow: 'hidden', aspectRatio: '4/3', background: '#1a1a1a' }}
                     onMouseEnter={(e) => {
@@ -344,7 +344,7 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                         {yacht.model}
                       </div>
                       <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginTop: 4 }}>
-                        {yacht.length}m · {yacht.builder}
+                        {yacht.length}m{yacht.builder ? ` · ${yacht.builder}` : ''}
                       </div>
                     </div>
 
@@ -445,7 +445,7 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                     </button>
                   )}
                   <Link
-                    href={`/yachting/fleet/${yachtSlug(yacht)}`}
+                    href={yachtHref(yacht)}
                     style={{
                       flex: 1,
                       textAlign: 'center',

@@ -102,6 +102,72 @@ export async function getYachts(options: {
   })
 }
 
+export interface YachtDetail {
+  id: number
+  model: string
+  builder: string | null
+  length: number
+  maxGuests: number | null
+  cabins: number
+  bathrooms: number | null
+  maxSleeping: number | null
+  year: number | null
+  priceDay: number | null
+  priceSale: number | null
+  priceHour: number | null
+  priceWeek: number | null
+  region: string | null
+  city: string | null
+  status: string | null
+  engines: string | null
+  engineHours: number | null
+  beam: number | null
+  beamOpenPlatform: number | null
+  draft: number | null
+  cruiseSpeed: number | null
+  maxSpeed: number | null
+  consumption: string | null
+  autonomy: string | null
+  fuelCapacity: number | null
+  waterCapacity: number | null
+  navigationClass: string | null
+  dryWeight: number | null
+  hull: string | null
+  media: { id: number; url: string | null; alt: string | null }[]
+}
+
+// Full detail record for a single yacht's page — id, every spec field (used
+// to build the full "all info we have" spec sheet on a sale yacht's page),
+// and its full media gallery (unlike getYachts()/getSimilarYachts(), which
+// only take a thumbnail for card display).
+export async function getYachtById(id: number): Promise<YachtDetail | null> {
+  const rows = await prisma.$queryRaw<(Omit<YachtDetail, 'media'> & { media: YachtDetail['media'] | null })[]>`
+    SELECT
+      y.id, y.model, y.builder, y.length, y.max_guests as "maxGuests",
+      y.cabins, y.bathrooms, y.max_sleeping as "maxSleeping",
+      y.year, y.price_day as "priceDay", y.price_sale as "priceSale",
+      y.price_hour as "priceHour", y.price_week as "priceWeek",
+      y.region, y.city, y.status,
+      y.engines, y.engine_hours as "engineHours",
+      y.beam, y.beam_open_platform as "beamOpenPlatform", y.draft,
+      y.cruise_speed as "cruiseSpeed", y.max_speed as "maxSpeed",
+      y.consumption, y.autonomy,
+      y.fuel_capacity as "fuelCapacity", y.water_capacity as "waterCapacity",
+      y.navigation_class as "navigationClass", y.dry_weight as "dryWeight", y.hull,
+      (SELECT json_agg(json_build_object('id', m.id, 'url', m.url, 'alt', m.alt) ORDER BY m.id)
+       FROM media m WHERE m.yacht_id = y.id) as media
+    FROM yacht y
+    WHERE y.id = ${id}
+  `
+
+  if (!rows || rows.length === 0) return null
+
+  return {
+    ...rows[0],
+    media: rows[0].media || []
+  }
+}
+
 interface SimilarYachtRow {
   id: number
   builder: string | null

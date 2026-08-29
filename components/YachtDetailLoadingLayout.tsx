@@ -1,5 +1,8 @@
 import { Suspense } from 'react'
 
+// Shared Suspense shell for a yacht's detail page — reused identically by
+// the /charters/[slug] and /sales/[slug] routes so both stream behind the
+// same loading spinner instead of duplicating this markup twice.
 function LoadingFallback() {
   return (
     <div style={{
@@ -45,7 +48,7 @@ function LoadingFallback() {
   )
 }
 
-export default function YachtDetailLayout({
+export default function YachtDetailLoadingLayout({
   children,
 }: {
   children: React.ReactNode
