@@ -24,12 +24,21 @@ export async function GET(request: Request) {
 
     const search = searchParams.get('search')
     if (search) {
+      // Prisma's `contains` can't do a case-insensitive substring match
+      // inside a String[] column (its array filters are exact-value only),
+      // so services are matched separately with a raw ILIKE over the
+      // unnested array, then folded into the same OR as an id list.
+      const serviceMatches = await prisma.$queryRaw<{ id: number }[]>`
+        SELECT id FROM provider
+        WHERE EXISTS (SELECT 1 FROM unnest(services) AS s WHERE s ILIKE ${'%' + search + '%'})
+      `
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { firstName: { contains: search, mode: 'insensitive' } },
         { company: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
         { phone: { contains: search, mode: 'insensitive' } },
+        ...(serviceMatches.length > 0 ? [{ id: { in: serviceMatches.map((r) => r.id) } }] : []),
       ]
     }
 

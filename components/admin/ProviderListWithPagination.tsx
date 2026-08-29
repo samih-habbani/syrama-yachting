@@ -28,6 +28,11 @@ const GRID = '1.8fr 1fr 1fr 1.5fr 1.4fr 0.8fr 44px'
 const isPlaceholder = (v?: string | null): v is undefined | null | '' => !v || /^-+$/.test(v.trim())
 const real = (v?: string | null) => (isPlaceholder(v) ? null : v)
 
+// Display-only formatting — prepend "+" to a phone number that's missing
+// it, without touching the stored value (some rows already have it, e.g.
+// "+33 6 ...", others were saved as plain "33 6 ..." or "06 52 ...").
+const formatPhone = (v: string) => (v.trim().startsWith('+') ? v : `+${v.trim()}`)
+
 export default function ProviderListWithPagination({
   providers, currentPage, totalPages, onEdit, onDelete, onPageChange,
 }: ProviderListProps) {
@@ -118,7 +123,7 @@ export default function ProviderListWithPagination({
               )}
               {phone && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-lora)', fontSize: 11.5, color: '#8f8f7f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  <Phone size={11} strokeWidth={1.75} style={{ flexShrink: 0 }} />{phone}
+                  <Phone size={11} strokeWidth={1.75} style={{ flexShrink: 0 }} />{formatPhone(phone)}
                 </span>
               )}
               {website && (

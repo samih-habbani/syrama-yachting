@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, ArrowLeft, Building2, UserCheck, UserX } from 'lucide-react'
+import { Plus, ArrowLeft, Building2, UserCheck, UserX, Download } from 'lucide-react'
 import ProviderListWithPagination from '@/components/admin/ProviderListWithPagination'
 import ProviderForm, { type Provider } from '@/components/admin/ProviderForm'
 import ProviderFilters, { EMPTY_PROVIDER_FILTERS, type ProviderFilterState } from '@/components/admin/ProviderFilters'
@@ -133,10 +133,30 @@ export default function ProvidersPage() {
         description="Your network of yacht brokers, restaurants, hotels and other partners."
         breadcrumbs={[{ label: 'Overview', href: '/admin/dashboard' }, { label: 'Providers' }]}
         action={
-          <Button variant="primary" onClick={() => { setEditingProvider(null); setShowForm(true) }}>
-            <Plus size={14} strokeWidth={2.5} />
-            Add Provider
-          </Button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            {/* Plain anchor, not a Button+router navigation — this hits an API
+                route that streams a binary .xlsx download, not a Next.js page. */}
+            <a
+              href="/api/admin/providers/export"
+              download
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                fontFamily: 'var(--font-lora)', fontSize: 12, fontWeight: 600, letterSpacing: '0.04em',
+                color: '#d4b472', background: 'transparent', border: '1px solid rgba(184,151,74,0.35)',
+                borderRadius: 7, padding: '11px 20px', textDecoration: 'none', whiteSpace: 'nowrap',
+                transition: 'background 0.2s ease',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(184,151,74,0.1)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              <Download size={14} strokeWidth={2} />
+              Export Excel
+            </a>
+            <Button variant="primary" onClick={() => { setEditingProvider(null); setShowForm(true) }}>
+              <Plus size={14} strokeWidth={2.5} />
+              Add Provider
+            </Button>
+          </div>
         }
       />
 

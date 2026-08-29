@@ -88,11 +88,20 @@ model User {
 }
 
 model Client {
-  id        Int      @id @default(autoincrement())
-  fullName  String   @map("full_name")
-  email     String   @unique
-  phone     String
-  createdAt DateTime @default(now()) @map("created_at")
+  id        Int       @id @default(autoincrement())
+  fullName  String    @map("full_name")
+  // email/phone made optional to accommodate imported legacy leads that are
+  // missing one or the other (or share a placeholder email) — still required
+  // at the application layer when creating a client through a booking.
+  email     String?   @unique
+  phone     String?
+  address   String?
+  city      String?
+  country   String?
+  region    String?
+  notes     String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
   reservations Reservation[]
 
   @@map("client")
