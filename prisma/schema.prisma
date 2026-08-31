@@ -160,6 +160,51 @@ model Provider {
   @@map("provider")
 }
 
+model Property {
+  id              Int      @id @default(autoincrement())
+  title           String?
+  description     String?
+  city            String?
+  zipCode         String?  @map("zip_code")
+  type            String?
+  surface         Float?
+  rooms           Int?
+  bedrooms        Int?
+  bathrooms       Int?
+  price           Float?
+  reference       String?
+  year            Int?
+  forSale         Boolean? @map("for_sale")
+  isOffMarket     Boolean? @map("is_off_market")
+  region          String?
+  available       Boolean?
+  status          String?
+  rating          Float?
+  reviewsCount    Int?     @map("reviews_count")
+  surfaceUnit     String?  @map("surface_unit")
+  currency        String?
+  mapIframeSrc    String?  @map("map_iframe_src")
+  // Loose reference, same convention as Yacht.providerId — no formal
+  // Prisma @relation to keep this table independent of the Provider model.
+  providerId      Int?     @map("provider_id")
+  priceDay        Float?   @map("price_day")
+  maxGuests       Int?     @map("max_guests")
+  beds            Int?
+  terraceSurface  Float?   @map("terrace_surface")
+  hasTerrace      Boolean? @map("has_terrace")
+  hasBalcony      Boolean? @map("has_balcony")
+  petsAllowed     Boolean? @map("pets_allowed")
+  partiesAllowed  Boolean? @map("parties_allowed")
+  checkInFrom     String?  @map("check_in_from")
+  checkOutBefore  String?  @map("check_out_before")
+  amenities       Json?
+  bedDistribution Json?    @map("bed_distribution")
+  priceWeek       Float?   @map("price_week")
+  priceMonth      Float?   @map("price_month")
+
+  @@map("property")
+}
+
 model Message {
   id              Int      @id @default(autoincrement())
   name            String?
