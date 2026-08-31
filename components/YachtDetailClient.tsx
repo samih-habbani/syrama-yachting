@@ -82,6 +82,14 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
 
   const isCharter = (yacht.status || '').toLowerCase() === 'location'
 
+  // "Our fleet" back-link — the fleet page defaults its tab to Charter, so a
+  // sale yacht's page must explicitly pass tab=sale or the user lands back
+  // on the wrong filter after browsing a sale listing.
+  const fleetParams = new URLSearchParams()
+  if (yacht.region) fleetParams.set('region', yacht.region)
+  if (!isCharter) fleetParams.set('tab', 'sale')
+  const fleetHref = fleetParams.size > 0 ? `/yachting/fleet?${fleetParams.toString()}` : '/yachting/fleet'
+
   // A charter guest planning a trip needs the essentials to picture the
   // cruise — size, capacity/comfort, brand, and where to embark — not a
   // full technical sheet (that's for a buyer, see saleSpecs below). Either
@@ -144,7 +152,7 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
   return (
     <main id="main-content" style={{ background: '#06090f', minHeight: '100vh' }}>
       <nav className="px-5 md:px-12" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 20, paddingBottom: 20, background: 'rgba(6,9,15,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(184,151,74,0.12)' }}>
-        <Link href={yacht.region ? `/yachting/fleet?region=${encodeURIComponent(yacht.region)}` : '/yachting/fleet'} style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#8f8f7f', textDecoration: 'none' }}>← Our fleet</Link>
+        <Link href={fleetHref} style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#8f8f7f', textDecoration: 'none' }}>← Our fleet</Link>
         <Link href="/#contact" className="hidden lg:inline-block" style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#06090f', background: '#b8974a', padding: '12px 24px', textDecoration: 'none' }}>Contact Us</Link>
         {isCharter ? (
           <button
