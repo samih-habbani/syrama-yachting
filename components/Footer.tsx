@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { Phone, Mail } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -86,6 +87,22 @@ export default function Footer() {
             <p className="font-[var(--font-lora)] text-[#f5eedd]/60 text-sm leading-relaxed tracking-wide">
               Luxury yacht charter and sales across the Mediterranean and worldwide.
             </p>
+            <div className="mt-5 flex flex-col gap-2.5">
+              <a
+                href="tel:+971505548034"
+                className="flex items-center gap-2.5 font-[var(--font-lora)] text-[#f5eedd]/60 text-sm tracking-wide hover:text-[#b8974a] transition-colors"
+              >
+                <Phone size={14} strokeWidth={1.75} className="text-[#b8974a] shrink-0" />
+                +971 50 554 8034
+              </a>
+              <a
+                href="mailto:contact@syrama-services.com"
+                className="flex items-center gap-2.5 font-[var(--font-lora)] text-[#f5eedd]/60 text-sm tracking-wide hover:text-[#b8974a] transition-colors"
+              >
+                <Mail size={14} strokeWidth={1.75} className="text-[#b8974a] shrink-0" />
+                contact@syrama-services.com
+              </a>
+            </div>
           </motion.div>
 
           {/* Links sections */}
