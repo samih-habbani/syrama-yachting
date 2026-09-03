@@ -100,6 +100,10 @@ model Client {
   country   String?
   region    String?
   notes     String?
+  // Which business line this client belongs to — same value space as
+  // Provider.type (e.g. "Yacht Charter"), so clients and providers can be
+  // filtered/reported on consistently.
+  service   String?
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @map("updated_at")
   reservations Reservation[]

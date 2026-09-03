@@ -20,6 +20,7 @@ export async function GET(request: Request) {
     const fullName = searchParams.get('fullName')
     const email = searchParams.get('email')
     const phone = searchParams.get('phone')
+    const service = searchParams.get('service')
     const dateFrom = searchParams.get('dateFrom')
     const dateTo = searchParams.get('dateTo')
 
@@ -33,6 +34,9 @@ export async function GET(request: Request) {
     }
     if (phone) {
       where.phone = { contains: phone, mode: 'insensitive' }
+    }
+    if (service) {
+      where.service = { equals: service, mode: 'insensitive' }
     }
     if (dateFrom || dateTo) {
       where.createdAt = {}
@@ -52,6 +56,7 @@ export async function GET(request: Request) {
           fullName: true,
           email: true,
           phone: true,
+          service: true,
           createdAt: true,
           _count: {
             select: { reservations: true }
@@ -86,7 +91,7 @@ export async function PUT(request: Request) {
   try {
     await checkAuth()
     const data = await request.json()
-    const { id, fullName, email, phone } = data
+    const { id, fullName, email, phone, service } = data
 
     if (!id) {
       return Response.json({ error: 'Client ID is required' }, { status: 400 })
@@ -94,7 +99,7 @@ export async function PUT(request: Request) {
 
     const client = await prisma.client.update({
       where: { id: parseInt(id) },
-      data: { fullName, email, phone }
+      data: { fullName, email, phone, service }
     })
 
     return Response.json(client)

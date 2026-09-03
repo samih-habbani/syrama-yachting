@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Contact, Mail, Phone, CalendarDays, Pencil, ArrowLeft, Save } from 'lucide-react'
+import { Contact, Mail, Phone, CalendarDays, Briefcase, Pencil, ArrowLeft, Save } from 'lucide-react'
 import ClientFilters from '@/components/admin/ClientFilters'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import Card from '@/components/admin/ui/Card'
@@ -17,6 +17,7 @@ interface Client {
   fullName: string
   email: string
   phone: string
+  service: string | null
   createdAt: string
   _count?: { reservations: number }
 }
@@ -31,7 +32,7 @@ export default function ClientsPage() {
   const [filters, setFilters] = useState(EMPTY_FILTERS)
 
   const [editingClient, setEditingClient] = useState<Client | null>(null)
-  const [formData, setFormData] = useState({ fullName: '', email: '', phone: '' })
+  const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', service: '' })
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -73,7 +74,7 @@ export default function ClientsPage() {
 
   const handleEdit = (client: Client) => {
     setEditingClient(client)
-    setFormData({ fullName: client.fullName, email: client.email, phone: client.phone })
+    setFormData({ fullName: client.fullName, email: client.email, phone: client.phone, service: client.service || '' })
     setError('')
   }
 
@@ -139,6 +140,9 @@ export default function ClientsPage() {
               <FilterField label="Phone *">
                 <TextField type="tel" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
               </FilterField>
+              <FilterField label="Service">
+                <TextField value={formData.service} onChange={(e) => setFormData({ ...formData, service: e.target.value })} placeholder="e.g. Yacht Charter, Yacht Sales…" />
+              </FilterField>
             </div>
 
             <Button type="submit" variant="primary" disabled={isSaving}>
@@ -199,7 +203,13 @@ export default function ClientsPage() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {client.service && (
+                  <Badge tone="neutral">
+                    <Briefcase size={10} strokeWidth={2} />
+                    {client.service}
+                  </Badge>
+                )}
                 <Badge tone="gold">{client._count?.reservations || 0} reservation{(client._count?.reservations || 0) === 1 ? '' : 's'}</Badge>
                 <ActionsMenu items={[{ label: 'Edit', icon: <Pencil size={13.5} strokeWidth={1.75} />, onClick: () => handleEdit(client) }]} />
               </div>
