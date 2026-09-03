@@ -74,11 +74,20 @@ export default function YachtForm({ yacht, onSaved }: YachtFormProps) {
     fetch('/api/admin/providers?limit=1000')
       .then((res) => res.json())
       .then((data) => {
-        const options: SearchSelectOption[] = (data.providers || []).map((p: { id: number; name?: string | null; firstName?: string | null; company?: string | null }) => ({
-          value: p.id,
-          label: [p.firstName, p.name].filter(Boolean).join(' ') || p.company || `Provider #${p.id}`,
-          sublabel: p.company && ([p.firstName, p.name].filter(Boolean).join(' ') ? p.company : undefined),
-        }))
+        // The imported provider dataset used dash-only strings ('-', '--', ...)
+        // as a "no value" placeholder — treat them as empty so a provider
+        // doesn't show up as "- -" in the picker.
+        const isPlaceholder = (v: string) => /^-+$/.test(v.trim())
+        const realStr = (v?: string | null) => (v && !isPlaceholder(v) ? v : null)
+        const options: SearchSelectOption[] = (data.providers || []).map((p: { id: number; name?: string | null; firstName?: string | null; company?: string | null }) => {
+          const fullName = [realStr(p.firstName), realStr(p.name)].filter(Boolean).join(' ')
+          const company = realStr(p.company)
+          return {
+            value: p.id,
+            label: fullName || company || `Provider #${p.id}`,
+            sublabel: fullName && company ? company : undefined,
+          }
+        })
         setProviderOptions(options)
       })
       .catch((err) => console.error('Fetch providers error:', err))

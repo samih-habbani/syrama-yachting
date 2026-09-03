@@ -52,6 +52,9 @@ export async function GET(request: Request) {
     const cities = searchParams.getAll('city')
     if (cities.length > 0) where.city = { in: cities }
 
+    const providerIds = searchParams.getAll('providerId')
+    if (providerIds.length > 0) where.providerId = { in: providerIds.map((id) => parseInt(id)) }
+
     if (searchParams.has('status')) {
       const status = searchParams.get('status')
       if (status === 'charter') {

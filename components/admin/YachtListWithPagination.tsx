@@ -37,9 +37,15 @@ interface YachtListProps {
 
 const GRID = '2fr 0.9fr 1fr 1fr 1.2fr 0.9fr 44px'
 
+// The imported provider dataset used dash-only strings ('-', '--', ...) as
+// a "no value" placeholder — treat them as empty, same convention as the
+// Providers admin pages, so a yacht doesn't end up showing "- -" here.
+const isPlaceholder = (v: string) => /^-+$/.test(v.trim())
+const realStr = (v?: string | null) => (v && !isPlaceholder(v) ? v : null)
+
 function providerLabel(provider?: Yacht['provider']): string | null {
   if (!provider) return null
-  return [provider.firstName, provider.name].filter(Boolean).join(' ') || provider.company || null
+  return [realStr(provider.firstName), realStr(provider.name)].filter(Boolean).join(' ') || realStr(provider.company) || null
 }
 
 function statusTone(status?: string | null): 'gold' | 'blue' {

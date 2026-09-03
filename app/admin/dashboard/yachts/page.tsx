@@ -54,6 +54,7 @@ export default function YachtsPage() {
       if (appliedFilters.maxGuests) params.append('maxGuests', appliedFilters.maxGuests as string)
       ;(appliedFilters.region as string[] | undefined || []).forEach((r) => params.append('region', r))
       ;(appliedFilters.city as string[] | undefined || []).forEach((c) => params.append('city', c))
+      ;(appliedFilters.providerId as string[] | undefined || []).forEach((p) => params.append('providerId', p))
       if (appliedFilters.status) params.append('status', appliedFilters.status as string)
 
       const response = await fetch(`/api/admin/yachts?${params.toString()}`)

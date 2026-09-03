@@ -11,11 +11,22 @@ import { ChevronDown, Search, X } from 'lucide-react'
 // local state — with several of these side by side in a filter bar, each
 // managing its own open state independently let two panels stay open at
 // once. The parent holds a single "which field is open" value instead.
+//
+// `options` accepts either plain strings (the value doubles as its own
+// label — the common case: hashtags, regions, cities…) or `{value, label}`
+// pairs, for when the filtered value isn't human-readable on its own (e.g.
+// a provider id, matched against a display name built from other fields).
+// `selected` is always the list of `value`s either way.
+export interface MultiSelectOption {
+  value: string
+  label: string
+}
+
 export default function MultiSelectField({
   label, options, selected, onChange, isOpen, onOpenChange,
 }: {
   label: string
-  options: string[]
+  options: (string | MultiSelectOption)[]
   selected: string[]
   onChange: (next: string[]) => void
   isOpen: boolean
@@ -29,6 +40,8 @@ export default function MultiSelectField({
   const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => setMounted(true), [])
+
+  const normalizedOptions: MultiSelectOption[] = options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o))
 
   const updatePosition = () => {
     const rect = triggerRef.current?.getBoundingClientRect()
@@ -63,13 +76,17 @@ export default function MultiSelectField({
   }
 
   const filteredOptions = query
-    ? options.filter((o) => o.toLowerCase().includes(query.toLowerCase()))
-    : options
+    ? normalizedOptions.filter((o) => o.label.toLowerCase().includes(query.toLowerCase()))
+    : normalizedOptions
+
+  const selectedLabel = selected.length === 1
+    ? normalizedOptions.find((o) => o.value === selected[0])?.label || selected[0]
+    : null
 
   const buttonLabel = selected.length === 0
     ? `All ${label.toLowerCase()}`
     : selected.length === 1
-      ? selected[0]
+      ? selectedLabel
       : `${selected.length} selected`
 
   return (
@@ -104,7 +121,7 @@ export default function MultiSelectField({
             boxShadow: '0 16px 40px rgba(0,0,0,0.55)', overflow: 'hidden', display: 'flex', flexDirection: 'column',
           }}
         >
-          {options.length > 8 && (
+          {normalizedOptions.length > 8 && (
             <div style={{ position: 'relative', padding: 8, borderBottom: '1px solid rgba(184,151,74,0.12)' }}>
               <Search size={13} color="#6b6b60" style={{ position: 'absolute', left: 18, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
               <input
@@ -129,10 +146,10 @@ export default function MultiSelectField({
               </div>
             ) : (
               filteredOptions.map((option) => {
-                const checked = selected.includes(option)
+                const checked = selected.includes(option.value)
                 return (
                   <label
-                    key={option}
+                    key={option.value}
                     style={{
                       display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 5,
                       fontFamily: 'var(--font-lora)', fontSize: 12.5, color: checked ? '#f5eedd' : '#d8d8cc',
@@ -144,10 +161,10 @@ export default function MultiSelectField({
                     <input
                       type="checkbox"
                       checked={checked}
-                      onChange={() => toggle(option)}
+                      onChange={() => toggle(option.value)}
                       style={{ width: 14, height: 14, accentColor: '#b8974a', cursor: 'pointer', flexShrink: 0 }}
                     />
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{option}</span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{option.label}</span>
                   </label>
                 )
               })

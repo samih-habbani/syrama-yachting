@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import FilterBar, { FilterField, SearchField, TextField, SelectField } from './ui/FilterBar'
-import MultiSelectField from './ui/MultiSelectField'
+import MultiSelectField, { type MultiSelectOption } from './ui/MultiSelectField'
 
 const EMPTY_FILTERS = {
   model: '',
@@ -12,21 +12,23 @@ const EMPTY_FILTERS = {
   maxGuests: '',
   region: [] as string[],
   city: [] as string[],
+  providerId: [] as string[],
   status: '',
 }
 
 interface Meta {
   regions: string[]
   cities: string[]
+  providers: MultiSelectOption[]
 }
 
-const EMPTY_META: Meta = { regions: [], cities: [] }
+const EMPTY_META: Meta = { regions: [], cities: [], providers: [] }
 
 interface YachtFiltersProps {
   onFilterChange: (filters: typeof EMPTY_FILTERS) => void
 }
 
-type OpenFilter = 'region' | 'city' | null
+type OpenFilter = 'region' | 'city' | 'provider' | null
 
 export default function YachtFilters({ onFilterChange }: YachtFiltersProps) {
   const [filters, setFilters] = useState(EMPTY_FILTERS)
@@ -38,7 +40,7 @@ export default function YachtFilters({ onFilterChange }: YachtFiltersProps) {
   useEffect(() => {
     fetch('/api/admin/yachts/meta')
       .then((res) => res.json())
-      .then((data) => setMeta({ regions: data.regions || [], cities: data.cities || [] }))
+      .then((data) => setMeta({ regions: data.regions || [], cities: data.cities || [], providers: data.providers || [] }))
       .catch((err) => console.error('Fetch yacht meta error:', err))
   }, [])
 
@@ -88,6 +90,17 @@ export default function YachtFilters({ onFilterChange }: YachtFiltersProps) {
           onChange={(v) => update({ city: v })}
           isOpen={openFilter === 'city'}
           onOpenChange={(open) => setOpenFilter(open ? 'city' : null)}
+        />
+      </FilterField>
+
+      <FilterField label="Provider">
+        <MultiSelectField
+          label="Providers"
+          options={meta.providers}
+          selected={filters.providerId}
+          onChange={(v) => update({ providerId: v })}
+          isOpen={openFilter === 'provider'}
+          onOpenChange={(open) => setOpenFilter(open ? 'provider' : null)}
         />
       </FilterField>
 
