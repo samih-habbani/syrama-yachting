@@ -7,6 +7,7 @@ import AvailabilityModal from './AvailabilityModal'
 import BrokerContactModal from './BrokerContactModal'
 import ShareButtons from './ShareButtons'
 import YachtExperienceJourney from './YachtExperienceJourney'
+import Footer from './Footer'
 import { useWhatsappContext } from './WhatsappContext'
 import { yachtHref } from '@/lib/slug'
 
@@ -356,6 +357,8 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
           </div>
         </div>
       )}
+
+      <Footer />
 
       {isCharter && (
         <ReservationModal

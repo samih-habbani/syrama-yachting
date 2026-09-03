@@ -1,5 +1,6 @@
 import Navbar from '@/components/Navbar'
 import DestinationCards from '@/components/DestinationCards'
+import Footer from '@/components/Footer'
 
 export const metadata = {
   title: 'Yacht Charter Destinations | Syrama Yachting',
@@ -16,6 +17,8 @@ export default function ChartersPage() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: 80 }}>
         <DestinationCards />
       </div>
+
+      <Footer />
     </main>
   )
 }
