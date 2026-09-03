@@ -95,6 +95,7 @@ function buildData(data: Record<string, unknown>) {
     isActive: typeof data.isActive === 'boolean' ? data.isActive : null,
     website: str(data.website),
     instagram: str(data.instagram),
+    catalogUrl: str(data.catalogUrl),
     notes: str(data.notes),
     position: str(data.position),
     firstContact: str(data.firstContact),

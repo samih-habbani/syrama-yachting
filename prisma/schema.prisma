@@ -182,6 +182,10 @@ model Provider {
   isActive     Boolean?  @map("is_active")
   website      String?
   instagram    String?
+  // A link the team can come back to while working with this provider —
+  // usually their yacht/product catalog, often shared as a Google Drive
+  // folder rather than a proper website.
+  catalogUrl   String?   @map("catalog_url")
   notes        String?
   position     String?
   firstContact String?   @map("first_contact")

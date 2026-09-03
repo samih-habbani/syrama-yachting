@@ -23,7 +23,7 @@ export default function YachtsPage() {
   const [editingYacht, setEditingYacht] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [filters, setFilters] = useState<Record<string, string>>({})
+  const [filters, setFilters] = useState<Record<string, string | string[]>>({})
   const [stats, setStats] = useState<YachtStats | null>(null)
 
   const fetchStats = async () => {
@@ -40,21 +40,21 @@ export default function YachtsPage() {
     }
   }
 
-  const fetchYachts = async (page: number, appliedFilters: Record<string, string> = {}) => {
+  const fetchYachts = async (page: number, appliedFilters: Record<string, string | string[]> = {}) => {
     try {
       setIsLoading(true)
       const params = new URLSearchParams()
       params.append('page', String(page))
       params.append('limit', '10')
 
-      if (appliedFilters.model) params.append('model', appliedFilters.model)
-      if (appliedFilters.minLength) params.append('minLength', appliedFilters.minLength)
-      if (appliedFilters.maxLength) params.append('maxLength', appliedFilters.maxLength)
-      if (appliedFilters.minGuests) params.append('minGuests', appliedFilters.minGuests)
-      if (appliedFilters.maxGuests) params.append('maxGuests', appliedFilters.maxGuests)
-      if (appliedFilters.region) params.append('region', appliedFilters.region)
-      if (appliedFilters.city) params.append('city', appliedFilters.city)
-      if (appliedFilters.status) params.append('status', appliedFilters.status)
+      if (appliedFilters.model) params.append('model', appliedFilters.model as string)
+      if (appliedFilters.minLength) params.append('minLength', appliedFilters.minLength as string)
+      if (appliedFilters.maxLength) params.append('maxLength', appliedFilters.maxLength as string)
+      if (appliedFilters.minGuests) params.append('minGuests', appliedFilters.minGuests as string)
+      if (appliedFilters.maxGuests) params.append('maxGuests', appliedFilters.maxGuests as string)
+      ;(appliedFilters.region as string[] | undefined || []).forEach((r) => params.append('region', r))
+      ;(appliedFilters.city as string[] | undefined || []).forEach((c) => params.append('city', c))
+      if (appliedFilters.status) params.append('status', appliedFilters.status as string)
 
       const response = await fetch(`/api/admin/yachts?${params.toString()}`)
       if (response.ok) {

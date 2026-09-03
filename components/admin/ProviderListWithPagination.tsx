@@ -1,6 +1,6 @@
 'use client'
 
-import { Pencil, Trash2, Building2, Mail, Phone, Globe } from 'lucide-react'
+import { Pencil, Trash2, Building2, Mail, Phone, Globe, FolderOpen } from 'lucide-react'
 import Card from './ui/Card'
 import Badge from './ui/Badge'
 import Pagination from './ui/Pagination'
@@ -75,6 +75,7 @@ export default function ProviderListWithPagination({
         const email = real(provider.email)
         const phone = real(provider.phone)
         const website = real(provider.website)
+        const catalogUrl = real(provider.catalogUrl)
         const services = (provider.services || []).map(real).filter((v): v is string => !!v)
 
         return (
@@ -131,7 +132,20 @@ export default function ProviderListWithPagination({
                   <Globe size={11} strokeWidth={1.75} style={{ flexShrink: 0 }} />{website}
                 </span>
               )}
-              {!email && !phone && !website && (
+              {catalogUrl && (
+                <a
+                  href={catalogUrl.startsWith('http') ? catalogUrl : `https://${catalogUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'var(--font-lora)', fontSize: 11.5, color: '#d4b472', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: 'none' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                  onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                >
+                  <FolderOpen size={11} strokeWidth={1.75} style={{ flexShrink: 0 }} />Catalog
+                </a>
+              )}
+              {!email && !phone && !website && !catalogUrl && (
                 <span style={{ fontFamily: 'var(--font-lora)', fontSize: 12, color: '#5a5a52' }}>—</span>
               )}
             </div>

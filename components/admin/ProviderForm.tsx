@@ -17,6 +17,7 @@ export interface Provider {
   phone?: string | null
   website?: string | null
   instagram?: string | null
+  catalogUrl?: string | null
   city?: string | null
   region?: string | null
   country?: string | null
@@ -74,6 +75,7 @@ export default function ProviderForm({ provider, onSaved, onCancel }: ProviderFo
     phone: provider?.phone || '',
     website: provider?.website || '',
     instagram: provider?.instagram || '',
+    catalogUrl: provider?.catalogUrl || '',
     city: provider?.city || '',
     region: provider?.region || '',
     country: provider?.country || '',
@@ -178,6 +180,9 @@ export default function ProviderForm({ provider, onSaved, onCancel }: ProviderFo
           </FilterField>
           <FilterField label="Instagram">
             <TextField value={formData.instagram} onChange={(e) => update({ instagram: e.target.value })} />
+          </FilterField>
+          <FilterField label="Catalog URL">
+            <TextField value={formData.catalogUrl} onChange={(e) => update({ catalogUrl: e.target.value })} placeholder="e.g. Google Drive link" />
           </FilterField>
         </Section>
 

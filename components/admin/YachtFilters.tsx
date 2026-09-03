@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import FilterBar, { FilterField, SearchField, TextField, SelectField } from './ui/FilterBar'
+import MultiSelectField from './ui/MultiSelectField'
 
 const EMPTY_FILTERS = {
   model: '',
@@ -9,17 +10,37 @@ const EMPTY_FILTERS = {
   maxLength: '',
   minGuests: '',
   maxGuests: '',
-  region: '',
-  city: '',
+  region: [] as string[],
+  city: [] as string[],
   status: '',
 }
+
+interface Meta {
+  regions: string[]
+  cities: string[]
+}
+
+const EMPTY_META: Meta = { regions: [], cities: [] }
 
 interface YachtFiltersProps {
   onFilterChange: (filters: typeof EMPTY_FILTERS) => void
 }
 
+type OpenFilter = 'region' | 'city' | null
+
 export default function YachtFilters({ onFilterChange }: YachtFiltersProps) {
   const [filters, setFilters] = useState(EMPTY_FILTERS)
+  const [meta, setMeta] = useState<Meta>(EMPTY_META)
+  // Shared so opening one of the two dropdowns closes the other, instead of
+  // both being able to stay open at once.
+  const [openFilter, setOpenFilter] = useState<OpenFilter>(null)
+
+  useEffect(() => {
+    fetch('/api/admin/yachts/meta')
+      .then((res) => res.json())
+      .then((data) => setMeta({ regions: data.regions || [], cities: data.cities || [] }))
+      .catch((err) => console.error('Fetch yacht meta error:', err))
+  }, [])
 
   const update = (patch: Partial<typeof EMPTY_FILTERS>) => {
     const next = { ...filters, ...patch }
@@ -32,7 +53,7 @@ export default function YachtFilters({ onFilterChange }: YachtFiltersProps) {
     onFilterChange(EMPTY_FILTERS)
   }
 
-  const hasActiveFilters = Object.values(filters).some((v) => v !== '')
+  const hasActiveFilters = Object.values(filters).some((v) => (Array.isArray(v) ? v.length > 0 : v !== ''))
 
   return (
     <FilterBar hasActiveFilters={hasActiveFilters} onReset={handleReset}>
@@ -49,11 +70,25 @@ export default function YachtFilters({ onFilterChange }: YachtFiltersProps) {
       </FilterField>
 
       <FilterField label="Region">
-        <TextField placeholder="e.g. Mediterranean" value={filters.region} onChange={(e) => update({ region: e.target.value })} />
+        <MultiSelectField
+          label="Regions"
+          options={meta.regions}
+          selected={filters.region}
+          onChange={(v) => update({ region: v })}
+          isOpen={openFilter === 'region'}
+          onOpenChange={(open) => setOpenFilter(open ? 'region' : null)}
+        />
       </FilterField>
 
       <FilterField label="City">
-        <TextField placeholder="e.g. Monaco" value={filters.city} onChange={(e) => update({ city: e.target.value })} />
+        <MultiSelectField
+          label="Cities"
+          options={meta.cities}
+          selected={filters.city}
+          onChange={(v) => update({ city: v })}
+          isOpen={openFilter === 'city'}
+          onOpenChange={(open) => setOpenFilter(open ? 'city' : null)}
+        />
       </FilterField>
 
       <FilterField label="Length (m)">

@@ -46,13 +46,11 @@ export async function GET(request: Request) {
       }
     }
 
-    if (searchParams.has('region')) {
-      where.region = { contains: searchParams.get('region'), mode: 'insensitive' }
-    }
+    const regions = searchParams.getAll('region')
+    if (regions.length > 0) where.region = { in: regions }
 
-    if (searchParams.has('city')) {
-      where.city = { contains: searchParams.get('city'), mode: 'insensitive' }
-    }
+    const cities = searchParams.getAll('city')
+    if (cities.length > 0) where.city = { in: cities }
 
     if (searchParams.has('status')) {
       const status = searchParams.get('status')
