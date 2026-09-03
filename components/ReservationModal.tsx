@@ -115,7 +115,7 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
         role="dialog"
         aria-modal="true"
         aria-labelledby="reservation-modal-title"
-        className="modal-content bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-md w-full max-h-[90vh] overflow-y-auto rounded-lg border border-[#b8974a] border-opacity-20 p-6 sm:p-12 shadow-2xl"
+        className="modal-content bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-md w-full max-h-[90vh] overflow-y-auto rounded-lg border border-[#b8974a]/20 p-6 sm:p-12 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {success ? (
@@ -139,7 +139,7 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <div className="bg-red-500 bg-opacity-10 border border-red-500 border-opacity-50 text-red-300 px-4 py-3 text-sm rounded-lg">
+                <div className="bg-red-500/10 border border-red-500/50 text-red-300 px-4 py-3 text-sm rounded-lg">
                   {error}
                 </div>
               )}
@@ -153,7 +153,7 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
-                    className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                    className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
                     placeholder="Your name"
                     required
                   />
@@ -167,7 +167,7 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                    className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
                     placeholder="+33..."
                     required
                   />
@@ -182,7 +182,7 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                  className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
                   placeholder="your@email.com"
                   required
                 />
@@ -197,7 +197,7 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
                     name="date"
                     value={formData.date}
                     onChange={handleChange}
-                    className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm"
+                    className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm"
                     required
                   />
                 </div>
@@ -210,7 +210,7 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
                     name="numberOfPeople"
                     value={formData.numberOfPeople}
                     onChange={handleChange}
-                    className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm"
+                    className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm"
                     min="1"
                     required
                   />
@@ -226,12 +226,12 @@ export default function ReservationModal({ yachtId, yachtModel, isOpen, onClose 
                   value={formData.location}
                   onChange={handleChange}
                   placeholder="e.g., Monaco, French Riviera"
-                  className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                  className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
                   required
                 />
               </div>
 
-              <div className="flex gap-3 pt-6 border-t border-[#b8974a] border-opacity-10">
+              <div className="flex gap-3 pt-6 border-t border-[#b8974a]/10">
                 <button
                   type="submit"
                   disabled={isLoading}

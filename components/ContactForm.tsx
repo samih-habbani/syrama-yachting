@@ -76,13 +76,13 @@ export default function ContactForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-500 bg-opacity-10 border border-red-500 border-opacity-50 text-red-300 px-4 py-3 text-sm rounded-lg">
+        <div className="bg-red-500/10 border border-red-500/50 text-red-300 px-4 py-3 text-sm rounded-lg">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="bg-green-500 bg-opacity-10 border border-green-500 border-opacity-50 text-green-300 px-4 py-3 text-sm rounded-lg">
+        <div className="bg-green-500/10 border border-green-500/50 text-green-300 px-4 py-3 text-sm rounded-lg">
           ✓ Thank you! Your message has been received and we will get back to you soon.
         </div>
       )}
@@ -99,7 +99,7 @@ export default function ContactForm() {
             value={formData.firstName}
             onChange={handleChange}
             placeholder="Your first name"
-            className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
+            className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
             required
           />
         </div>
@@ -114,7 +114,7 @@ export default function ContactForm() {
             value={formData.lastName}
             onChange={handleChange}
             placeholder="Your last name"
-            className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
+            className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
             required
           />
         </div>
@@ -132,7 +132,7 @@ export default function ContactForm() {
             value={formData.email}
             onChange={handleChange}
             placeholder="your@email.com"
-            className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
+            className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
             required
           />
         </div>
@@ -147,7 +147,7 @@ export default function ContactForm() {
             value={formData.phone}
             onChange={handleChange}
             placeholder="+33..."
-            className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
+            className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
           />
         </div>
       </div>
@@ -161,7 +161,7 @@ export default function ContactForm() {
           name="subject"
           value={formData.subject}
           onChange={handleChange}
-          className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm"
+          className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm"
           required
         >
           <option value="">Select a request type</option>
@@ -184,7 +184,7 @@ export default function ContactForm() {
             value={formData.destination}
             onChange={handleChange}
             placeholder="Where would you like to charter?"
-            className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
+            className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
           />
         </div>
 
@@ -197,7 +197,7 @@ export default function ContactForm() {
             name="preferredDate"
             value={formData.preferredDate}
             onChange={handleChange}
-            className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
+            className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
           />
         </div>
 
@@ -212,7 +212,7 @@ export default function ContactForm() {
             onChange={handleChange}
             placeholder="Number of guests"
             min="1"
-            className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
+            className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500"
           />
         </div>
       </div>
@@ -228,7 +228,7 @@ export default function ContactForm() {
           onChange={handleChange}
           placeholder="Your message..."
           rows={6}
-          className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500 resize-none"
+          className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-white focus:outline-none transition text-sm placeholder-gray-500 resize-none"
           required
         />
       </div>

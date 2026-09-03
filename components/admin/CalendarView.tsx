@@ -73,13 +73,13 @@ export default function CalendarView({ region, weekStart }: CalendarViewProps) {
     <div className="overflow-x-auto">
       <div className="min-w-full">
         {/* Header - Days */}
-        <div className="grid grid-cols-8 gap-0 bg-[#0f1419] border-b border-[#b8974a] border-opacity-20">
+        <div className="grid grid-cols-8 gap-0 bg-[#0f1419] border-b border-[#b8974a]/20">
           <div className="p-3 text-xs text-gray-500 font-light">Time</div>
           {days.map((day, idx) => {
             const dayDate = new Date(weekStart)
             dayDate.setDate(dayDate.getDate() + idx)
             return (
-              <div key={day} className="p-3 border-l border-[#b8974a] border-opacity-20">
+              <div key={day} className="p-3 border-l border-[#b8974a]/20">
                 <p className="text-xs text-gray-500 tracking-wider uppercase">{day}</p>
                 <p className="text-sm text-[#b8974a] font-semibold">
                   {dayDate.getDate()}
@@ -91,8 +91,8 @@ export default function CalendarView({ region, weekStart }: CalendarViewProps) {
 
         {/* Hours grid */}
         {hours.map(hour => (
-          <div key={hour} className="grid grid-cols-8 gap-0 border-b border-[#b8974a] border-opacity-10">
-            <div className="p-3 text-xs text-gray-600 bg-[#06090f] border-r border-[#b8974a] border-opacity-10">
+          <div key={hour} className="grid grid-cols-8 gap-0 border-b border-[#b8974a]/10">
+            <div className="p-3 text-xs text-gray-600 bg-[#06090f] border-r border-[#b8974a]/10">
               {String(hour).padStart(2, '0')}:00
             </div>
 
@@ -101,12 +101,12 @@ export default function CalendarView({ region, weekStart }: CalendarViewProps) {
               return (
                 <div
                   key={`${hour}-${dayIdx}`}
-                  className="p-2 border-l border-[#b8974a] border-opacity-10 min-h-20 bg-[#0f1419] hover:bg-[#141820] transition"
+                  className="p-2 border-l border-[#b8974a]/10 min-h-20 bg-[#0f1419] hover:bg-[#141820] transition"
                 >
                   {dayReservations.map(res => (
                     <div
                       key={res.id}
-                      className="bg-[#b8974a] bg-opacity-20 border border-[#b8974a] border-opacity-50 rounded px-2 py-1 mb-1 text-xs"
+                      className="bg-[#b8974a]/20 border border-[#b8974a]/50 rounded px-2 py-1 mb-1 text-xs"
                     >
                       <p className="text-[#b8974a] font-semibold truncate">{res.yacht.model}</p>
                       <p className="text-gray-300 text-xs truncate">{res.client.fullName}</p>

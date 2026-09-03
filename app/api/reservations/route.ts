@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { cookies } from 'next/headers'
+import { sendEmail } from '@/lib/email'
 
 async function checkAuth() {
   const cookieStore = await cookies()
@@ -90,17 +91,36 @@ export async function POST(request: Request) {
       )
     }
 
-    // Get or create client
+    // Get or create client — `email` is unique, so a returning guest (or
+    // anyone already in the CRM, e.g. from the legacy import) submitting
+    // this public form again must reuse their existing row rather than
+    // hit a P2002 and silently fail the whole booking.
     let clientIdToUse: number
     if (isNewClient) {
-      const newClient = await prisma.client.create({
-        data: {
-          fullName,
-          email,
-          phone
-        }
+      const existingClient = await prisma.client.findFirst({
+        where: { email: { equals: email, mode: 'insensitive' } }
       })
-      clientIdToUse = newClient.id
+
+      if (existingClient) {
+        clientIdToUse = existingClient.id
+        // Backfill anything the existing record was missing, without
+        // clobbering data already curated in the admin.
+        const updates: { fullName?: string; phone?: string } = {}
+        if (!existingClient.fullName && fullName) updates.fullName = fullName
+        if (!existingClient.phone && phone) updates.phone = phone
+        if (Object.keys(updates).length > 0) {
+          await prisma.client.update({ where: { id: existingClient.id }, data: updates })
+        }
+      } else {
+        const newClient = await prisma.client.create({
+          data: {
+            fullName,
+            email,
+            phone
+          }
+        })
+        clientIdToUse = newClient.id
+      }
     } else {
       clientIdToUse = clientId
     }
@@ -121,6 +141,45 @@ export async function POST(request: Request) {
         yacht: { select: { id: true, model: true } }
       }
     })
+
+    // Notify the team by email — same fire-and-forget pattern as the
+    // contact form, so a slow/failed email never holds up or breaks the
+    // booking itself.
+    const emailPromise = sendEmail(
+      'contact@syrama-services.com',
+      `New Charter Request: ${reservation.yacht?.model || 'Yacht'}`,
+      `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #b8974a;">New Charter Request</h2>
+
+          <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Yacht:</strong> ${reservation.yacht?.model || 'N/A'}</p>
+            <p><strong>Date:</strong> ${new Date(reservation.date!).toLocaleDateString()}</p>
+            <p><strong>Guests:</strong> ${reservation.numberOfPeople}</p>
+            <p><strong>Location:</strong> ${reservation.location}</p>
+            ${reservation.price ? `<p><strong>Price:</strong> ${reservation.price}</p>` : ''}
+          </div>
+
+          <div style="background-color: #f9f9f9; padding: 20px; border-left: 4px solid #b8974a; margin: 20px 0;">
+            <p><strong>Client:</strong> ${reservation.client.fullName}</p>
+            <p><strong>Email:</strong> ${reservation.client.email}</p>
+            ${reservation.client.phone ? `<p><strong>Phone:</strong> ${reservation.client.phone}</p>` : ''}
+          </div>
+
+          <p style="color: #999; font-size: 12px; margin-top: 30px;">
+            This request was sent from the charter request form on the website.
+          </p>
+        </div>
+      `
+    )
+
+    emailPromise
+      .then(() => {
+        console.log('[API] Email sent successfully for reservation ID:', reservation.id)
+      })
+      .catch((err) => {
+        console.error('[API] Email sending failed for reservation ID:', reservation.id, err)
+      })
 
     return Response.json(reservation, { status: 201 })
   } catch (error) {

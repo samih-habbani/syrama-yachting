@@ -105,7 +105,7 @@ export default function AvailabilityModal({ isOpen, onClose, yacht }: Availabili
         role="dialog"
         aria-modal="true"
         aria-labelledby="availability-modal-title"
-        className="availability-modal-content relative bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden rounded-lg border border-[#b8974a] border-opacity-20 shadow-2xl"
+        className="availability-modal-content relative bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden rounded-lg border border-[#b8974a]/20 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button stays fixed to the card — not inside the scrollable body below */}
@@ -150,7 +150,7 @@ export default function AvailabilityModal({ isOpen, onClose, yacht }: Availabili
                 value={guests}
                 onChange={(e) => setGuests(e.target.value)}
                 placeholder="e.g. 8"
-                className="w-full bg-[#f5eedd] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#06090f] focus:outline-none transition text-sm placeholder-gray-600"
+                className="w-full bg-[#f5eedd] border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#06090f] focus:outline-none transition text-sm placeholder-gray-600"
                 style={{ colorScheme: 'light' }}
                 required
               />
@@ -164,7 +164,7 @@ export default function AvailabilityModal({ isOpen, onClose, yacht }: Availabili
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="e.g. Cannes"
-                className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
                 required
               />
             </div>
@@ -177,7 +177,7 @@ export default function AvailabilityModal({ isOpen, onClose, yacht }: Availabili
                 value={date}
                 min={todayISO()}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-[#f5eedd] border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#06090f] focus:outline-none transition text-sm"
+                className="w-full bg-[#f5eedd] border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#06090f] focus:outline-none transition text-sm"
                 style={{ colorScheme: 'light' }}
                 required
               />

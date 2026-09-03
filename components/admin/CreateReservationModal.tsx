@@ -184,7 +184,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
       `}</style>
 
       <div
-        className="modal-content bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-2xl w-full rounded-lg border border-[#b8974a] border-opacity-20 p-8 shadow-2xl max-h-screen overflow-y-auto"
+        className="modal-content bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-2xl w-full rounded-lg border border-[#b8974a]/20 p-8 shadow-2xl max-h-screen overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-6">
@@ -196,7 +196,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="bg-red-500 bg-opacity-10 border border-red-500 border-opacity-50 text-red-300 px-4 py-3 text-sm rounded-lg">
+            <div className="bg-red-500/10 border border-red-500/50 text-red-300 px-4 py-3 text-sm rounded-lg">
               {error}
             </div>
           )}
@@ -208,7 +208,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
               name="yachtId"
               value={formData.yachtId}
               onChange={handleChange}
-              className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm"
+              className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm"
               required
               disabled={isLoadingData}
             >
@@ -242,7 +242,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
                   value={formData.newClientName}
                   onChange={handleChange}
                   placeholder="Full name"
-                  className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-2 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                  className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-2 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
                   required={createNewClient}
                 />
                 <input
@@ -251,7 +251,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
                   value={formData.newClientEmail}
                   onChange={handleChange}
                   placeholder="Email"
-                  className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-2 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                  className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-2 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
                   required={createNewClient}
                 />
                 <input
@@ -260,7 +260,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
                   value={formData.newClientPhone}
                   onChange={handleChange}
                   placeholder="Phone"
-                  className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-2 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                  className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-2 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
                   required={createNewClient}
                 />
               </div>
@@ -269,7 +269,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
                 name="clientId"
                 value={formData.clientId}
                 onChange={handleChange}
-                className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm"
+                className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm"
                 required={!createNewClient}
                 disabled={isLoadingData}
               >
@@ -292,7 +292,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
-                className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-2 text-white focus:outline-none transition text-sm"
+                className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-2 text-white focus:outline-none transition text-sm"
                 required
               />
             </div>
@@ -304,7 +304,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
                 value={formData.numberOfPeople}
                 onChange={handleChange}
                 placeholder="Number"
-                className="w-full bg-white bg-opacity-5 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-2 text-white focus:outline-none transition text-sm"
+                className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-2 text-white focus:outline-none transition text-sm"
                 min="1"
                 required
               />
@@ -321,7 +321,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
                 value={formData.location}
                 onChange={handleChange}
                 placeholder="e.g., Monaco"
-                className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-2 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-2 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
               />
             </div>
             <div>
@@ -332,14 +332,14 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
                 value={formData.price}
                 onChange={handleChange}
                 placeholder="Amount"
-                className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-2 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-2 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
                 step="0.01"
                 min="0"
               />
             </div>
           </div>
 
-          <div className="flex gap-3 pt-6 border-t border-[#b8974a] border-opacity-10">
+          <div className="flex gap-3 pt-6 border-t border-[#b8974a]/10">
             <button
               type="submit"
               disabled={isSubmitting || isLoadingData}

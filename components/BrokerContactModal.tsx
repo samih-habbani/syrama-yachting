@@ -166,7 +166,7 @@ export default function BrokerContactModal({ isOpen, onClose, yacht }: BrokerCon
         role="dialog"
         aria-modal="true"
         aria-labelledby="broker-modal-title"
-        className="broker-modal-content relative bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden rounded-lg border border-[#b8974a] border-opacity-20 shadow-2xl"
+        className="broker-modal-content relative bg-gradient-to-b from-[#0f1419] to-[#06090f] max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden rounded-lg border border-[#b8974a]/20 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -209,7 +209,7 @@ export default function BrokerContactModal({ isOpen, onClose, yacht }: BrokerCon
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Alexander Smith"
-                className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
               />
               {touched && !name.trim() && (
                 <p className="text-[#e0a45a] text-xs mt-2">Please enter your name.</p>
@@ -224,7 +224,7 @@ export default function BrokerContactModal({ isOpen, onClose, yacht }: BrokerCon
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
               />
               {touched && !email.trim() && (
                 <p className="text-[#e0a45a] text-xs mt-2">Please enter your email.</p>
@@ -239,7 +239,7 @@ export default function BrokerContactModal({ isOpen, onClose, yacht }: BrokerCon
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+33..."
-                className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+                className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
               />
             </div>
 
@@ -251,7 +251,7 @@ export default function BrokerContactModal({ isOpen, onClose, yacht }: BrokerCon
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={defaultMessage}
                 rows={3}
-                className="w-full bg-[#06090f] bg-opacity-80 border border-[#b8974a] border-opacity-20 hover:border-opacity-40 focus:border-opacity-100 rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500 resize-none"
+                className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500 resize-none"
               />
             </div>
 
