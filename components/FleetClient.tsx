@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import Link from 'next/link'
 import AvailabilityModal from './AvailabilityModal'
 import { yachtHref } from '@/lib/slug'
@@ -82,13 +83,14 @@ export default function FleetClient({ yachts }: FleetClientProps) {
                     }}
                   >
                     {yacht.media?.[0]?.url && (
-                      <img
+                      <Image
                         src={`/uploads/yachts/${yacht.media[0].url}`}
                         alt={yacht.media?.[0]?.alt || yacht.model}
+                        fill
                         loading="lazy"
+                        sizes="(max-width: 767px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        quality={75}
                         style={{
-                          width: '100%',
-                          height: '100%',
                           objectFit: 'cover',
                           filter: 'brightness(0.75)',
                           transition: 'transform 0.9s cubic-bezier(0.25, 0.1, 0, 1)',

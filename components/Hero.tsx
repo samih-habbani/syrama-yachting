@@ -1,6 +1,6 @@
 'use client'
 import dynamic from 'next/dynamic'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, cubicBezier, useScroll, useTransform } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -28,6 +28,21 @@ export default function Hero() {
   const videoScale = useTransform(scrollYProgress, [0, 1], [1, 1.08])
   const videoOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0])
   const contentY = useTransform(scrollYProgress, [0, 1], [0, 60])
+
+  // The video panel is already hidden below the `lg` breakpoint via
+  // `hidden lg:block` (it would obstruct the headline on a phone screen),
+  // but CSS `display:none` alone doesn't stop the browser from downloading
+  // an autoplaying <video> — it still has to be told not to mount at all.
+  // Gated on a real matchMedia check (not just a width read) so it also
+  // reacts to a resize across the breakpoint, same as the CSS does.
+  const [showVideo, setShowVideo] = useState(false)
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 1024px)')
+    setShowVideo(mql.matches)
+    const onChange = (e: MediaQueryListEvent) => setShowVideo(e.matches)
+    mql.addEventListener('change', onChange)
+    return () => mql.removeEventListener('change', onChange)
+  }, [])
 
   // Rotating words
   useEffect(() => {
@@ -96,22 +111,25 @@ export default function Hero() {
           opacity: videoOpacity,
         }}
       >
-        <video
-          ref={videoRef}
-          src="/videos/hero-yacht-optimized.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-          aria-hidden="true"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center',
-            filter: 'brightness(0.85) contrast(1.05)',
-          }}
-        />
+        {showVideo && (
+          <video
+            ref={videoRef}
+            src="/videos/hero-yacht-optimized.mp4"
+            preload="auto"
+            autoPlay
+            muted
+            loop
+            playsInline
+            aria-hidden="true"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              filter: 'brightness(0.85) contrast(1.05)',
+            }}
+          />
+        )}
 
         {/* Shadow trail — left edge of video → blends into noir */}
         <div

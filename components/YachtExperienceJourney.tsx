@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, cubicBezier } from 'framer-motion'
+import Image from 'next/image'
 
 // Same easing/number-treatment language already established on the site
 // (see components/Experiences.tsx and components/sections/HowItWorks.tsx) —
@@ -148,11 +149,14 @@ function WaterActivityCard({ name, image, delay }: { name: string; image: string
         if (img) img.style.transform = 'scale(1)'
       }}
     >
-      <img
+      <Image
         src={image}
         alt={name}
+        fill
         loading="lazy"
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.62)', transition: 'transform 1s cubic-bezier(0.25, 0.1, 0, 1)' }}
+        sizes="(max-width: 767px) 50vw, 20vw"
+        quality={75}
+        style={{ objectFit: 'cover', filter: 'brightness(0.62)', transition: 'transform 1s cubic-bezier(0.25, 0.1, 0, 1)' }}
       />
       <div
         aria-hidden

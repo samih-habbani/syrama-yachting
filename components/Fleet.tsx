@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import FleetFilters, { FilterState } from './FleetFilters'
@@ -14,35 +15,40 @@ interface Media {
   alt: string | null
 }
 
-interface Yacht {
+export interface Yacht {
   id: number
   name?: string
-  builder: string
+  builder: string | null
   model: string
   length: number
   maxGuests: number | null
   cabins: number
-  year: number | null
+  year?: number | null
   region: string | null
-  city: string | null
+  city?: string | null
   priceDay: number | null
   priceSale: number | null
   status: string | null
-  available: boolean
-  rating: number | null
-  reviewsCount: number | null
-  mapIframeSrc: string | null
+  available?: boolean
+  rating?: number | null
+  reviewsCount?: number | null
+  mapIframeSrc?: string | null
   media?: Media[]
 }
 
 interface FleetProps {
   showFilters?: boolean
   limit?: number
+  // Server-fetched starting data (see app/yachting/fleet/page.tsx) — lets the
+  // fleet render on first paint instead of showing an empty grid while the
+  // client re-fetches the same 500 yachts over the network, which is what
+  // made this page feel slow to open on mobile/cellular.
+  initialYachts?: Yacht[]
 }
 
 const PAGE_SIZE = 12
 
-export default function Fleet({ showFilters = true, limit }: FleetProps) {
+export default function Fleet({ showFilters = true, limit, initialYachts }: FleetProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -50,8 +56,8 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
   const tabParam = searchParams.get('tab')
 
   const [activeTab, setActiveTab] = useState<'charter' | 'sale'>(tabParam === 'sale' ? 'sale' : 'charter')
-  const [allYachts, setAllYachts] = useState<Yacht[]>([])
-  const [loading, setLoading] = useState(true)
+  const [allYachts, setAllYachts] = useState<Yacht[]>(initialYachts ?? [])
+  const [loading, setLoading] = useState(!initialYachts)
   const [availabilityYacht, setAvailabilityYacht] = useState<Yacht | null>(null)
   const [brokerYacht, setBrokerYacht] = useState<Yacht | null>(null)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -59,7 +65,11 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
 
   // Un seul appel réseau pour toute la flotte — tout le filtrage / tri qui suit
   // se fait ensuite en mémoire, côté client, sans jamais retoucher la BDD.
+  // Skipped entirely when the server already handed us the fleet as
+  // `initialYachts` (see app/yachting/fleet/page.tsx) — no point re-fetching
+  // over the network what we already have.
   useEffect(() => {
+    if (initialYachts) return
     const fetchAllYachts = async () => {
       try {
         setLoading(true)
@@ -74,6 +84,10 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
       }
     }
     fetchAllYachts()
+    // Intentionally mount-only — initialYachts is a one-time seed from the
+    // server, not something that should re-trigger this effect if it were
+    // ever to change identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const bounds = useMemo(() => {
@@ -323,13 +337,14 @@ export default function Fleet({ showFilters = true, limit }: FleetProps) {
                     }}
                   >
                     {yacht.media?.[0]?.url && (
-                      <img
+                      <Image
                         src={`/uploads/yachts/${yacht.media[0].url}`}
                         alt={yacht.media?.[0]?.alt || yacht.model}
+                        fill
                         loading="lazy"
+                        sizes="(max-width: 767px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        quality={75}
                         style={{
-                          width: '100%',
-                          height: '100%',
                           objectFit: 'cover',
                           filter: 'brightness(0.75)',
                           transition: 'transform 0.9s cubic-bezier(0.25, 0.1, 0, 1)',
