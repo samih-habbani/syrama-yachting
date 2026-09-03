@@ -7,13 +7,13 @@ import { FilterField, TextField, SelectField } from './ui/FilterBar'
 
 interface Reservation {
   id: number
-  date: string
-  numberOfPeople: number
-  location: string
+  date: string | null
+  numberOfPeople: number | null
+  location: string | null
   price?: number | null
   status: string
   client: { fullName: string }
-  yacht: { model: string }
+  yacht: { model: string } | null
 }
 
 interface EditReservationModalProps {
@@ -22,7 +22,7 @@ interface EditReservationModalProps {
   onSuccess: () => void
 }
 
-function toDateInputValue(iso: string) {
+function toDateInputValue(iso: string | null) {
   return iso ? iso.slice(0, 10) : ''
 }
 
@@ -35,7 +35,7 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
     if (reservation) {
       setFormData({
         date: toDateInputValue(reservation.date),
-        numberOfPeople: String(reservation.numberOfPeople),
+        numberOfPeople: reservation.numberOfPeople != null ? String(reservation.numberOfPeople) : '',
         location: reservation.location || '',
         price: reservation.price != null ? String(reservation.price) : '',
         status: reservation.status || 'pending',
@@ -98,7 +98,7 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
             <h3 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 400, fontSize: 24, color: '#f5eedd', margin: 0 }}>
               {reservation.client.fullName}
             </h3>
-            <p style={{ fontFamily: 'var(--font-lora)', fontSize: 12.5, color: '#8f8f7f', margin: '2px 0 0' }}>{reservation.yacht.model}</p>
+            <p style={{ fontFamily: 'var(--font-lora)', fontSize: 12.5, color: '#8f8f7f', margin: '2px 0 0' }}>{reservation.yacht?.model || '—'}</p>
           </div>
           <button
             onClick={onClose}

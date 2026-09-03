@@ -15,14 +15,14 @@ import ActionsMenu from '@/components/admin/ui/ActionsMenu'
 
 interface Reservation {
   id: number
-  date: string
-  numberOfPeople: number
-  location: string
+  date: string | null
+  numberOfPeople: number | null
+  location: string | null
   price?: number | null
   status: string
   createdAt: string
   client: { fullName: string; email: string; phone: string }
-  yacht: { model: string }
+  yacht: { model: string } | null
 }
 
 const EMPTY_FILTERS = { id: '', clientName: '', yachtModel: '', dateFrom: '', dateTo: '' }
@@ -128,15 +128,15 @@ export default function ReservationsPage() {
               </div>
 
               <div>
-                <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#d8d8cc' }}>{res.yacht.model}</div>
+                <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#d8d8cc' }}>{res.yacht?.model || '—'}</div>
                 <div style={{ fontFamily: 'var(--font-lora)', fontSize: 11.5, color: '#8f8f7f', marginTop: 2 }}>
-                  {new Date(res.date).toLocaleDateString()}
+                  {res.date ? new Date(res.date).toLocaleDateString() : '—'}
                 </div>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontFamily: 'var(--font-lora)', fontSize: 12, color: '#8f8f7f' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><UsersIcon size={12} strokeWidth={1.75} />{res.numberOfPeople} guests</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><MapPin size={12} strokeWidth={1.75} />{res.location}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><UsersIcon size={12} strokeWidth={1.75} />{res.numberOfPeople != null ? `${res.numberOfPeople} guests` : '—'}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><MapPin size={12} strokeWidth={1.75} />{res.location || '—'}</span>
                 {res.price != null && (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Euro size={12} strokeWidth={1.75} />{res.price.toFixed(2)}</span>
                 )}

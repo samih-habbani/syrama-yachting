@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Save } from 'lucide-react'
 import Card from './ui/Card'
 import Button from './ui/Button'
 import { FilterField, TextField, SelectField } from './ui/FilterBar'
+import SearchSelectField, { type SearchSelectOption } from './ui/SearchSelectField'
 
 interface Yacht {
   id?: number
@@ -20,6 +21,7 @@ interface Yacht {
   city?: string | null
   status?: string | null
   available?: boolean
+  providerId?: number | null
 }
 
 interface YachtFormProps {
@@ -61,10 +63,26 @@ export default function YachtForm({ yacht, onSaved }: YachtFormProps) {
     city: yacht?.city || '',
     status: normalizeStatus(yacht?.status),
     available: yacht?.available !== false,
+    providerId: yacht?.providerId ?? null,
   })
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [providerOptions, setProviderOptions] = useState<SearchSelectOption[]>([])
+
+  useEffect(() => {
+    fetch('/api/admin/providers?limit=1000')
+      .then((res) => res.json())
+      .then((data) => {
+        const options: SearchSelectOption[] = (data.providers || []).map((p: { id: number; name?: string | null; firstName?: string | null; company?: string | null }) => ({
+          value: p.id,
+          label: [p.firstName, p.name].filter(Boolean).join(' ') || p.company || `Provider #${p.id}`,
+          sublabel: p.company && ([p.firstName, p.name].filter(Boolean).join(' ') ? p.company : undefined),
+        }))
+        setProviderOptions(options)
+      })
+      .catch((err) => console.error('Fetch providers error:', err))
+  }, [])
 
   const update = (patch: Partial<typeof formData>) => setFormData((prev) => ({ ...prev, ...patch }))
 
@@ -125,6 +143,15 @@ export default function YachtForm({ yacht, onSaved }: YachtFormProps) {
               <option value="Location">Charter</option>
               <option value="Vente">Sale</option>
             </SelectField>
+          </FilterField>
+          <FilterField label="Provider">
+            <SearchSelectField
+              label="providers"
+              options={providerOptions}
+              value={formData.providerId}
+              onChange={(v) => update({ providerId: v })}
+              placeholder="No provider linked"
+            />
           </FilterField>
         </Section>
 

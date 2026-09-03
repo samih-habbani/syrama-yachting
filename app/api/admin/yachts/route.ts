@@ -83,6 +83,10 @@ export async function GET(request: Request) {
           currency: true,
           status: true,
           available: true,
+          providerId: true,
+          provider: {
+            select: { id: true, name: true, firstName: true, company: true }
+          },
           media: {
             select: { id: true, url: true, alt: true },
             take: 1
@@ -133,7 +137,8 @@ export async function POST(request: Request) {
         region: data.region || null,
         city: data.city || null,
         currency: data.currency || 'EUR',
-        lengthUnit: data.lengthUnit || 'm'
+        lengthUnit: data.lengthUnit || 'm',
+        providerId: data.providerId ? parseInt(data.providerId) : null
       }
     })
 
@@ -175,9 +180,10 @@ export async function PUT(request: Request) {
         priceDay: data.priceDay ? parseFloat(data.priceDay) : null,
         priceSale: data.priceSale ? parseFloat(data.priceSale) : null,
         region: data.region || null,
-        city: data.city || null
+        city: data.city || null,
+        providerId: data.providerId !== undefined ? (data.providerId ? parseInt(data.providerId) : null) : undefined
       },
-      include: { media: true }
+      include: { media: true, provider: { select: { id: true, name: true, firstName: true, company: true } } }
     })
 
     return Response.json(yacht)

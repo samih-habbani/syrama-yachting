@@ -20,7 +20,9 @@ export async function GET(request: Request) {
     const fullName = searchParams.get('fullName')
     const email = searchParams.get('email')
     const phone = searchParams.get('phone')
-    const service = searchParams.get('service')
+    const services = searchParams.getAll('services')
+    const tag = searchParams.get('tag')
+    const tags = searchParams.getAll('tags')
     const dateFrom = searchParams.get('dateFrom')
     const dateTo = searchParams.get('dateTo')
 
@@ -35,8 +37,20 @@ export async function GET(request: Request) {
     if (phone) {
       where.phone = { contains: phone, mode: 'insensitive' }
     }
-    if (service) {
-      where.service = { equals: service, mode: 'insensitive' }
+    if (services.length > 0) {
+      where.services = { hasSome: services }
+    }
+    if (tags.length > 0) {
+      // Exact match against picked hashtags (multi-select filter).
+      where.tags = { hasSome: tags }
+    } else if (tag) {
+      // Free-text fallback — a partial, case-insensitive match on any tag,
+      // since `hasSome` can't do substring matching inside a String[] column.
+      const tagMatches = await prisma.$queryRaw<{ id: number }[]>`
+        SELECT id FROM client
+        WHERE EXISTS (SELECT 1 FROM unnest(tags) AS t WHERE t ILIKE ${'%' + tag + '%'})
+      `
+      where.id = { in: tagMatches.map((r) => r.id) }
     }
     if (dateFrom || dateTo) {
       where.createdAt = {}
@@ -56,10 +70,24 @@ export async function GET(request: Request) {
           fullName: true,
           email: true,
           phone: true,
-          service: true,
+          services: true,
+          tags: true,
           createdAt: true,
           _count: {
             select: { reservations: true }
+          },
+          // Powers the "products" chips in the admin list — what a client
+          // actually booked (yacht/villa name + a thumbnail), so the list
+          // is a visual reminder rather than just a reservation count.
+          reservations: {
+            select: {
+              id: true,
+              objectTitle: true,
+              image: true,
+              yacht: { select: { model: true, builder: true, media: { select: { url: true }, take: 1 } } },
+              property: { select: { title: true } },
+            },
+            orderBy: { createdAt: 'desc' }
           }
         },
         orderBy: { createdAt: 'desc' },
@@ -86,12 +114,46 @@ export async function GET(request: Request) {
   }
 }
 
+// POST create client
+export async function POST(request: Request) {
+  try {
+    await checkAuth()
+    const data = await request.json()
+    const { fullName, email, phone, services, tags } = data
+
+    if (!fullName) {
+      return Response.json({ error: 'Full name is required' }, { status: 400 })
+    }
+
+    const client = await prisma.client.create({
+      data: {
+        fullName,
+        email: email || null,
+        phone: phone || null,
+        services: services || [],
+        tags: tags || [],
+      }
+    })
+
+    return Response.json(client, { status: 201 })
+  } catch (error: any) {
+    if (error?.code === 'P2002') {
+      return Response.json({ error: 'A client with this email already exists' }, { status: 409 })
+    }
+    console.error('Create client error:', error)
+    return Response.json(
+      { error: 'Failed to create client' },
+      { status: 500 }
+    )
+  }
+}
+
 // PUT update client
 export async function PUT(request: Request) {
   try {
     await checkAuth()
     const data = await request.json()
-    const { id, fullName, email, phone, service } = data
+    const { id, fullName, email, phone, services, tags } = data
 
     if (!id) {
       return Response.json({ error: 'Client ID is required' }, { status: 400 })
@@ -99,7 +161,7 @@ export async function PUT(request: Request) {
 
     const client = await prisma.client.update({
       where: { id: parseInt(id) },
-      data: { fullName, email, phone, service }
+      data: { fullName, email, phone, services, tags, updatedAt: new Date() }
     })
 
     return Response.json(client)

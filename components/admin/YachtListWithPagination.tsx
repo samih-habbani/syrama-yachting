@@ -21,6 +21,8 @@ interface Yacht {
   currency?: string | null
   status?: string | null
   available: boolean
+  providerId?: number | null
+  provider?: { id: number; name?: string | null; firstName?: string | null; company?: string | null } | null
   media?: { id: number; url: string; alt?: string | null }[]
 }
 
@@ -33,7 +35,12 @@ interface YachtListProps {
   onPageChange: (page: number) => void
 }
 
-const GRID = '2.2fr 1fr 1fr 1fr 1fr 44px'
+const GRID = '2fr 0.9fr 1fr 1fr 1.2fr 0.9fr 44px'
+
+function providerLabel(provider?: Yacht['provider']): string | null {
+  if (!provider) return null
+  return [provider.firstName, provider.name].filter(Boolean).join(' ') || provider.company || null
+}
 
 function statusTone(status?: string | null): 'gold' | 'blue' {
   return (status || '').toLowerCase() === 'vente' || (status || '').toLowerCase() === 'sale' ? 'blue' : 'gold'
@@ -67,6 +74,7 @@ export default function YachtListWithPagination({
         <div>Type</div>
         <div>Length / Cabins</div>
         <div>Region</div>
+        <div>Provider</div>
         <div>Rate</div>
         <div />
       </div>
@@ -115,6 +123,10 @@ export default function YachtListWithPagination({
 
               <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#d8d8cc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {yacht.region || '—'}
+              </div>
+
+              <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: providerLabel(yacht.provider) ? '#d8d8cc' : '#5a5a52', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {providerLabel(yacht.provider) || 'Unlinked'}
               </div>
 
               <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#d8d8cc' }}>

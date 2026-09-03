@@ -9,11 +9,51 @@ async function checkAuth() {
   }
 }
 
+async function isAdmin() {
+  const cookieStore = await cookies()
+  return !!cookieStore.get('userId')?.value
+}
+
 // POST create reservation
 export async function POST(request: Request) {
   try {
     const data = await request.json()
-    const { clientId, fullName, email, phone, yachtId, date, numberOfPeople, location, price } = data
+    const { clientId, fullName, email, phone, yachtId, propertyId, objectTitle, date, numberOfPeople, location, price } = data
+
+    // Admin "quick add" path — used from the Clients admin page to tag a
+    // product (yacht or villa) a client has booked, as a visual reminder.
+    // Deliberately lighter than the public booking flow below: only the
+    // client and one product reference are required, everything else is
+    // optional and filled in later from the Reservations page if needed.
+    if (await isAdmin() && clientId && (yachtId || propertyId || objectTitle)) {
+      const yacht = yachtId
+        ? await prisma.yacht.findUnique({ where: { id: parseInt(yachtId) }, select: { region: true } })
+        : null
+      const property = propertyId
+        ? await prisma.property.findUnique({ where: { id: parseInt(propertyId) }, select: { region: true } })
+        : null
+
+      const reservation = await prisma.reservation.create({
+        data: {
+          clientId: parseInt(clientId),
+          yachtId: yachtId ? parseInt(yachtId) : null,
+          propertyId: propertyId ? parseInt(propertyId) : null,
+          objectTitle: objectTitle || null,
+          date: date ? new Date(date) : null,
+          location: location || null,
+          region: yacht?.region || property?.region || null,
+          price: price ? parseFloat(price) : null,
+          status: 'confirmed',
+        },
+        include: {
+          client: { select: { fullName: true } },
+          yacht: { select: { model: true, builder: true, media: { select: { url: true }, take: 1 } } },
+          property: { select: { title: true } },
+        }
+      })
+
+      return Response.json(reservation, { status: 201 })
+    }
 
     if (!yachtId || !date || !numberOfPeople) {
       return Response.json(
@@ -200,6 +240,30 @@ export async function PUT(request: Request) {
     console.error('Update reservation error:', error)
     return Response.json(
       { error: 'Failed to update reservation' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE a reservation — e.g. undoing a product mistakenly added from the
+// Clients admin page.
+export async function DELETE(request: Request) {
+  try {
+    await checkAuth()
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return Response.json({ error: 'Reservation ID is required' }, { status: 400 })
+    }
+
+    await prisma.reservation.delete({ where: { id: parseInt(id) } })
+
+    return Response.json({ success: true })
+  } catch (error) {
+    console.error('Delete reservation error:', error)
+    return Response.json(
+      { error: 'Failed to delete reservation' },
       { status: 500 }
     )
   }

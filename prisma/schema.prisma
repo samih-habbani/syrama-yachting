@@ -43,6 +43,7 @@ model Yacht {
   reviewsCount          Int?     @map("reviews_count")
   city                  String?
   providerId            Int?     @map("provider_id")
+  provider              Provider? @relation(fields: [providerId], references: [id])
   priceDay              Float?   @map("price_day")
   priceSale             Float?   @map("price_sale")
   year                  Int?
@@ -59,6 +60,7 @@ model Yacht {
   @@index([status])
   @@index([length])
   @@index([region])
+  @@index([providerId])
   @@map("yacht")
 }
 
@@ -100,10 +102,15 @@ model Client {
   country   String?
   region    String?
   notes     String?
-  // Which business line this client belongs to — same value space as
-  // Provider.type (e.g. "Yacht Charter"), so clients and providers can be
-  // filtered/reported on consistently.
-  service   String?
+  // Which business line(s) this client has been a customer of — same value
+  // space as Provider.type (e.g. "Yacht Charter"), and a real array like
+  // Provider.services since a client can span more than one over time.
+  services  String[]  @default([])
+  // Free-text hashtags for richer context a single "service" can't capture —
+  // e.g. "26 French Riviera Yacht Charter" to record year + region + service
+  // in one glance. Deliberately unstructured (no separate year/region
+  // columns) per the user's own "simplest is hashtags" framing.
+  tags      String[]  @default([])
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @map("updated_at")
   reservations Reservation[]
@@ -112,22 +119,51 @@ model Client {
 }
 
 model Reservation {
-  id        Int      @id @default(autoincrement())
-  clientId  Int      @map("client_id")
-  yachtId   Int      @map("yacht_id")
-  date      DateTime
-  numberOfPeople Int @map("number_of_people")
-  location  String
-  region    String?
-  price     Float?
-  status    String   @default("pending")
-  createdAt DateTime @default(now()) @map("created_at")
+  id             Int       @id @default(autoincrement())
+  clientId       Int       @map("client_id")
+  // Optional — legacy bookings include non-yacht lines (transport, jet
+  // charter) with no yacht at all, unlike the live charter-booking flow
+  // which always supplies one.
+  yachtId        Int?      @map("yacht_id")
+  date           DateTime?
+  // Legacy data records a stay as a start/end range rather than one date —
+  // `date` is kept as the start (existing live flow still just sets this
+  // one field), `endDate` added for the rest of that range when it exists.
+  endDate        DateTime? @map("end_date")
+  numberOfPeople Int?      @map("number_of_people")
+  location       String?
+  region         String?
+  price          Float?
+  status         String    @default("pending")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  yacht     Yacht    @relation(fields: [yachtId], references: [id], onDelete: Cascade)
+  // Fields that only exist to preserve the legacy booking log's full
+  // fidelity (it covers more than yacht charters: transport, jet_booking…)
+  // — the live app never sets these, only the historical import does.
+  type           String?
+  objectId       Int?      @map("object_id")
+  objectTitle    String?   @map("object_title")
+  firstName      String?   @map("first_name")
+  lastName       String?   @map("last_name")
+  email          String?
+  phone          String?
+  message        String?
+  image          String?
+  // Loose references, same convention as Yacht.providerId/Property.providerId
+  // — no formal Prisma relation.
+  providerId     Int?      @map("provider_id")
+  propertyId     Int?      @map("property_id")
+  priceTotal     Float?    @map("price_total")
+  commissionRate Float?    @map("commission_rate")
+  currency       String?
+
+  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  yacht     Yacht?    @relation(fields: [yachtId], references: [id], onDelete: SetNull)
+  property  Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
 
   @@index([clientId])
   @@index([yachtId])
+  @@index([propertyId])
   @@index([region])
   @@map("reservation")
 }
@@ -155,6 +191,7 @@ model Provider {
   manager      String?
   address      String?
   postalCode   String?   @map("postal_code")
+  yachts       Yacht[]
 
   @@index([type])
   @@index([region])
@@ -205,6 +242,7 @@ model Property {
   bedDistribution Json?    @map("bed_distribution")
   priceWeek       Float?   @map("price_week")
   priceMonth      Float?   @map("price_month")
+  reservations    Reservation[]
 
   @@map("property")
 }

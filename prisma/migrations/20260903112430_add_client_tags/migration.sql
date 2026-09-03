@@ -1,0 +1,1 @@
+ALTER TABLE "client" ADD COLUMN "tags" TEXT[] NOT NULL DEFAULT '{}';
