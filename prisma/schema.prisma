@@ -53,6 +53,13 @@ model Yacht {
   mapIframeSrc          String?  @map("map_iframe_src")
   priceHour             Float?   @map("price_hour")
   priceWeek             Float?   @map("price_week")
+  // What Syrama actually pays the provider (B2B / wholesale cost), as
+  // opposed to the price_day/week/hour/sale fields above which are what
+  // gets charged to the client — lets the team see margin at a glance.
+  b2bPrice              Float?   @map("b2b_price")
+  // Some charters are only bookable in blocks of at least N hours (mainly
+  // relevant alongside price_hour) — null means no minimum.
+  minRentalHours        Int?     @map("min_rental_hours")
   createdAt             DateTime @default(now()) @map("created_at")
   media                 Media[]
   reservations          Reservation[]

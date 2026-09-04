@@ -16,7 +16,11 @@ interface Yacht {
   maxGuests?: number | null
   year?: number | null
   priceDay?: number | null
+  priceHour?: number | null
+  priceWeek?: number | null
   priceSale?: number | null
+  b2bPrice?: number | null
+  minRentalHours?: number | null
   region?: string | null
   city?: string | null
   status?: string | null
@@ -58,7 +62,11 @@ export default function YachtForm({ yacht, onSaved }: YachtFormProps) {
     maxGuests: yacht?.maxGuests ?? '',
     year: yacht?.year ?? '',
     priceDay: yacht?.priceDay ?? '',
+    priceHour: yacht?.priceHour ?? '',
+    priceWeek: yacht?.priceWeek ?? '',
     priceSale: yacht?.priceSale ?? '',
+    b2bPrice: yacht?.b2bPrice ?? '',
+    minRentalHours: yacht?.minRentalHours ?? '',
     region: yacht?.region || '',
     city: yacht?.city || '',
     status: normalizeStatus(yacht?.status),
@@ -183,8 +191,20 @@ export default function YachtForm({ yacht, onSaved }: YachtFormProps) {
           <FilterField label="Price per Day">
             <TextField type="number" step="0.01" value={formData.priceDay} onChange={(e) => update({ priceDay: e.target.value })} />
           </FilterField>
+          <FilterField label="Price per Week">
+            <TextField type="number" step="0.01" value={formData.priceWeek} onChange={(e) => update({ priceWeek: e.target.value })} />
+          </FilterField>
+          <FilterField label="Price per Hour">
+            <TextField type="number" step="0.01" value={formData.priceHour} onChange={(e) => update({ priceHour: e.target.value })} />
+          </FilterField>
+          <FilterField label="Minimum Rental Hours">
+            <TextField type="number" value={formData.minRentalHours} onChange={(e) => update({ minRentalHours: e.target.value })} placeholder="e.g. 4" />
+          </FilterField>
           <FilterField label="Sale Price">
             <TextField type="number" step="0.01" value={formData.priceSale} onChange={(e) => update({ priceSale: e.target.value })} />
+          </FilterField>
+          <FilterField label="B2B Price (cost)">
+            <TextField type="number" step="0.01" value={formData.b2bPrice} onChange={(e) => update({ b2bPrice: e.target.value })} placeholder="What you pay the provider" />
           </FilterField>
           <FilterField label="Region">
             <TextField value={formData.region} onChange={(e) => update({ region: e.target.value })} />

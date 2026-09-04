@@ -1,0 +1,2 @@
+ALTER TABLE "yacht" ADD COLUMN "b2b_price" DOUBLE PRECISION;
+ALTER TABLE "yacht" ADD COLUMN "min_rental_hours" INTEGER;

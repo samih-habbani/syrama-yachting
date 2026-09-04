@@ -18,6 +18,11 @@ interface Yacht {
   maxGuests?: number | null
   region?: string | null
   priceDay?: number | null
+  priceHour?: number | null
+  priceWeek?: number | null
+  priceSale?: number | null
+  b2bPrice?: number | null
+  minRentalHours?: number | null
   currency?: string | null
   status?: string | null
   available: boolean
@@ -35,7 +40,7 @@ interface YachtListProps {
   onPageChange: (page: number) => void
 }
 
-const GRID = '2fr 0.9fr 1fr 1fr 1.2fr 0.9fr 44px'
+const GRID = '1.8fr 0.8fr 1fr 0.9fr 1.1fr 0.95fr 0.95fr 44px'
 
 // The imported provider dataset used dash-only strings ('-', '--', ...) as
 // a "no value" placeholder — treat them as empty, same convention as the
@@ -50,6 +55,19 @@ function providerLabel(provider?: Yacht['provider']): string | null {
 
 function statusTone(status?: string | null): 'gold' | 'blue' {
   return (status || '').toLowerCase() === 'vente' || (status || '').toLowerCase() === 'sale' ? 'blue' : 'gold'
+}
+
+// Sell price for the list's Price column — whichever of day/week/hour is
+// actually set (a charter yacht normally only has one), with the matching
+// /d /w /h suffix; a for-sale yacht shows its flat sale price instead.
+function sellPrice(yacht: Yacht): { amount: number; suffix: string; minHours?: number | null } | null {
+  if (statusTone(yacht.status) === 'blue') {
+    return yacht.priceSale ? { amount: yacht.priceSale, suffix: '' } : null
+  }
+  if (yacht.priceDay) return { amount: yacht.priceDay, suffix: '/d' }
+  if (yacht.priceWeek) return { amount: yacht.priceWeek, suffix: '/w' }
+  if (yacht.priceHour) return { amount: yacht.priceHour, suffix: '/h', minHours: yacht.minRentalHours }
+  return null
 }
 
 export default function YachtListWithPagination({
@@ -81,7 +99,8 @@ export default function YachtListWithPagination({
         <div>Length / Cabins</div>
         <div>Region</div>
         <div>Provider</div>
-        <div>Rate</div>
+        <div>Price</div>
+        <div>B2B Price</div>
         <div />
       </div>
 
@@ -136,7 +155,22 @@ export default function YachtListWithPagination({
               </div>
 
               <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#d8d8cc' }}>
-                {yacht.priceDay ? `${yacht.priceDay.toLocaleString()} ${yacht.currency || 'EUR'}` : '—'}
+                {(() => {
+                  const price = sellPrice(yacht)
+                  if (!price) return <span style={{ color: '#5a5a52' }}>—</span>
+                  return (
+                    <>
+                      {price.amount.toLocaleString()} {yacht.currency || 'EUR'}{price.suffix}
+                      {price.minHours ? (
+                        <div style={{ fontSize: 11, color: '#8f8f7f', marginTop: 1 }}>min {price.minHours}h</div>
+                      ) : null}
+                    </>
+                  )
+                })()}
+              </div>
+
+              <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: yacht.b2bPrice ? '#d8d8cc' : '#5a5a52' }}>
+                {yacht.b2bPrice ? `${yacht.b2bPrice.toLocaleString()} ${yacht.currency || 'EUR'}` : '—'}
               </div>
 
               <ActionsMenu
