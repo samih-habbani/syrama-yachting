@@ -66,41 +66,56 @@ export async function GET(request: Request) {
       }
     }
 
+    // `fields=full` powers the admin "data table" — every scalar column
+    // instead of the trimmed-down set the card list needs, so it stays fast.
+    const full = searchParams.get('fields') === 'full'
+
     const [yachts, total] = await Promise.all([
-      prisma.yacht.findMany({
-        where,
-        select: {
-          id: true,
-          model: true,
-          builder: true,
-          length: true,
-          maxGuests: true,
-          cabins: true,
-          year: true,
-          priceDay: true,
-          priceHour: true,
-          priceWeek: true,
-          priceSale: true,
-          b2bPrice: true,
-          minRentalHours: true,
-          region: true,
-          city: true,
-          currency: true,
-          status: true,
-          available: true,
-          providerId: true,
-          provider: {
-            select: { id: true, name: true, firstName: true, company: true }
-          },
-          media: {
-            select: { id: true, url: true, alt: true },
-            take: 1
-          }
-        },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit
-      }),
+      full
+        ? prisma.yacht.findMany({
+            where,
+            include: {
+              provider: { select: { id: true, name: true, firstName: true, company: true } },
+              media: { select: { id: true, url: true, alt: true }, take: 1 }
+            },
+            orderBy: { createdAt: 'desc' },
+            skip,
+            take: limit
+          })
+        : prisma.yacht.findMany({
+            where,
+            select: {
+              id: true,
+              model: true,
+              builder: true,
+              length: true,
+              maxGuests: true,
+              cabins: true,
+              year: true,
+              priceDay: true,
+              priceHour: true,
+              priceWeek: true,
+              priceSale: true,
+              b2bPrice: true,
+              minRentalHours: true,
+              region: true,
+              city: true,
+              currency: true,
+              status: true,
+              available: true,
+              providerId: true,
+              provider: {
+                select: { id: true, name: true, firstName: true, company: true }
+              },
+              media: {
+                select: { id: true, url: true, alt: true },
+                take: 1
+              }
+            },
+            orderBy: { createdAt: 'desc' },
+            skip,
+            take: limit
+          }),
       prisma.yacht.count({ where })
     ])
 
@@ -206,6 +221,100 @@ export async function PUT(request: Request) {
       { error: 'Failed to update yacht' },
       { status: 500 }
     )
+  }
+}
+
+// Column config for the admin data-table's inline click-to-edit cells —
+// `PATCH` only ever writes the one field named in the request, never a
+// full-record replace, so an in-progress edit on one cell can't clobber
+// any other column (unlike PUT above, which needs the whole form).
+type FieldType = 'string' | 'float' | 'int' | 'boolean'
+const EDITABLE_FIELDS: Record<string, { type: FieldType; required?: boolean }> = {
+  model: { type: 'string', required: true },
+  builder: { type: 'string' },
+  status: { type: 'string', required: true },
+  available: { type: 'boolean' },
+  length: { type: 'float', required: true },
+  lengthUnit: { type: 'string', required: true },
+  beam: { type: 'float' },
+  beamOpenPlatform: { type: 'float' },
+  draft: { type: 'float' },
+  cruiseSpeed: { type: 'float' },
+  maxSpeed: { type: 'float' },
+  cabins: { type: 'int', required: true },
+  bathrooms: { type: 'int' },
+  maxGuests: { type: 'int' },
+  maxSleeping: { type: 'int' },
+  engines: { type: 'string' },
+  engineHours: { type: 'int' },
+  consumption: { type: 'string' },
+  autonomy: { type: 'string' },
+  fuelCapacity: { type: 'int' },
+  waterCapacity: { type: 'int' },
+  navigationClass: { type: 'string' },
+  dryWeight: { type: 'float' },
+  hull: { type: 'string' },
+  rating: { type: 'float' },
+  reviewsCount: { type: 'int' },
+  year: { type: 'int' },
+  region: { type: 'string' },
+  city: { type: 'string' },
+  currency: { type: 'string', required: true },
+  priceDay: { type: 'float' },
+  priceWeek: { type: 'float' },
+  priceHour: { type: 'float' },
+  minRentalHours: { type: 'int' },
+  priceSale: { type: 'float' },
+  b2bPrice: { type: 'float' },
+  mapIframeSrc: { type: 'string' },
+}
+
+// PATCH — single-field update for the data table's click-to-edit cells
+export async function PATCH(request: Request) {
+  try {
+    await checkAuth()
+    const data = await request.json()
+    const { id, field, value } = data
+
+    if (!id || !field) {
+      return Response.json({ error: 'id and field are required' }, { status: 400 })
+    }
+
+    const config = EDITABLE_FIELDS[field]
+    if (!config) {
+      return Response.json({ error: `Field "${field}" is not editable` }, { status: 400 })
+    }
+
+    let coerced: string | number | boolean | null
+
+    if (config.type === 'boolean') {
+      coerced = !!value
+    } else if (value === '' || value === null || value === undefined) {
+      if (config.required) {
+        return Response.json({ error: `${field} is required` }, { status: 400 })
+      }
+      coerced = null
+    } else if (config.type === 'float') {
+      const n = parseFloat(value)
+      if (isNaN(n)) return Response.json({ error: `${field} must be a number` }, { status: 400 })
+      coerced = n
+    } else if (config.type === 'int') {
+      const n = parseInt(value)
+      if (isNaN(n)) return Response.json({ error: `${field} must be a number` }, { status: 400 })
+      coerced = n
+    } else {
+      coerced = String(value)
+    }
+
+    const yacht = await prisma.yacht.update({
+      where: { id: parseInt(id) },
+      data: { [field]: coerced },
+    })
+
+    return Response.json(yacht)
+  } catch (error) {
+    console.error('Patch yacht error:', error)
+    return Response.json({ error: 'Failed to update yacht' }, { status: 500 })
   }
 }
 

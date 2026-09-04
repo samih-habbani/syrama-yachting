@@ -17,6 +17,7 @@ interface Yacht {
   cabins: number
   maxGuests?: number | null
   region?: string | null
+  city?: string | null
   priceDay?: number | null
   priceHour?: number | null
   priceWeek?: number | null
@@ -40,7 +41,7 @@ interface YachtListProps {
   onPageChange: (page: number) => void
 }
 
-const GRID = '1.8fr 0.8fr 1fr 0.9fr 1.1fr 0.95fr 0.95fr 44px'
+const GRID = '1.7fr 0.75fr 1fr 0.85fr 0.85fr 1fr 0.9fr 0.9fr 44px'
 
 // The imported provider dataset used dash-only strings ('-', '--', ...) as
 // a "no value" placeholder — treat them as empty, same convention as the
@@ -98,6 +99,7 @@ export default function YachtListWithPagination({
         <div>Type</div>
         <div>Length / Cabins</div>
         <div>Region</div>
+        <div>City</div>
         <div>Provider</div>
         <div>Price</div>
         <div>B2B Price</div>
@@ -148,6 +150,10 @@ export default function YachtListWithPagination({
 
               <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#d8d8cc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {yacht.region || '—'}
+              </div>
+
+              <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: yacht.city ? '#d8d8cc' : '#5a5a52', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {yacht.city || '—'}
               </div>
 
               <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: providerLabel(yacht.provider) ? '#d8d8cc' : '#5a5a52', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

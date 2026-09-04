@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Contact, Mail, Phone, CalendarDays, Briefcase, Hash, Pencil, ArrowLeft, Save, Plus, X, Users, UserCheck, UserPlus, CalendarCheck, Anchor, Home, Package } from 'lucide-react'
 import ClientFilters, { EMPTY_CLIENT_FILTERS, type ClientFilterState } from '@/components/admin/ClientFilters'
 import PageHeader from '@/components/admin/ui/PageHeader'
@@ -13,6 +13,7 @@ import ActionsMenu from '@/components/admin/ui/ActionsMenu'
 import StatCard from '@/components/admin/ui/StatCard'
 import { FilterField, TextField } from '@/components/admin/ui/FilterBar'
 import SearchSelectField, { type SearchSelectOption } from '@/components/admin/ui/SearchSelectField'
+import EditableCell from '@/components/admin/ui/EditableCell'
 
 interface ReservationProduct {
   id: number
@@ -87,71 +88,6 @@ interface ClientStats {
 }
 
 const GRID = '1.4fr 1.5fr 1fr 1.5fr 1.9fr 44px'
-
-// Click a cell to edit it inline, blur (or Enter) to save, Escape to
-// discard. `onSave` is only called when the value actually changed, and
-// the caller decides what "saved" vs "still editing" looks like (error
-// styling, revert on failure, etc).
-function EditableCell({
-  value, onSave, type = 'text', hasError,
-}: {
-  value: string | null | undefined
-  onSave: (next: string) => void
-  type?: string
-  hasError?: boolean
-}) {
-  const normalized = value || ''
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(normalized)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => { if (!editing) setDraft(normalized) }, [normalized, editing])
-  useEffect(() => { if (editing) { inputRef.current?.focus(); inputRef.current?.select() } }, [editing])
-
-  const commit = () => {
-    setEditing(false)
-    const trimmed = draft.trim()
-    if (trimmed !== normalized) onSave(trimmed)
-  }
-
-  if (editing) {
-    return (
-      <input
-        ref={inputRef}
-        type={type}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') { e.preventDefault(); inputRef.current?.blur() }
-          if (e.key === 'Escape') { setDraft(normalized); setEditing(false) }
-        }}
-        style={{
-          width: '100%', fontFamily: 'var(--font-lora)', fontSize: 12.5, color: '#f5eedd',
-          background: 'rgba(6,9,15,0.6)', border: `1px solid ${hasError ? 'rgba(196,94,94,0.6)' : 'rgba(184,151,74,0.6)'}`,
-          borderRadius: 5, padding: '4px 7px', outline: 'none',
-        }}
-      />
-    )
-  }
-
-  return (
-    <div
-      onClick={() => setEditing(true)}
-      title="Click to edit"
-      style={{
-        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'text',
-        borderRadius: 5, padding: '4px 7px', margin: '-4px -7px',
-        border: `1px solid ${hasError ? 'rgba(196,94,94,0.5)' : 'transparent'}`,
-        transition: 'background 0.15s ease',
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(184,151,74,0.08)')}
-      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-    >
-      {value || '—'}
-    </div>
-  )
-}
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([])

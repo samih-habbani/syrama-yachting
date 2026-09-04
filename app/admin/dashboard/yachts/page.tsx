@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, ArrowLeft, Sailboat, Tag, ShoppingBag } from 'lucide-react'
+import Link from 'next/link'
+import { Plus, ArrowLeft, Sailboat, Tag, ShoppingBag, Table2 } from 'lucide-react'
 import YachtListWithPagination from '@/components/admin/YachtListWithPagination'
 import YachtForm from '@/components/admin/YachtForm'
 import YachtFilters from '@/components/admin/YachtFilters'
@@ -130,10 +131,18 @@ export default function YachtsPage() {
         description="Manage your fleet — charter and sale listings."
         breadcrumbs={[{ label: 'Overview', href: '/admin/dashboard' }, { label: 'Yachts' }]}
         action={
-          <Button variant="primary" onClick={() => { setEditingYacht(null); setShowForm(true) }}>
-            <Plus size={14} strokeWidth={2.5} />
-            Add Yacht
-          </Button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <Link href="/admin/dashboard/yachts/table">
+              <Button variant="secondary">
+                <Table2 size={14} strokeWidth={2} />
+                Data Table
+              </Button>
+            </Link>
+            <Button variant="primary" onClick={() => { setEditingYacht(null); setShowForm(true) }}>
+              <Plus size={14} strokeWidth={2.5} />
+              Add Yacht
+            </Button>
+          </div>
         }
       />
 
