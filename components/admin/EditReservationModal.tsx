@@ -12,6 +12,11 @@ interface Reservation {
   location: string | null
   price?: number | null
   status: string
+  startTime: string | null
+  endTime: string | null
+  plannedItinerary: string | null
+  deposit: number | null
+  paymentDeadline: string | null
   client: { fullName: string }
   yacht: { model: string } | null
 }
@@ -26,8 +31,18 @@ function toDateInputValue(iso: string | null) {
   return iso ? iso.slice(0, 10) : ''
 }
 
+// Fallbacks matching a freshly-created reservation's own defaults — a
+// reservation edited before either was ever set (e.g. imported legacy
+// data) still lands on the same "no deposit yet, due today" starting point.
+function todayInputValue() {
+  return new Date().toISOString().slice(0, 10)
+}
+
 export default function EditReservationModal({ reservation, onClose, onSuccess }: EditReservationModalProps) {
-  const [formData, setFormData] = useState({ date: '', numberOfPeople: '', location: '', price: '', status: 'pending' })
+  const [formData, setFormData] = useState({
+    date: '', numberOfPeople: '', location: '', price: '', status: 'pending',
+    startTime: '', endTime: '', plannedItinerary: '', deposit: '0', paymentDeadline: '',
+  })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -39,6 +54,11 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
         location: reservation.location || '',
         price: reservation.price != null ? String(reservation.price) : '',
         status: reservation.status || 'pending',
+        startTime: reservation.startTime || '',
+        endTime: reservation.endTime || '',
+        plannedItinerary: reservation.plannedItinerary || '',
+        deposit: reservation.deposit != null ? String(reservation.deposit) : '0',
+        paymentDeadline: toDateInputValue(reservation.paymentDeadline) || todayInputValue(),
       })
       setError('')
     }
@@ -125,9 +145,43 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
             </FilterField>
           </div>
 
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+            <FilterField label="Embarkation Time *">
+              <TextField type="time" required value={formData.startTime} onChange={(e) => setFormData({ ...formData, startTime: e.target.value })} />
+            </FilterField>
+            <FilterField label="Disembarkation Time">
+              <TextField type="time" value={formData.endTime} onChange={(e) => setFormData({ ...formData, endTime: e.target.value })} />
+            </FilterField>
+          </div>
+
           <div style={{ marginBottom: 16 }}>
             <FilterField label="Location">
               <TextField value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
+            </FilterField>
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <FilterField label="Planned Itinerary">
+              <textarea
+                value={formData.plannedItinerary}
+                onChange={(e) => setFormData({ ...formData, plannedItinerary: e.target.value })}
+                rows={3}
+                placeholder="e.g. Departure from Cannes, Lérins Islands, lunch anchorage, return by sunset"
+                style={{
+                  width: '100%', fontFamily: 'var(--font-lora)', fontSize: 13, color: '#f5eedd',
+                  background: 'rgba(6,9,15,0.5)', border: '1px solid rgba(184,151,74,0.2)', borderRadius: 7,
+                  padding: '10px 14px', outline: 'none', resize: 'vertical',
+                }}
+              />
+            </FilterField>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+            <FilterField label="Deposit">
+              <TextField type="number" step="0.01" min={0} value={formData.deposit} onChange={(e) => setFormData({ ...formData, deposit: e.target.value })} />
+            </FilterField>
+            <FilterField label="Payment Deadline">
+              <TextField type="date" value={formData.paymentDeadline} onChange={(e) => setFormData({ ...formData, paymentDeadline: e.target.value })} />
             </FilterField>
           </div>
 

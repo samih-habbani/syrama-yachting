@@ -63,6 +63,7 @@ model Yacht {
   createdAt             DateTime @default(now()) @map("created_at")
   media                 Media[]
   reservations          Reservation[]
+  bookingLinks          BookingLink[]
 
   @@index([status])
   @@index([length])
@@ -164,15 +165,133 @@ model Reservation {
   commissionRate Float?    @map("commission_rate")
   currency       String?
 
+  // Embarkation/disembarkation time of day — kept separate from `date`/
+  // `endDate` (which stay plain calendar days) so a reservation's time
+  // can be edited on its own, same convention as BookingLink.
+  startTime        String?   @map("start_time")
+  endTime          String?   @map("end_time")
+  plannedItinerary String?   @map("planned_itinerary")
+  // Defaults match how a fresh reservation is set up in the admin: no
+  // deposit yet, payment due immediately unless edited otherwise.
+  deposit          Float?    @default(0)
+  paymentDeadline  DateTime? @default(now()) @map("payment_deadline")
+
   client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
   yacht     Yacht?    @relation(fields: [yachtId], references: [id], onDelete: SetNull)
   property  Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  contract  Contract?
 
   @@index([clientId])
   @@index([yachtId])
   @@index([propertyId])
   @@index([region])
   @@map("reservation")
+}
+
+// The SYRAMA Private Yacht Experience Agreement, generated automatically
+// once a client completes a booking link — a snapshot of what was known at
+// that moment (client details, yacht, date/time), since the reservation or
+// client records could change later while the issued contract must not.
+model Contract {
+  id                Int       @id @default(autoincrement())
+  reservationId     Int       @unique @map("reservation_id")
+  bookingReference  String    @unique @map("booking_reference")
+  // "waiting_for_payment" until the team updates it by hand — this app
+  // doesn't process payments itself.
+  status            String    @default("waiting_for_payment")
+
+  clientFullName    String    @map("client_full_name")
+  clientEmail       String    @map("client_email")
+  clientPhone       String    @map("client_phone")
+  clientCountry     String?   @map("client_country")
+
+  yachtModel        String    @map("yacht_model")
+  yachtOperator     String?   @map("yacht_operator")
+
+  experienceDate    DateTime  @map("experience_date")
+  experienceEndDate DateTime? @map("experience_end_date")
+  startTime         String?   @map("start_time")
+  endTime           String?   @map("end_time")
+  numberOfGuests    Int?      @map("number_of_guests")
+  plannedItinerary  String?   @map("planned_itinerary")
+  deposit           Float?
+  paymentDeadline   DateTime? @map("payment_deadline")
+  totalPrice        Float?    @map("total_price")
+  // Snapshot of Reservation.createdAt — the SYRAMA signature date shows
+  // when the booking itself was made, not when the contract PDF happens
+  // to be (re)generated.
+  reservationCreatedAt DateTime? @map("reservation_created_at")
+
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime? @map("updated_at")
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@map("contract")
+}
+
+// Imported from the legacy booking system's own `invoice` table (client
+// service invoices and provider commission invoices alike), and now also
+// created going forward from a reservation that already has a contract.
+// `reservationId`/`providerId`/`customerId` are loose references, same
+// convention as elsewhere in this schema — several imported rows point to
+// legacy reservations that were never carried over, so a formal relation
+// (and the FK constraint it implies) would break the import.
+model Invoice {
+  id               Int       @id @default(autoincrement())
+  reservationId    Int?      @map("reservation_id")
+  providerId       Int?      @map("provider_id")
+  customerId       Int?      @map("customer_id")
+  // "INV-26<id>" — continues the legacy numbering scheme (year prefix +
+  // the row's own auto-increment id), so a freshly created invoice's
+  // number is always the next one in the same sequence.
+  invoiceNumber    String    @unique @map("invoice_number")
+  type             String
+  serviceTitle     String?   @map("service_title")
+  serviceCity      String?   @map("service_city")
+  startDate        DateTime? @map("start_date")
+  endDate          DateTime? @map("end_date")
+  priceTotal       Float?    @map("price_total")
+  commissionRate   Float?    @map("commission_rate")
+  commissionAmount Float?    @map("commission_amount")
+  currency         String
+  status           String    @default("draft")
+  notes            String?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  // "service" (billed to the client) or "commission" (billed to/deducted
+  // from a provider) — only "service" is created from the live app today.
+  category         String
+  applyVat         Boolean   @default(false) @map("apply_vat")
+  vatRate          Float     @default(0) @map("vat_rate")
+
+  @@index([reservationId])
+  @@map("invoice")
+}
+
+// A shareable link the admin generates for one specific yacht + date/time
+// slot (e.g. from a WhatsApp conversation) — the client opens it, fills in
+// their contact details, and that creates the reservation directly instead
+// of the team relaying the details back and forth manually.
+model BookingLink {
+  id            Int       @id @default(autoincrement())
+  token         String    @unique
+  yachtId       Int       @map("yacht_id")
+  date          DateTime
+  // Only set for a multi-day charter — null means the same day as `date`.
+  endDate       DateTime? @map("end_date")
+  startTime     String    @map("start_time")
+  endTime       String?   @map("end_time")
+  // "pending" until the client submits the form, then "completed" — a
+  // completed link shows a "already booked" message instead of the form
+  // again, so re-opening it (e.g. from chat history) can't double-book.
+  status        String    @default("pending")
+  reservationId Int?      @map("reservation_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  yacht         Yacht     @relation(fields: [yachtId], references: [id], onDelete: Cascade)
+
+  @@index([yachtId])
+  @@map("booking_link")
 }
 
 model Provider {

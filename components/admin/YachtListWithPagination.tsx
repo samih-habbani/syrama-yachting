@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Pencil, Trash2, Images, Sailboat } from 'lucide-react'
+import { Pencil, Trash2, Images, Sailboat, Link2 } from 'lucide-react'
 import MediaManager from './MediaManager'
 import Card from './ui/Card'
 import Badge from './ui/Badge'
 import Pagination from './ui/Pagination'
 import EmptyState from './ui/EmptyState'
 import ActionsMenu from './ui/ActionsMenu'
+import GenerateBookingLinkModal from './GenerateBookingLinkModal'
 
 interface Yacht {
   id: number
@@ -75,6 +76,7 @@ export default function YachtListWithPagination({
   yachts, currentPage, totalPages, onEdit, onDelete, onPageChange,
 }: YachtListProps) {
   const [expandedYachtId, setExpandedYachtId] = useState<number | null>(null)
+  const [linkYacht, setLinkYacht] = useState<Yacht | null>(null)
 
   if (yachts.length === 0) {
     return (
@@ -183,6 +185,7 @@ export default function YachtListWithPagination({
                 items={[
                   { label: 'Edit', icon: <Pencil size={13.5} strokeWidth={1.75} />, onClick: () => onEdit(yacht) },
                   { label: expanded ? 'Hide Images' : 'Manage Images', icon: <Images size={13.5} strokeWidth={1.75} />, onClick: () => setExpandedYachtId(expanded ? null : yacht.id) },
+                  { label: 'Generate Booking Link', icon: <Link2 size={13.5} strokeWidth={1.75} />, onClick: () => setLinkYacht(yacht) },
                   { label: 'Delete', icon: <Trash2 size={13.5} strokeWidth={1.75} />, onClick: () => onDelete(yacht.id), tone: 'danger' },
                 ]}
               />
@@ -200,6 +203,8 @@ export default function YachtListWithPagination({
       })}
 
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
+
+      <GenerateBookingLinkModal yacht={linkYacht} onClose={() => setLinkYacht(null)} />
     </Card>
   )
 }

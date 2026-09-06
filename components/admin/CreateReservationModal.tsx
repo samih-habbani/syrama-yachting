@@ -1,12 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-
-interface Yacht {
-  id: number
-  model: string
-  region: string
-}
+import AsyncSearchSelectField, { type AsyncSearchSelectOption } from './ui/AsyncSearchSelectField'
 
 interface Client {
   id: number
@@ -22,8 +17,8 @@ interface CreateReservationModalProps {
 }
 
 export default function CreateReservationModal({ isOpen, onClose, onSuccess }: CreateReservationModalProps) {
-  const [yachts, setYachts] = useState<Yacht[]>([])
   const [clients, setClients] = useState<Client[]>([])
+  const [selectedYacht, setSelectedYacht] = useState<AsyncSearchSelectOption | null>(null)
   const [isLoadingData, setIsLoadingData] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -50,15 +45,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
   const fetchData = async () => {
     try {
       setIsLoadingData(true)
-      const [yachtsRes, clientsRes] = await Promise.all([
-        fetch('/api/admin/yachts?page=1&limit=1000'),
-        fetch('/api/clients?page=1&limit=1000')
-      ])
-
-      if (yachtsRes.ok) {
-        const yachtsData = await yachtsRes.json()
-        setYachts(yachtsData.yachts)
-      }
+      const clientsRes = await fetch('/api/clients?page=1&limit=1000')
 
       if (clientsRes.ok) {
         const clientsData = await clientsRes.json()
@@ -69,6 +56,22 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
     } finally {
       setIsLoadingData(false)
     }
+  }
+
+  // Server-side search instead of loading every yacht upfront — the fleet
+  // is large enough that fetching it all just to filter client-side was
+  // slow to open the modal.
+  const searchYachts = async (query: string): Promise<AsyncSearchSelectOption[]> => {
+    const params = new URLSearchParams({ limit: '20' })
+    if (query) params.set('model', query)
+    const res = await fetch(`/api/admin/yachts?${params.toString()}`)
+    if (!res.ok) return []
+    const data = await res.json()
+    return (data.yachts || []).map((y: { id: number; model: string; builder: string | null; region: string | null }) => ({
+      value: y.id,
+      label: y.builder ? `${y.builder} ${y.model}` : y.model,
+      sublabel: y.region || undefined,
+    }))
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -141,6 +144,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
         location: '',
         price: ''
       })
+      setSelectedYacht(null)
       setCreateNewClient(false)
     } catch (err) {
       setError('An error occurred')
@@ -204,21 +208,17 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
           {/* Yacht Selection */}
           <div>
             <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Yacht *</label>
-            <select
-              name="yachtId"
-              value={formData.yachtId}
-              onChange={handleChange}
-              className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-3 text-[#f5eedd] focus:outline-none transition text-sm"
-              required
-              disabled={isLoadingData}
-            >
-              <option value="">Select a yacht...</option>
-              {yachts.map(yacht => (
-                <option key={yacht.id} value={yacht.id}>
-                  {yacht.model} ({yacht.region})
-                </option>
-              ))}
-            </select>
+            <AsyncSearchSelectField
+              label="yacht"
+              value={selectedYacht?.value ?? null}
+              selectedOption={selectedYacht}
+              onChange={(option) => {
+                setSelectedYacht(option)
+                setFormData((prev) => ({ ...prev, yachtId: option ? String(option.value) : '' }))
+              }}
+              fetchOptions={searchYachts}
+              placeholder="Type to search a yacht…"
+            />
           </div>
 
           {/* Client Selection */}

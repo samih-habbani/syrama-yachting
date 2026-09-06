@@ -1,10 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, CalendarCheck, Users as UsersIcon, MapPin, Euro, Pencil } from 'lucide-react'
+import { Plus, CalendarCheck, Users as UsersIcon, MapPin, Euro, Pencil, FileDown, Link2, Receipt, Percent } from 'lucide-react'
 import ReservationFilters from '@/components/admin/ReservationFilters'
 import CreateReservationModal from '@/components/admin/CreateReservationModal'
 import EditReservationModal from '@/components/admin/EditReservationModal'
+import GenerateBookingLinkModal from '@/components/admin/GenerateBookingLinkModal'
+import GenerateInvoiceModal from '@/components/admin/GenerateInvoiceModal'
+import GenerateCommissionInvoiceModal from '@/components/admin/GenerateCommissionInvoiceModal'
 import PageHeader from '@/components/admin/ui/PageHeader'
 import Button from '@/components/admin/ui/Button'
 import Card from '@/components/admin/ui/Card'
@@ -16,13 +19,23 @@ import ActionsMenu from '@/components/admin/ui/ActionsMenu'
 interface Reservation {
   id: number
   date: string | null
+  endDate: string | null
   numberOfPeople: number | null
   location: string | null
   price?: number | null
   status: string
   createdAt: string
+  startTime: string | null
+  endTime: string | null
+  plannedItinerary: string | null
+  deposit: number | null
+  paymentDeadline: string | null
   client: { fullName: string; email: string; phone: string }
-  yacht: { model: string } | null
+  yacht: { id: number; model: string; builder: string | null; providerId: number | null } | null
+  contract: { id: number } | null
+  bookingLinkToken: string | null
+  invoiceId: number | null
+  commissionInvoiceId: number | null
 }
 
 const EMPTY_FILTERS = { id: '', clientName: '', yachtModel: '', dateFrom: '', dateTo: '' }
@@ -40,6 +53,9 @@ export default function ReservationsPage() {
   const [totalPages, setTotalPages] = useState(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
+  const [linkingReservation, setLinkingReservation] = useState<Reservation | null>(null)
+  const [invoicingReservation, setInvoicingReservation] = useState<Reservation | null>(null)
+  const [commissionReservation, setCommissionReservation] = useState<Reservation | null>(null)
   const [filters, setFilters] = useState(EMPTY_FILTERS)
 
   const fetchReservations = async (page: number) => {
@@ -106,6 +122,55 @@ export default function ReservationsPage() {
         onSuccess={() => fetchReservations(currentPage)}
       />
 
+      <GenerateBookingLinkModal
+        yacht={linkingReservation?.yacht || null}
+        reservation={linkingReservation ? {
+          id: linkingReservation.id,
+          date: linkingReservation.date,
+          endDate: linkingReservation.endDate,
+          startTime: linkingReservation.startTime,
+          endTime: linkingReservation.endTime,
+          numberOfPeople: linkingReservation.numberOfPeople,
+          bookingLinkToken: linkingReservation.bookingLinkToken,
+        } : null}
+        onClose={() => {
+          setLinkingReservation(null)
+          // A link may have just been generated — refresh so the row
+          // switches from "Generate Booking Link" to "Get Link".
+          fetchReservations(currentPage)
+        }}
+      />
+
+      <GenerateInvoiceModal
+        reservation={invoicingReservation ? {
+          id: invoicingReservation.id,
+          yacht: invoicingReservation.yacht,
+          location: invoicingReservation.location,
+          price: invoicingReservation.price ?? null,
+          date: invoicingReservation.date,
+          endDate: invoicingReservation.endDate,
+        } : null}
+        onClose={() => {
+          setInvoicingReservation(null)
+          // An invoice may have just been generated — refresh so the row
+          // switches from "Generate Invoice" to "Download Invoice".
+          fetchReservations(currentPage)
+        }}
+      />
+
+      <GenerateCommissionInvoiceModal
+        reservation={commissionReservation ? {
+          id: commissionReservation.id,
+          yacht: commissionReservation.yacht,
+          price: commissionReservation.price ?? null,
+          providerId: commissionReservation.yacht?.providerId ?? null,
+        } : null}
+        onClose={() => {
+          setCommissionReservation(null)
+          fetchReservations(currentPage)
+        }}
+      />
+
       {isLoading ? (
         <Card style={{ textAlign: 'center', padding: '60px 20px' }}>
           <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#8f8f7f' }}>Loading reservations…</div>
@@ -146,7 +211,29 @@ export default function ReservationsPage() {
                 <Badge tone={statusTone(res.status)} dot>{res.status}</Badge>
               </div>
 
-              <ActionsMenu items={[{ label: 'Edit', icon: <Pencil size={13.5} strokeWidth={1.75} />, onClick: () => setEditingReservation(res) }]} />
+              <ActionsMenu
+                items={[
+                  { label: 'Edit', icon: <Pencil size={13.5} strokeWidth={1.75} />, onClick: () => setEditingReservation(res) },
+                  ...(res.contract
+                    ? [
+                        { label: 'Download Contract', icon: <FileDown size={13.5} strokeWidth={1.75} />, onClick: () => window.open(`/api/admin/contracts/${res.contract!.id}/pdf`, '_blank') },
+                        res.invoiceId
+                          ? { label: 'Download Invoice', icon: <Receipt size={13.5} strokeWidth={1.75} />, onClick: () => window.open(`/api/admin/invoices/${res.invoiceId}/pdf`, '_blank') }
+                          : { label: 'Generate Invoice', icon: <Receipt size={13.5} strokeWidth={1.75} />, onClick: () => setInvoicingReservation(res) },
+                      ]
+                    : res.bookingLinkToken
+                      ? [{ label: 'Get Link', icon: <Link2 size={13.5} strokeWidth={1.75} />, onClick: () => setLinkingReservation(res) }]
+                      : res.yacht
+                        ? [{ label: 'Generate Booking Link', icon: <Link2 size={13.5} strokeWidth={1.75} />, onClick: () => setLinkingReservation(res) }]
+                        : []),
+                  // Independent of the client-facing contract/invoice flow
+                  // above — for a booking where SYRAMA was the referral /
+                  // apporteur d'affaires rather than the direct party.
+                  res.commissionInvoiceId
+                    ? { label: 'Download Commission Invoice', icon: <Percent size={13.5} strokeWidth={1.75} />, onClick: () => window.open(`/api/admin/invoices/${res.commissionInvoiceId}/pdf`, '_blank') }
+                    : { label: 'Generate Commission Invoice', icon: <Percent size={13.5} strokeWidth={1.75} />, onClick: () => setCommissionReservation(res) },
+                ]}
+              />
             </div>
           ))}
 

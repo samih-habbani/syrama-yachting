@@ -1,0 +1,3 @@
+ALTER TABLE "contract"
+  ADD COLUMN IF NOT EXISTS "total_price" DOUBLE PRECISION,
+  ADD COLUMN IF NOT EXISTS "reservation_created_at" TIMESTAMP(3);
