@@ -108,10 +108,22 @@ export default function Fleet({ showFilters = true, limit, initialYachts }: Flee
     () => Array.from(new Set(allYachts.map(y => y.region).filter(Boolean))).sort() as string[],
     [allYachts]
   )
-  const builders = useMemo(
-    () => Array.from(new Set(allYachts.map(y => y.builder).filter(Boolean))).sort() as string[],
-    [allYachts]
-  )
+  // One option per distinct builder+model combination actually present in the
+  // fleet (not just per builder) — shown as "Builder - Model" in the select,
+  // same format as the Search a Yacht results. The option's value is a
+  // composite key so picking it can match the exact model, not just the brand.
+  // A few imported legacy rows have a dash-only builder ('-') used as a "no
+  // value" placeholder (same convention as lib/invoice.ts's isPlaceholder) —
+  // treated as no builder, same as null.
+  const builders = useMemo(() => {
+    const seen = new Map<string, string>() // key -> label
+    allYachts.forEach(y => {
+      if (!y.builder || /^-+$/.test(y.builder.trim())) return
+      const key = `${y.builder}|||${y.model}`
+      if (!seen.has(key)) seen.set(key, `${y.builder} - ${y.model}`)
+    })
+    return Array.from(seen, ([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label))
+  }, [allYachts])
 
   const [filters, setFilters] = useState<FilterState>({
     region: regionParam,
@@ -159,7 +171,7 @@ export default function Fleet({ showFilters = true, limit, initialYachts }: Flee
     const filtered = allYachts.filter(y => {
       if (!statusMatches(y.status)) return false
       if (filters.region && (y.region || '').toLowerCase() !== filters.region.toLowerCase()) return false
-      if (filters.builder && (y.builder || '').toLowerCase() !== filters.builder.toLowerCase()) return false
+      if (filters.builder && `${y.builder || ''}|||${y.model}`.toLowerCase() !== filters.builder.toLowerCase()) return false
       if (filters.minLength && y.length < filters.minLength) return false
       if (filters.maxLength && y.length > filters.maxLength) return false
       // Guests/price sliders only make sense for yachts that actually have
@@ -296,6 +308,7 @@ export default function Fleet({ showFilters = true, limit, initialYachts }: Flee
             bounds={bounds}
             regions={regions}
             builders={builders}
+            yachts={allYachts}
             resultCount={yachts.length}
             onFiltersChange={setFilters}
             onReset={resetFilters}

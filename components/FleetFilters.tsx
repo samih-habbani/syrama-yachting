@@ -1,6 +1,19 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { yachtHref } from '@/lib/slug'
+
+// Just enough of the full Yacht shape to search and link out to a result —
+// see components/Fleet.tsx for the full interface.
+export interface SearchableYacht {
+  id: number
+  builder: string | null
+  model: string
+  status: string | null
+  media?: { url: string | null }[]
+}
 
 export interface FilterState {
   region: string | null
@@ -27,7 +40,10 @@ interface FleetFiltersProps {
   filters: FilterState
   bounds: FilterBounds
   regions: string[]
-  builders: string[]
+  // One option per distinct builder+model combination present in the fleet,
+  // labeled "Builder - Model" — see components/Fleet.tsx.
+  builders: { value: string; label: string }[]
+  yachts: SearchableYacht[]
   resultCount: number
   onFiltersChange: (filters: FilterState) => void
   onReset: () => void
@@ -54,7 +70,7 @@ const labelStyle: React.CSSProperties = {
 // Composant purement contrôlé : toutes les données (yachts, bornes, régions,
 // builders) sont chargées UNE SEULE FOIS par le parent (Fleet.tsx). Ici, on ne
 // fait que lire/écrire l'état des filtres — aucun appel réseau, filtrage 100% côté DOM.
-export default function FleetFilters({ filters, bounds, regions, builders, resultCount, onFiltersChange, onReset }: FleetFiltersProps) {
+export default function FleetFilters({ filters, bounds, regions, builders, yachts, resultCount, onFiltersChange, onReset }: FleetFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(true)
 
   const handleFilterChange = (newFilters: Partial<FilterState>) => {
@@ -162,6 +178,21 @@ export default function FleetFilters({ filters, bounds, regions, builders, resul
         </div>
       </div>
 
+      {/* Destination — always visible, independent of the collapse state below.
+          Same grid as the row below so it occupies exactly one column instead
+          of stretching across the full card width. */}
+      <div style={{ padding: '24px 32px', borderBottom: '1px solid rgba(184,151,74,0.15)' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <CustomSelect
+            label="Destination"
+            placeholder="All Destinations"
+            value={filters.region}
+            options={regions.map(r => ({ value: r, label: r }))}
+            onChange={(v) => handleFilterChange({ region: v })}
+          />
+        </div>
+      </div>
+
       {/* Filter Content */}
       <AnimatePresence>
         {isExpanded && (
@@ -173,20 +204,14 @@ export default function FleetFilters({ filters, bounds, regions, builders, resul
             transition={{ duration: 0.3 }}
           >
             <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: 36 }}>
-              {/* Row 1 — selects */}
+              {/* Row 1 — search + selects */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <CustomSelect
-                  label="Destination"
-                  placeholder="All Destinations"
-                  value={filters.region}
-                  options={regions.map(r => ({ value: r, label: r }))}
-                  onChange={(v) => handleFilterChange({ region: v })}
-                />
+                <YachtSearchField yachts={yachts} />
                 <CustomSelect
                   label="Builder"
                   placeholder="All Builders"
                   value={filters.builder}
-                  options={builders.map(b => ({ value: b, label: b }))}
+                  options={builders}
                   onChange={(v) => handleFilterChange({ builder: v })}
                 />
                 <CustomSelect
@@ -250,22 +275,52 @@ function CustomSelect({
 }) {
   const [open, setOpen] = useState(false)
   const [focusIntent, setFocusIntent] = useState<'first' | 'last' | null>(null)
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 })
+  const [mounted, setMounted] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
   const triggerId = `select-${label.replace(/\s+/g, '-').toLowerCase()}`
   const listboxId = `${triggerId}-listbox`
 
+  useEffect(() => setMounted(true), [])
+
+  // Rendered through a portal (see below) so the dropdown always escapes
+  // the filter panel's own collapse/expand animation — that panel toggles
+  // `overflow: hidden` while animating its height, which was clipping any
+  // option list still positioned inside it.
+  const updatePosition = () => {
+    const rect = triggerRef.current?.getBoundingClientRect()
+    if (!rect) return
+    setCoords({ top: rect.bottom + 6, left: rect.left, width: rect.width })
+  }
+
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    if (!open) return
+    updatePosition()
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (ref.current?.contains(target)) return
+      if (panelRef.current?.contains(target)) return
+      setOpen(false)
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
+    const handleReposition = () => updatePosition()
+
+    document.addEventListener('mousedown', handleClickOutside)
+    window.addEventListener('scroll', handleReposition, true)
+    window.addEventListener('resize', handleReposition)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      window.removeEventListener('scroll', handleReposition, true)
+      window.removeEventListener('resize', handleReposition)
+    }
+  }, [open])
 
   // Move focus into the option list once it has mounted, after opening via keyboard
   useEffect(() => {
     if (!open || !focusIntent) return
-    const optionEls = Array.from(ref.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])
+    const optionEls = Array.from(panelRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])
     const target = focusIntent === 'last' ? optionEls[optionEls.length - 1] : optionEls[0]
     target?.focus()
     setFocusIntent(null)
@@ -281,7 +336,7 @@ function CustomSelect({
         if (e.key === 'Escape') {
           e.preventDefault()
           setOpen(false)
-          ref.current?.querySelector<HTMLButtonElement>('button')?.focus()
+          triggerRef.current?.focus()
           return
         }
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -291,7 +346,7 @@ function CustomSelect({
             setFocusIntent(e.key === 'ArrowDown' ? 'first' : 'last')
             return
           }
-          const optionEls = Array.from(ref.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])
+          const optionEls = Array.from(panelRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])
           if (optionEls.length === 0) return
           const currentIndex = optionEls.indexOf(document.activeElement as HTMLButtonElement)
           const nextIndex = e.key === 'ArrowDown'
@@ -302,7 +357,7 @@ function CustomSelect({
         }
         if (open && (e.key === 'Home' || e.key === 'End')) {
           e.preventDefault()
-          const optionEls = Array.from(ref.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])
+          const optionEls = Array.from(panelRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])
           const target = e.key === 'Home' ? optionEls[0] : optionEls[optionEls.length - 1]
           target?.focus()
         }
@@ -310,6 +365,7 @@ function CustomSelect({
     >
       <label id={`${triggerId}-label`} style={labelStyle}>{label}</label>
       <button
+        ref={triggerRef}
         id={triggerId}
         type="button"
         onClick={(e) => {
@@ -351,83 +407,242 @@ function CustomSelect({
         </motion.svg>
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.15 }}
-            role="listbox"
-            id={listboxId}
-            aria-labelledby={`${triggerId}-label`}
-            style={{
-              position: 'absolute',
-              top: 'calc(100% + 6px)',
-              left: 0,
-              right: 0,
-              zIndex: 30,
-              maxHeight: 280,
-              overflowY: 'auto',
-              background: '#0b0e15',
-              border: '1px solid rgba(184,151,74,0.35)',
-              borderRadius: 4,
-              boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
-            }}
-          >
-            <button
-              type="button"
-              role="option"
-              aria-selected={value === null}
-              onClick={() => { onChange(null); setOpen(false) }}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              ref={panelRef}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
+              role="listbox"
+              id={listboxId}
+              aria-labelledby={`${triggerId}-label`}
               style={{
-                width: '100%',
-                textAlign: 'left',
-                font: 'inherit',
-                border: 'none',
-                padding: '11px 16px',
-                fontFamily: 'var(--font-tenor)',
-                fontSize: 12,
-                color: value === null ? '#b8974a' : 'rgba(245,238,221,0.55)',
-                background: value === null ? 'rgba(184,151,74,0.1)' : 'transparent',
-                cursor: 'pointer',
-                transition: 'background 0.15s ease',
+                position: 'fixed',
+                top: coords.top,
+                left: coords.left,
+                width: coords.width,
+                zIndex: 100,
+                maxHeight: 280,
+                overflowY: 'auto',
+                background: '#0b0e15',
+                border: '1px solid rgba(184,151,74,0.35)',
+                borderRadius: 4,
+                boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(184,151,74,0.1)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = value === null ? 'rgba(184,151,74,0.1)' : 'transparent')}
             >
-              {placeholder}
-            </button>
-            {options.map(o => (
               <button
-                key={o.value}
                 type="button"
                 role="option"
-                aria-selected={value === o.value}
-                onClick={() => { onChange(o.value); setOpen(false) }}
+                aria-selected={value === null}
+                onClick={() => { onChange(null); setOpen(false) }}
                 style={{
                   width: '100%',
                   textAlign: 'left',
                   font: 'inherit',
                   border: 'none',
-                  borderTop: '1px solid rgba(184,151,74,0.08)',
                   padding: '11px 16px',
                   fontFamily: 'var(--font-tenor)',
                   fontSize: 12,
-                  color: value === o.value ? '#b8974a' : 'rgba(245,238,221,0.8)',
-                  background: value === o.value ? 'rgba(184,151,74,0.1)' : 'transparent',
+                  color: value === null ? '#b8974a' : 'rgba(245,238,221,0.55)',
+                  background: value === null ? 'rgba(184,151,74,0.1)' : 'transparent',
                   cursor: 'pointer',
                   transition: 'background 0.15s ease',
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(184,151,74,0.1)')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = value === o.value ? 'rgba(184,151,74,0.1)' : 'transparent')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = value === null ? 'rgba(184,151,74,0.1)' : 'transparent')}
               >
-                {o.label}
+                {placeholder}
               </button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {options.map(o => (
+                <button
+                  key={o.value}
+                  type="button"
+                  role="option"
+                  aria-selected={value === o.value}
+                  onClick={() => { onChange(o.value); setOpen(false) }}
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    font: 'inherit',
+                    border: 'none',
+                    borderTop: '1px solid rgba(184,151,74,0.08)',
+                    padding: '11px 16px',
+                    fontFamily: 'var(--font-tenor)',
+                    fontSize: 12,
+                    color: value === o.value ? '#b8974a' : 'rgba(245,238,221,0.8)',
+                    background: value === o.value ? 'rgba(184,151,74,0.1)' : 'transparent',
+                    cursor: 'pointer',
+                    transition: 'background 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(184,151,74,0.1)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = value === o.value ? 'rgba(184,151,74,0.1)' : 'transparent')}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// Yacht search — free-text, client-side match on "builder + model",
+// portal-based results list (same clipping fix as CustomSelect above).
+// Clicking a result navigates straight to that yacht's page.
+// ─────────────────────────────────────────────────────────────
+function YachtSearchField({ yachts }: { yachts: SearchableYacht[] }) {
+  const router = useRouter()
+  const [query, setQuery] = useState('')
+  const [open, setOpen] = useState(false)
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 })
+  const [mounted, setMounted] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => setMounted(true), [])
+
+  const updatePosition = () => {
+    const rect = inputRef.current?.getBoundingClientRect()
+    if (!rect) return
+    setCoords({ top: rect.bottom + 6, left: rect.left, width: rect.width })
+  }
+
+  useEffect(() => {
+    if (!open) return
+    updatePosition()
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (ref.current?.contains(target)) return
+      if (panelRef.current?.contains(target)) return
+      setOpen(false)
+    }
+    const handleReposition = () => updatePosition()
+
+    document.addEventListener('mousedown', handleClickOutside)
+    window.addEventListener('scroll', handleReposition, true)
+    window.addEventListener('resize', handleReposition)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      window.removeEventListener('scroll', handleReposition, true)
+      window.removeEventListener('resize', handleReposition)
+    }
+  }, [open])
+
+  const trimmed = query.trim().toLowerCase()
+  const results = trimmed.length === 0
+    ? []
+    : yachts
+        .filter((y) => `${y.builder || ''} ${y.model}`.toLowerCase().includes(trimmed))
+        .slice(0, 8)
+
+  const goToYacht = (yacht: SearchableYacht) => {
+    setOpen(false)
+    setQuery('')
+    router.push(yachtHref(yacht))
+  }
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <label style={labelStyle}>Search a Yacht</label>
+      <div style={{ position: 'relative' }}>
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
+          onFocus={() => { if (trimmed.length > 0) setOpen(true) }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setOpen(false)
+              inputRef.current?.blur()
+            } else if (e.key === 'Enter' && results.length > 0) {
+              e.preventDefault()
+              goToYacht(results[0])
+            }
+          }}
+          placeholder="Search by builder or model…"
+          aria-label="Search a yacht"
+          style={{
+            width: '100%',
+            padding: '13px 16px',
+            fontFamily: 'var(--font-tenor)',
+            fontSize: 12,
+            color: '#f5eedd',
+            background: open ? 'rgba(184,151,74,0.1)' : 'rgba(184,151,74,0.05)',
+            border: `1px solid ${open ? '#b8974a' : 'rgba(184,151,74,0.25)'}`,
+            borderRadius: 4,
+            outline: 'none',
+            transition: 'all 0.2s ease',
+          }}
+        />
+      </div>
+
+      {mounted && createPortal(
+        <AnimatePresence>
+          {open && results.length > 0 && (
+            <motion.div
+              ref={panelRef}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
+              role="listbox"
+              aria-label="Yacht search results"
+              style={{
+                position: 'fixed',
+                top: coords.top,
+                left: coords.left,
+                width: coords.width,
+                zIndex: 100,
+                maxHeight: 320,
+                overflowY: 'auto',
+                background: '#0b0e15',
+                border: '1px solid rgba(184,151,74,0.35)',
+                borderRadius: 4,
+                boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
+              }}
+            >
+              {results.map((y) => (
+                <button
+                  key={y.id}
+                  type="button"
+                  role="option"
+                  aria-selected={false}
+                  onClick={() => goToYacht(y)}
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    font: 'inherit',
+                    border: 'none',
+                    borderTop: '1px solid rgba(184,151,74,0.08)',
+                    padding: '11px 16px',
+                    fontFamily: 'var(--font-tenor)',
+                    fontSize: 12,
+                    color: 'rgba(245,238,221,0.85)',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    transition: 'background 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(184,151,74,0.1)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  {[y.builder, y.model].filter(Boolean).join(' - ')}
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   )
 }
