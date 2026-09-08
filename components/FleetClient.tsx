@@ -18,11 +18,13 @@ interface Yacht {
   builder: string | null
   model: string
   length: number
+  lengthUnit?: string
   maxGuests: number | null
   cabins: number
   priceDay: number | null
   priceHour: number | null
   priceWeek: number | null
+  currency?: string | null
   status: string | null
   region: string | null
   media?: Media[]
@@ -108,7 +110,7 @@ export default function FleetClient({ yachts }: FleetClientProps) {
                         {yacht.model}
                       </div>
                       <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginTop: 4 }}>
-                        {yacht.length}m{yacht.builder ? ` · ${yacht.builder}` : ''}
+                        {yacht.length}{yacht.lengthUnit || 'm'}{yacht.builder ? ` · ${yacht.builder}` : ''}
                       </div>
                     </div>
 
@@ -140,7 +142,7 @@ export default function FleetClient({ yachts }: FleetClientProps) {
                     <div style={{ display: 'flex', gap: 32 }}>
                       <div>
                         <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,238,221,0.7)', marginBottom: 6, fontWeight: 600 }}>Length</div>
-                        <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 18, fontWeight: 300, color: '#d4b472' }}>{yacht.length}m</div>
+                        <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 18, fontWeight: 300, color: '#d4b472' }}>{yacht.length}{yacht.lengthUnit || 'm'}</div>
                       </div>
                       {yacht.maxGuests && (
                         <div>

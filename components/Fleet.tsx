@@ -22,6 +22,7 @@ export interface Yacht {
   builder: string | null
   model: string
   length: number
+  lengthUnit?: string
   maxGuests: number | null
   cabins: number
   year?: number | null
@@ -31,6 +32,7 @@ export interface Yacht {
   priceHour: number | null
   priceWeek: number | null
   priceSale: number | null
+  currency?: string | null
   status: string | null
   available?: boolean
   rating?: number | null
@@ -130,6 +132,7 @@ export default function Fleet({ showFilters = true, limit, initialYachts }: Flee
 
   const [filters, setFilters] = useState<FilterState>({
     region: regionParam,
+    city: null,
     builder: null,
     minLength: 0,
     maxLength: 200,
@@ -139,6 +142,18 @@ export default function Fleet({ showFilters = true, limit, initialYachts }: Flee
     maxPrice: 0,
     sortBy: 'default',
   })
+
+  // Cities scoped to the currently selected region — no region selected
+  // means every city in the fleet, same idea as the builder list.
+  const cities = useMemo(
+    () => Array.from(new Set(
+      allYachts
+        .filter(y => !filters.region || (y.region || '').toLowerCase() === filters.region.toLowerCase())
+        .map(y => y.city)
+        .filter(Boolean)
+    )).sort() as string[],
+    [allYachts, filters.region]
+  )
 
   // Une fois les bornes réelles connues, on initialise les curseurs dessus (une seule fois)
   const boundsInitialized = useRef(false)
@@ -162,7 +177,7 @@ export default function Fleet({ showFilters = true, limit, initialYachts }: Flee
   }, [tabParam])
 
   useEffect(() => {
-    setFilters(prev => ({ ...prev, region: regionParam }))
+    setFilters(prev => ({ ...prev, region: regionParam, city: null }))
   }, [regionParam])
 
   const yachts = useMemo(() => {
@@ -174,6 +189,7 @@ export default function Fleet({ showFilters = true, limit, initialYachts }: Flee
     const filtered = allYachts.filter(y => {
       if (!statusMatches(y.status)) return false
       if (filters.region && (y.region || '').toLowerCase() !== filters.region.toLowerCase()) return false
+      if (filters.city && (y.city || '').toLowerCase() !== filters.city.toLowerCase()) return false
       if (filters.builder && `${y.builder || ''}|||${y.model}`.toLowerCase() !== filters.builder.toLowerCase()) return false
       if (filters.minLength && y.length < filters.minLength) return false
       if (filters.maxLength && y.length > filters.maxLength) return false
@@ -226,6 +242,7 @@ export default function Fleet({ showFilters = true, limit, initialYachts }: Flee
   const resetFilters = () => {
     setFilters({
       region: null,
+      city: null,
       builder: null,
       minLength: bounds.minLength,
       maxLength: bounds.maxLength,
@@ -310,6 +327,7 @@ export default function Fleet({ showFilters = true, limit, initialYachts }: Flee
             filters={filters}
             bounds={bounds}
             regions={regions}
+            cities={cities}
             builders={builders}
             yachts={allYachts}
             resultCount={yachts.length}
@@ -375,7 +393,7 @@ export default function Fleet({ showFilters = true, limit, initialYachts }: Flee
                         {yacht.model}
                       </div>
                       <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginTop: 4 }}>
-                        {yacht.length}m{yacht.builder ? ` · ${yacht.builder}` : ''}
+                        {yacht.length}{yacht.lengthUnit || 'm'}{yacht.builder ? ` · ${yacht.builder}` : ''}
                       </div>
                     </div>
 
@@ -407,7 +425,7 @@ export default function Fleet({ showFilters = true, limit, initialYachts }: Flee
                     <div style={{ display: 'flex', gap: 32 }}>
                       <div>
                         <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,238,221,0.7)', marginBottom: 6, fontWeight: 600 }}>Length</div>
-                        <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 18, fontWeight: 300, color: '#d4b472' }}>{yacht.length}m</div>
+                        <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 18, fontWeight: 300, color: '#d4b472' }}>{yacht.length}{yacht.lengthUnit || 'm'}</div>
                       </div>
                       {yacht.maxGuests && (
                         <div>

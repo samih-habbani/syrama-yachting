@@ -17,6 +17,7 @@ export interface SearchableYacht {
 
 export interface FilterState {
   region: string | null
+  city: string | null
   builder: string | null
   minLength: number
   maxLength: number
@@ -40,6 +41,10 @@ interface FleetFiltersProps {
   filters: FilterState
   bounds: FilterBounds
   regions: string[]
+  // Cities available for the currently selected region (or every city in
+  // the fleet when no region is picked yet) — recomputed by the parent
+  // whenever `filters.region` changes, same idea as `builders`.
+  cities: string[]
   // One option per distinct builder+model combination present in the fleet,
   // labeled "Builder - Model" — see components/Fleet.tsx.
   builders: { value: string; label: string }[]
@@ -70,7 +75,7 @@ const labelStyle: React.CSSProperties = {
 // Composant purement contrôlé : toutes les données (yachts, bornes, régions,
 // builders) sont chargées UNE SEULE FOIS par le parent (Fleet.tsx). Ici, on ne
 // fait que lire/écrire l'état des filtres — aucun appel réseau, filtrage 100% côté DOM.
-export default function FleetFilters({ filters, bounds, regions, builders, yachts, resultCount, onFiltersChange, onReset }: FleetFiltersProps) {
+export default function FleetFilters({ filters, bounds, regions, cities, builders, yachts, resultCount, onFiltersChange, onReset }: FleetFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(true)
 
   const handleFilterChange = (newFilters: Partial<FilterState>) => {
@@ -79,6 +84,7 @@ export default function FleetFilters({ filters, bounds, regions, builders, yacht
 
   const hasActiveFilters =
     filters.region !== null ||
+    filters.city !== null ||
     filters.builder !== null ||
     filters.sortBy !== 'default' ||
     filters.minLength > bounds.minLength ||
@@ -188,7 +194,17 @@ export default function FleetFilters({ filters, bounds, regions, builders, yacht
             placeholder="All Destinations"
             value={filters.region}
             options={regions.map(r => ({ value: r, label: r }))}
-            onChange={(v) => handleFilterChange({ region: v })}
+            // Picking a new region invalidates whatever city was selected
+            // for the old one (a city list scoped to the new region may not
+            // even contain it), same as clearing the field manually.
+            onChange={(v) => handleFilterChange({ region: v, city: null })}
+          />
+          <CustomSelect
+            label="City"
+            placeholder="All Cities"
+            value={filters.city}
+            options={cities.map(c => ({ value: c, label: c }))}
+            onChange={(v) => handleFilterChange({ city: v })}
           />
         </div>
       </div>

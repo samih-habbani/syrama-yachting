@@ -10,7 +10,7 @@ import YachtExperienceJourney from './YachtExperienceJourney'
 import Footer from './Footer'
 import { useWhatsappContext } from './WhatsappContext'
 import { yachtHref } from '@/lib/slug'
-import { getCharterRateInfo, formatCharterRate } from '@/lib/yacht-price'
+import { getCharterRateInfo, formatCharterRate, formatAmount } from '@/lib/yacht-price'
 
 interface Media {
   id: number
@@ -23,6 +23,7 @@ interface Yacht {
   model: string
   builder: string | null
   length: number
+  lengthUnit?: string
   maxGuests: number | null
   cabins: number
   bathrooms: number | null
@@ -32,6 +33,7 @@ interface Yacht {
   priceHour: number | null
   priceWeek: number | null
   priceSale: number | null
+  currency?: string | null
   region: string | null
   city: string | null
   status: string | null
@@ -57,11 +59,13 @@ interface SimilarYacht {
   model: string
   builder: string | null
   length: number
+  lengthUnit?: string
   maxGuests: number | null
   cabins: number
   priceDay: number | null
   priceHour: number | null
   priceWeek: number | null
+  currency?: string | null
   priceSale: number | null
   region: string | null
   status: string | null
@@ -104,7 +108,7 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
   // way, a spec with no real data is dropped instead of being shown blank
   // or as a misleading 0 (see hasValue above).
   const charterSpecs: [string, number | string | null | undefined][] = [
-    ['Length', `${yacht.length}m`],
+    ['Length', `${yacht.length}${yacht.lengthUnit || 'm'}`],
     ['Builder', yacht.builder],
     ['Year', yacht.year],
     ['Cabins', yacht.cabins],
@@ -114,7 +118,7 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
     ['City', yacht.city],
   ]
   const saleSpecs: [string, number | string | null | undefined][] = [
-    ['Length', `${yacht.length}m`],
+    ['Length', `${yacht.length}${yacht.lengthUnit || 'm'}`],
     ['Builder', yacht.builder],
     ['Year', yacht.year],
     ['Cabins', yacht.cabins],
@@ -203,7 +207,7 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
         <div style={{ position: 'absolute', bottom: 32, left: 'clamp(24px, 6vw, 96px)', right: 'clamp(24px, 6vw, 96px)' }}>
           <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 300, color: '#f5eedd', lineHeight: 1.1, margin: 0 }}>{yacht.model}</h1>
           <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginTop: 8 }}>
-            {[`${yacht.length}m`, yacht.builder, hasValue(yacht.year) ? yacht.year : null].filter(hasValue).join(' · ')}
+            {[`${yacht.length}${yacht.lengthUnit || 'm'}`, yacht.builder, hasValue(yacht.year) ? yacht.year : null].filter(hasValue).join(' · ')}
           </div>
         </div>
       </div>
@@ -260,7 +264,7 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
                 <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(24px, 2.4vw, 30px)', fontWeight: 300, color: '#d4b472', lineHeight: 1 }}>
                   {rate ? (
                     <>
-                      €{rate.amount.toLocaleString('en-US')}
+                      {formatAmount(rate.amount, yacht.currency || 'EUR')}
                       <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8f8f7f' }}>/{rate.unit}</span>
                     </>
                   ) : (
@@ -350,7 +354,7 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
                   <div style={{ position: 'absolute', bottom: 20, left: 24, right: 24 }}>
                     <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 22, fontWeight: 300, color: '#f5eedd', lineHeight: 1.2 }}>{sim.model}</div>
                     <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b8974a', marginTop: 4 }}>
-                      {sim.length}m{sim.builder ? ` · ${sim.builder}` : ''}
+                      {sim.length}{sim.lengthUnit || 'm'}{sim.builder ? ` · ${sim.builder}` : ''}
                     </div>
                   </div>
                 </div>

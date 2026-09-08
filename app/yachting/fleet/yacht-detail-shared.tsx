@@ -17,10 +17,11 @@ export async function generateYachtDetailMetadata(slug: string): Promise<Metadat
 
   const canonicalPath = yachtHref(yacht)
   const isCharter = (yacht.status || '').toLowerCase() === 'location'
-  const title = `${yacht.model}${yacht.builder ? ` by ${yacht.builder}` : ''} — ${yacht.length}m Yacht`
+  const lengthLabel = `${yacht.length}${yacht.lengthUnit || 'm'}`
+  const title = `${yacht.model}${yacht.builder ? ` by ${yacht.builder}` : ''} — ${lengthLabel} Yacht`
   const description = isCharter
-    ? `Charter the ${yacht.model}${yacht.builder ? ` by ${yacht.builder}` : ''}, a ${yacht.length}m yacht${yacht.maxGuests ? ` for up to ${yacht.maxGuests} guests` : ''}${yacht.region ? ` in ${yacht.region}` : ''}. Request availability with Syrama Yachting.`
-    : `${yacht.model}${yacht.builder ? ` by ${yacht.builder}` : ''} for sale — a ${yacht.length}m yacht${yacht.region ? ` in ${yacht.region}` : ''}. Contact Syrama Yachting to speak with a broker.`
+    ? `Charter the ${yacht.model}${yacht.builder ? ` by ${yacht.builder}` : ''}, a ${lengthLabel} yacht${yacht.maxGuests ? ` for up to ${yacht.maxGuests} guests` : ''}${yacht.region ? ` in ${yacht.region}` : ''}. Request availability with Syrama Yachting.`
+    : `${yacht.model}${yacht.builder ? ` by ${yacht.builder}` : ''} for sale — a ${lengthLabel} yacht${yacht.region ? ` in ${yacht.region}` : ''}. Contact Syrama Yachting to speak with a broker.`
   const imageUrl = yacht.media?.[0]?.url ? `/uploads/yachts/${yacht.media[0].url}` : undefined
 
   return {
@@ -66,11 +67,11 @@ export async function YachtDetailPageContent({ slug, expectedSegment }: { slug: 
     '@type': 'Product',
     name: yachtData.model,
     brand: yachtData.builder || undefined,
-    description: `${yachtData.model}${yachtData.builder ? ` by ${yachtData.builder}` : ''}, a ${yachtData.length}m yacht${yachtData.maxGuests ? ` for up to ${yachtData.maxGuests} guests` : ''}.`,
+    description: `${yachtData.model}${yachtData.builder ? ` by ${yachtData.builder}` : ''}, a ${yachtData.length}${yachtData.lengthUnit || 'm'} yacht${yachtData.maxGuests ? ` for up to ${yachtData.maxGuests} guests` : ''}.`,
     image: yachtData.media?.[0]?.url ? `${SITE_URL}/uploads/yachts/${yachtData.media[0].url}` : undefined,
     offers: offerPrice ? {
       '@type': 'Offer',
-      priceCurrency: 'EUR',
+      priceCurrency: yachtData.currency || 'EUR',
       price: offerPrice,
       availability: 'https://schema.org/InStock',
       url: `${SITE_URL}${canonicalPath}`,

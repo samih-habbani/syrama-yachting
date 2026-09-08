@@ -23,13 +23,33 @@ export function getCharterRateInfo(yacht: {
   return null
 }
 
-// One-line "€1,300/day" (or "Price on request") for compact card display.
+// Renders an amount in the yacht's own currency (AED for the Dubai fleets,
+// EUR for most of the rest, ...). The `currency` column isn't consistently
+// an ISO 4217 code — some rows store "EUR"/"AED", others store the raw
+// symbol "€" — so only hand a real 3-letter code to Intl (which throws on
+// anything else) and just prefix a symbol directly otherwise.
+// Exported on its own (not just via formatCharterRate) for the few spots
+// that render the amount and the "/hour" unit as two separately styled
+// elements instead of one plain string.
+export function formatAmount(amount: number, currency: string, locale = 'en-US'): string {
+  const plain = amount.toLocaleString(locale)
+  if (!/^[A-Za-z]{3}$/.test(currency)) return `${currency}${plain}`
+  try {
+    return new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount)
+  } catch {
+    return `${currency} ${plain}`
+  }
+}
+
+// One-line "€1,300/day" / "AED 1,300/hour" (or "Price on request") for
+// compact card display — currency comes from the yacht's own `currency`
+// field, never hardcoded, since it differs per fleet/region.
 export function formatCharterRate(
-  yacht: { priceHour?: number | null; priceDay?: number | null; priceWeek?: number | null },
-  opts: { currencySymbol?: string; locale?: string } = {}
+  yacht: { priceHour?: number | null; priceDay?: number | null; priceWeek?: number | null; currency?: string | null },
+  opts: { locale?: string } = {}
 ): string {
-  const { currencySymbol = '€', locale = 'en-US' } = opts
+  const { locale = 'en-US' } = opts
   const rate = getCharterRateInfo(yacht)
   if (!rate) return 'Price on request'
-  return `${currencySymbol}${rate.amount.toLocaleString(locale)}/${rate.unit}`
+  return `${formatAmount(rate.amount, yacht.currency || 'EUR', locale)}/${rate.unit}`
 }

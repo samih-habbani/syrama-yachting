@@ -87,14 +87,17 @@ export async function getYachts(options: {
       builder: true,
       model: true,
       length: true,
+      lengthUnit: true,
       maxGuests: true,
       cabins: true,
       priceDay: true,
       priceHour: true,
       priceWeek: true,
       priceSale: true,
+      currency: true,
       status: true,
       region: true,
+      city: true,
       media: {
         take: 1,
         orderBy: { id: 'asc' },
@@ -109,6 +112,7 @@ export interface YachtDetail {
   model: string
   builder: string | null
   length: number
+  lengthUnit: string
   maxGuests: number | null
   cabins: number
   bathrooms: number | null
@@ -118,6 +122,7 @@ export interface YachtDetail {
   priceSale: number | null
   priceHour: number | null
   priceWeek: number | null
+  currency: string
   region: string | null
   city: string | null
   status: string | null
@@ -145,10 +150,10 @@ export interface YachtDetail {
 export async function getYachtById(id: number): Promise<YachtDetail | null> {
   const rows = await prisma.$queryRaw<(Omit<YachtDetail, 'media'> & { media: YachtDetail['media'] | null })[]>`
     SELECT
-      y.id, y.model, y.builder, y.length, y.max_guests as "maxGuests",
+      y.id, y.model, y.builder, y.length, y.length_unit as "lengthUnit", y.max_guests as "maxGuests",
       y.cabins, y.bathrooms, y.max_sleeping as "maxSleeping",
       y.year, y.price_day as "priceDay", y.price_sale as "priceSale",
-      y.price_hour as "priceHour", y.price_week as "priceWeek",
+      y.price_hour as "priceHour", y.price_week as "priceWeek", y.currency,
       y.region, y.city, y.status,
       y.engines, y.engine_hours as "engineHours",
       y.beam, y.beam_open_platform as "beamOpenPlatform", y.draft,
@@ -175,12 +180,14 @@ interface SimilarYachtRow {
   builder: string | null
   model: string
   length: number
+  lengthUnit: string
   maxGuests: number | null
   cabins: number
   priceDay: number | null
   priceHour: number | null
   priceWeek: number | null
   priceSale: number | null
+  currency: string
   status: string | null
   region: string | null
   media: { id: number; url: string | null; alt: string | null }[] | null
@@ -196,9 +203,9 @@ export async function getSimilarYachts(yacht: { id: number; length: number; stat
 
   const rows = await prisma.$queryRaw<SimilarYachtRow[]>`
     SELECT
-      y.id, y.builder, y.model, y.length, y.max_guests as "maxGuests",
+      y.id, y.builder, y.model, y.length, y.length_unit as "lengthUnit", y.max_guests as "maxGuests",
       y.cabins, y.price_day as "priceDay", y.price_hour as "priceHour", y.price_week as "priceWeek",
-      y.price_sale as "priceSale", y.status, y.region,
+      y.price_sale as "priceSale", y.currency, y.status, y.region,
       (SELECT json_agg(t) FROM (
         SELECT m.id, m.url, m.alt FROM media m WHERE m.yacht_id = y.id ORDER BY m.id ASC LIMIT 1
       ) t) as media
