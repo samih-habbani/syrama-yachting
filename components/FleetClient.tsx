@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import AvailabilityModal from './AvailabilityModal'
 import { yachtHref } from '@/lib/slug'
+import { formatCharterRate } from '@/lib/yacht-price'
 
 interface Media {
   id: number
@@ -20,6 +21,8 @@ interface Yacht {
   maxGuests: number | null
   cabins: number
   priceDay: number | null
+  priceHour: number | null
+  priceWeek: number | null
   status: string | null
   region: string | null
   media?: Media[]
@@ -148,7 +151,7 @@ export default function FleetClient({ yachts }: FleetClientProps) {
                       <div>
                         <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(245,238,221,0.7)', marginBottom: 6, fontWeight: 600 }}>Rate</div>
                         <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 18, fontWeight: 300, color: '#d4b472' }}>
-                          {yacht.priceDay ? `€${yacht.priceDay.toLocaleString('fr-FR')}/day` : 'Price on request'}
+                          {formatCharterRate(yacht, { locale: 'fr-FR' })}
                         </div>
                       </div>
                     </div>

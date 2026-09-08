@@ -8,6 +8,7 @@ import FleetFilters, { FilterState } from './FleetFilters'
 import AvailabilityModal from './AvailabilityModal'
 import BrokerContactModal from './BrokerContactModal'
 import { yachtHref } from '@/lib/slug'
+import { formatCharterRate } from '@/lib/yacht-price'
 
 interface Media {
   id: number
@@ -27,6 +28,8 @@ export interface Yacht {
   region: string | null
   city?: string | null
   priceDay: number | null
+  priceHour: number | null
+  priceWeek: number | null
   priceSale: number | null
   status: string | null
   available?: boolean
@@ -418,7 +421,7 @@ export default function Fleet({ showFilters = true, limit, initialYachts }: Flee
                         </div>
                         <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 18, fontWeight: 300, color: '#d4b472' }}>
                           {activeTab === 'charter'
-                            ? (yacht.priceDay ? `€${yacht.priceDay.toLocaleString('en-US')}/day` : 'Price on request')
+                            ? formatCharterRate(yacht)
                             : (yacht.priceSale ? `€${yacht.priceSale.toLocaleString('en-US')}` : 'Price on request')}
                         </div>
                       </div>

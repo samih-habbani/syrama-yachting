@@ -10,6 +10,7 @@ import YachtExperienceJourney from './YachtExperienceJourney'
 import Footer from './Footer'
 import { useWhatsappContext } from './WhatsappContext'
 import { yachtHref } from '@/lib/slug'
+import { getCharterRateInfo, formatCharterRate } from '@/lib/yacht-price'
 
 interface Media {
   id: number
@@ -28,6 +29,8 @@ interface Yacht {
   maxSleeping: number | null
   year: number | null
   priceDay: number | null
+  priceHour: number | null
+  priceWeek: number | null
   priceSale: number | null
   region: string | null
   city: string | null
@@ -57,6 +60,8 @@ interface SimilarYacht {
   maxGuests: number | null
   cabins: number
   priceDay: number | null
+  priceHour: number | null
+  priceWeek: number | null
   priceSale: number | null
   region: string | null
   status: string | null
@@ -83,6 +88,7 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
   const next = () => setImgIndex(i => (i + 1) % images.length)
 
   const isCharter = (yacht.status || '').toLowerCase() === 'location'
+  const rate = getCharterRateInfo(yacht)
 
   // "Our fleet" back-link — the fleet page defaults its tab to Charter, so a
   // sale yacht's page must explicitly pass tab=sale or the user lands back
@@ -248,12 +254,18 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
         <div className="lg:sticky lg:top-[100px]">
           <div style={{ border: '1px solid rgba(184,151,74,0.2)', padding: 36, background: 'rgba(184,151,74,0.02)' }}>
             <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 24, fontWeight: 300, color: '#f5eedd', marginBottom: 8 }}>{yacht.model}</div>
-            {isCharter && yacht.priceDay && (
+            {isCharter && (
               <div style={{ marginBottom: 32 }}>
-                <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#8f8f7f', marginBottom: 8 }}>From</div>
+                <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#8f8f7f', marginBottom: 8 }}>{rate ? 'From' : ''}</div>
                 <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(24px, 2.4vw, 30px)', fontWeight: 300, color: '#d4b472', lineHeight: 1 }}>
-                  €{yacht.priceDay.toLocaleString('en-US')}
-                  <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8f8f7f' }}>/day</span>
+                  {rate ? (
+                    <>
+                      €{rate.amount.toLocaleString('en-US')}
+                      <span style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8f8f7f' }}>/{rate.unit}</span>
+                    </>
+                  ) : (
+                    'Price on request'
+                  )}
                 </div>
               </div>
             )}
@@ -348,7 +360,7 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
                   </div>
                   <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#d4b472' }}>
                     {(sim.status || '').toLowerCase() === 'location'
-                      ? (sim.priceDay ? `From €${sim.priceDay.toLocaleString('en-US')}/day` : 'Price on request')
+                      ? (getCharterRateInfo(sim) ? `From ${formatCharterRate(sim)}` : 'Price on request')
                       : (sim.priceSale ? `€${sim.priceSale.toLocaleString('en-US')}` : 'Price on request')}
                   </div>
                 </div>
