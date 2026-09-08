@@ -41,7 +41,7 @@ export async function GET() {
       .filter((p): p is NonNullable<typeof p> => !!p)
       .map((p) => ({
         value: String(p.id),
-        label: [realStr(p.firstName), realStr(p.name)].filter(Boolean).join(' ') || realStr(p.company) || `Provider #${p.id}`,
+        label: realStr(p.company) || [realStr(p.firstName), realStr(p.name)].filter(Boolean).join(' ') || `Provider #${p.id}`,
       }))
       .sort((a, b) => a.label.localeCompare(b.label))
 

@@ -162,7 +162,7 @@ export default function YachtsDataTablePage() {
   }, [filters])
 
   useEffect(() => {
-    fetchYachts(currentPage)
+    fetchYachts(currentPage, filters)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage])
 
