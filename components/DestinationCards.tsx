@@ -75,13 +75,17 @@ export default function DestinationCards({ isSale = false, saleDestinations = []
             {isSale ? 'Yachts For Sale' : 'Charter Destinations'}
           </span>
         </div>
-        <h1 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(20px, 4.4vw, 62px)', lineHeight: 1.05, color: '#f5eedd', margin: '0 0 20px', whiteSpace: 'nowrap' }}>
-          {isSale ? 'Find Your Yacht, Worldwide.' : 'Explore by Destination.'}
+        {/* The page's single H1 — /yacht-charter and /yacht-sale are pillar
+            pages built around this exact wording (see their page.tsx
+            metadata: title/H1 are meant to match), so this text is not a
+            free-form label like the rest of the component. */}
+        <h1 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(20px, 4.4vw, 58px)', lineHeight: 1.05, color: '#f5eedd', margin: '0 0 20px' }}>
+          {isSale ? 'Luxury Yachts for Sale Worldwide' : 'Luxury Yacht Charter Worldwide'}
         </h1>
         <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.8, color: '#8f8f7f', margin: 0, maxWidth: 640 }}>
           {isSale
-            ? 'Browse yachts for sale across our worldwide network of premium destinations.'
-            : 'Select a region to browse yachts available for charter.'}
+            ? 'Buy your next motor yacht or superyacht through Syrama Yachting — a curated brokerage fleet, with guidance from first enquiry through to acquisition.'
+            : 'Charter a private, fully crewed luxury yacht anywhere in the world — motor yachts and superyachts, with an advisor dedicated to your itinerary from first enquiry to disembarkation.'}
         </p>
 
         {/* Discreet, low-commitment CTA for a visitor who already knows what
