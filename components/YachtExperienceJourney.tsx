@@ -13,6 +13,17 @@ interface YachtExperienceJourneyProps {
   // buttons already on the page — this section never owns its own booking logic.
   onRequestExperience: () => void
   onWhatsApp: () => void
+  // Real data about the specific yacht/destination this section is shown
+  // on — every yacht page reused identical, generic copy in all four
+  // panels before this; weaving in the actual yacht and place names makes
+  // each page's content genuinely unique instead of one template repeated
+  // verbatim across the whole fleet, which matters for SEO. `place` is
+  // always a real, non-empty location (city, falling back to region) —
+  // never invented. `itineraries`, when present, are the same real
+  // cruising routes already shown in "Suggested Itineraries" on this page.
+  yachtName: string
+  place: string
+  itineraries?: { name: string }[]
 }
 
 const waterActivities = [
@@ -171,7 +182,9 @@ function WaterActivityCard({ name, image, delay }: { name: string; image: string
   )
 }
 
-export default function YachtExperienceJourney({ onRequestExperience, onWhatsApp }: YachtExperienceJourneyProps) {
+export default function YachtExperienceJourney({ onRequestExperience, onWhatsApp, yachtName, place, itineraries }: YachtExperienceJourneyProps) {
+  const spot = itineraries?.[0]?.name
+
   return (
     <section style={{ borderTop: '1px solid rgba(184,151,74,0.12)', padding: 'clamp(64px, 9vw, 130px) clamp(24px, 6vw, 96px)', background: '#06090f' }}>
       {/* Header */}
@@ -189,10 +202,10 @@ export default function YachtExperienceJourney({ onRequestExperience, onWhatsApp
           <div style={{ width: 32, height: 1, background: '#b8974a' }} />
         </div>
         <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(36px, 4.5vw, 62px)', lineHeight: 1.1, color: '#f5eedd', margin: '0 0 20px' }}>
-          Your journey, designed around you
+          Your {place} journey, designed around you
         </h2>
         <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.9, color: '#8f8f7f', margin: 0 }}>
-          From the destination to life on board, we design every detail of your day at sea.
+          From the destination to life on board the {yachtName}, we design every detail of your day at sea.
         </p>
       </motion.div>
 
@@ -200,8 +213,8 @@ export default function YachtExperienceJourney({ onRequestExperience, onWhatsApp
       <div className="space-y-24 lg:space-y-32">
         <JourneyPanel
           number="01"
-          title="Design your destination"
-          text="We build the itinerary around what you love — hidden coves, island-hopping, waterside restaurants only reachable by boat, a swim stop, a sunset anchorage, or several destinations in a single day."
+          title={`Design Your ${place} Itinerary`}
+          text={`We build the itinerary around what you love — hidden coves, island-hopping, waterside restaurants only reachable by boat, a swim stop, a sunset anchorage${spot ? `, or a run out to ${spot}` : ', or several destinations in a single day'}.`}
           image="/assets/destination.webp"
           tone="coast"
           reverse={false}
@@ -209,8 +222,8 @@ export default function YachtExperienceJourney({ onRequestExperience, onWhatsApp
 
         <JourneyPanel
           number="02"
-          title="Life on board"
-          text="A private chef when the yacht allows it, curated catering, champagne on ice, music, decoration and every small request — we shape the atmosphere on board around your day, not the other way around."
+          title={`Life on Board the ${yachtName}`}
+          text={`A private chef when the ${yachtName} allows it, curated catering, champagne on ice, music, decoration and every small request — we shape the atmosphere on board around your day in ${place}, not the other way around.`}
           image="/assets/private-dining.webp"
           imagePosition="center 78%"
           tone="onboard"
@@ -220,8 +233,8 @@ export default function YachtExperienceJourney({ onRequestExperience, onWhatsApp
         <div>
           <JourneyPanel
             number="03"
-            title="Play on the water"
-            text="Jet ski at sunrise, glide above the water on an e-foil, or explore a hidden reef. Depending on your yacht and destination, we bring the right toys on board."
+            title={`Play on the Water in ${place}`}
+            text={`Jet ski at sunrise, glide above the water on an e-foil, or explore a hidden reef near ${place}. Depending on the ${yachtName} and your itinerary, we bring the right toys on board.`}
             image="/assets/water-sports.webp"
             tone="toys"
             reverse={false}
@@ -235,8 +248,8 @@ export default function YachtExperienceJourney({ onRequestExperience, onWhatsApp
 
         <JourneyPanel
           number="04"
-          title="Your day, your way"
-          text="A family day at sea, a milestone birthday, a proposal, lunch with friends, a beach club, a sunset cruise or a full day of exploration — our team designs the day around the moment you want to create."
+          title={`Your Day in ${place}, Your Way`}
+          text={`A family day at sea, a milestone birthday, a proposal, lunch with friends, a beach club, a sunset cruise or a full day exploring ${place} — our team designs the day aboard the ${yachtName} around the moment you want to create.`}
           image="/assets/experiences_at_sea/cruising.webp"
           tone="sunset"
           reverse={true}
@@ -252,7 +265,7 @@ export default function YachtExperienceJourney({ onRequestExperience, onWhatsApp
         style={{ textAlign: 'center', marginTop: 'clamp(72px, 9vw, 130px)', paddingTop: 56, borderTop: '1px solid rgba(184,151,74,0.12)' }}
       >
         <h3 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(28px, 3.5vw, 44px)', color: '#f5eedd', margin: '0 0 16px' }}>
-          Let us design your day at sea
+          Let us design your day in {place}
         </h3>
         <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.8, color: '#8f8f7f', maxWidth: 460, margin: '0 auto 36px' }}>
           Tell us what you have in mind. We&rsquo;ll take care of the yacht, the itinerary and everything in between.

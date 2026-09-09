@@ -55,16 +55,37 @@ const organizationJsonLd = {
   areaServed: ["French Riviera", "Mediterranean", "Dubai"],
 };
 
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE_NAME,
+  url: SITE_URL,
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${cormorant.variable} ${lora.variable} scroll-smooth`}
+      // No global `scroll-smooth` here — it's what was making the browser's
+      // (and Next.js's own) navigation-triggered scroll-to-top run as a CSS
+      // smooth animation instead of jumping instantly. On a destination
+      // page whose images cause layout shift while that animation is still
+      // running, the shift throws the animation off and it can land
+      // mid-page instead of at the top — exactly the "Other Destinations"
+      // link bug. lib/scroll.ts's own smoothScrollToId already implements
+      // its own manual, layout-shift-safe easing (via `behavior: 'instant'`
+      // per animation frame) for the few places on the site that do want a
+      // smooth same-page scroll, so nothing here relied on this class.
+      className={`${cormorant.variable} ${lora.variable}`}
     >
       <body className="bg-[#06090f] text-[#f5eedd] antialiased">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <MotionProvider>

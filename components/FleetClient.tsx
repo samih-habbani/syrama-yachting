@@ -27,6 +27,8 @@ interface Yacht {
   currency?: string | null
   status: string | null
   region: string | null
+  city?: string | null
+  href?: string
   media?: Media[]
 }
 
@@ -71,7 +73,7 @@ export default function FleetClient({ yachts }: FleetClientProps) {
                 transition={{ duration: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
               >
-                <Link href={yachtHref(yacht)} style={{ textDecoration: 'none', display: 'block' }}>
+                <Link href={yacht.href ?? yachtHref(yacht)} style={{ textDecoration: 'none', display: 'block' }}>
                   <div
                     style={{ position: 'relative', overflow: 'hidden', aspectRatio: '4/3', background: '#1a1a1a' }}
                     onMouseEnter={(e) => {
@@ -183,7 +185,7 @@ export default function FleetClient({ yachts }: FleetClientProps) {
                     Check Availability
                   </button>
                   <Link
-                    href={yachtHref(yacht)}
+                    href={yacht.href ?? yachtHref(yacht)}
                     style={{
                       flex: 1,
                       textAlign: 'center',

@@ -3,8 +3,12 @@ import PageNavbar from '@/components/PageNavbar';
 import Footer from '@/components/Footer';
 
 export const metadata = {
-  title: 'About | Syrama Yachting',
+  // Just "About Us" — the root layout's title template already appends
+  // "| Syrama Yachting", so the page's own title must never repeat the
+  // brand name itself (that's the exact double-suffix bug being fixed here).
+  title: 'About Us',
   description: 'Learn about Syrama Yachting, the luxury yacht charter and sales division of Syrama Services.',
+  alternates: { canonical: '/about' },
 };
 
 export default function About() {

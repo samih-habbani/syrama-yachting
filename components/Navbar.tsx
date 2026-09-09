@@ -8,9 +8,12 @@ import { smoothScrollToId } from '@/lib/scroll';
 
 // pathname seul ne suffit pas : /yachting/fleet sert à la fois le parcours
 // charter et vente (distingués par ?tab=sale), donc le param est nécessaire aussi.
+// /yacht-charter/* (les landing pages SEO par destination) sont toujours
+// charter-only, donc elles comptent comme CHARTERS quel que soit tabParam.
 function isNavItemActive(href: string, pathname: string, tabParam: string | null) {
   const isFleetPage = pathname === '/yachting/fleet';
-  if (href === '/charters') return pathname === '/charters' || (isFleetPage && tabParam !== 'sale');
+  const isDestinationPage = pathname.startsWith('/yacht-charter/');
+  if (href === '/charters') return pathname === '/charters' || isDestinationPage || (isFleetPage && tabParam !== 'sale');
   if (href === '/sales') return pathname === '/sales' || (isFleetPage && tabParam === 'sale');
   return pathname === href;
 }

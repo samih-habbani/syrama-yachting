@@ -3,8 +3,9 @@ import DestinationCards from '@/components/DestinationCards'
 import Footer from '@/components/Footer'
 
 export const metadata = {
-  title: 'Yachts for Sale | Syrama Yachting',
+  title: 'Yachts for Sale',
   description: 'Browse luxury yachts for sale worldwide. Exclusive vessels available in Mediterranean, Caribbean, UAE, and premium destinations.',
+  alternates: { canonical: '/sales' },
 }
 
 export const revalidate = 3600

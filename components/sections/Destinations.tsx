@@ -3,6 +3,23 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, cubicBezier, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 
+// Every destination below now has a dedicated /yacht-charter/[slug] SEO
+// page (see lib/destinations.ts) — this maps each tile's id to its page.
+// 'emirates' is the only id that doesn't match its slug 1:1 (the dedicated
+// page is keyed on the city, "dubai", since that's where the fleet actually is).
+const DESTINATION_PAGE_BY_ID: Record<string, string> = {
+  'french-riviera': '/yacht-charter/french-riviera',
+  'balearic-islands': '/yacht-charter/balearic-islands',
+  'greece': '/yacht-charter/greece',
+  'emirates': '/yacht-charter/emirates/dubai',
+  'italy': '/yacht-charter/italy',
+  'corsica': '/yacht-charter/corsica',
+  'maldives': '/yacht-charter/maldives',
+  'caribbean': '/yacht-charter/caribbean',
+  'sardinia': '/yacht-charter/sardinia',
+  'miami': '/yacht-charter/miami',
+}
+
 const destinations = [
   {
     id: 'french-riviera',
@@ -212,7 +229,7 @@ export default function Destinations() {
                           {dest.subtitle}
                         </div>
 
-                        <Link href={`/yachting/fleet?region=${encodeURIComponent(dest.name)}`} style={{ textDecoration: 'none' }}>
+                        <Link href={DESTINATION_PAGE_BY_ID[dest.id] || `/yachting/fleet?region=${encodeURIComponent(dest.name)}`} style={{ textDecoration: 'none' }}>
                           <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: activeDestination === dest.id ? 1 : 0, y: activeDestination === dest.id ? 0 : 10 }}

@@ -6,7 +6,9 @@ import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { getYachtById, getSimilarYachts } from '@/lib/yacht-service'
 import YachtDetailClient from '@/components/YachtDetailClient'
-import { idFromSlug, yachtHref, type YachtTypeSegment } from '@/lib/slug'
+import { idFromSlug, type YachtTypeSegment } from '@/lib/slug'
+import { getDestinationForYacht, getRelatedDestinations, destinationPath } from '@/lib/destinations'
+import { breadcrumbJsonLd } from '@/lib/breadcrumb'
 
 const SITE_URL = 'https://www.syrama-yachting.com'
 
@@ -15,7 +17,7 @@ export async function generateYachtDetailMetadata(slug: string): Promise<Metadat
   const yacht = id !== null ? await getYachtById(id) : null
   if (!yacht) return { title: 'Yacht Not Found' }
 
-  const canonicalPath = yachtHref(yacht)
+  const canonicalPath = yacht.href
   const isCharter = (yacht.status || '').toLowerCase() === 'location'
   const lengthLabel = `${yacht.length}${yacht.lengthUnit || 'm'}`
   const title = `${yacht.model}${yacht.builder ? ` by ${yacht.builder}` : ''} — ${lengthLabel} Yacht`
@@ -43,7 +45,11 @@ export async function generateYachtDetailMetadata(slug: string): Promise<Metadat
   }
 }
 
-export async function YachtDetailPageContent({ slug, expectedSegment }: { slug: string; expectedSegment: YachtTypeSegment }) {
+// `requestedPath` defaults to the flat /yachting/fleet/[segment]/[slug]
+// shape for the two thin routes still using that scheme; the nested
+// /yacht-charter/[region]/[city]/[yacht] route passes its own full path in
+// explicitly, since it doesn't follow that pattern.
+export async function YachtDetailPageContent({ slug, expectedSegment, requestedPath }: { slug: string; expectedSegment: YachtTypeSegment; requestedPath?: string }) {
   const id = idFromSlug(slug)
   if (id === null) notFound()
 
@@ -51,16 +57,37 @@ export async function YachtDetailPageContent({ slug, expectedSegment }: { slug: 
   if (!yachtData) notFound()
 
   // Single check covers every reason to redirect: an old bare-id link, a
-  // stale slug (model/builder text changed), or the wrong charter/sale
-  // segment (e.g. a yacht switched from charter to sale after being listed).
-  const canonicalPath = yachtHref(yachtData)
-  if (`/yachting/fleet/${expectedSegment}/${slug}` !== canonicalPath) {
+  // stale slug (model/builder text changed), the wrong charter/sale segment
+  // (e.g. a yacht switched from charter to sale after being listed), or —
+  // now — a charter yacht accessed at its old flat URL when it actually
+  // belongs under a destination's nested URL (see lib/slug.ts's yachtHref).
+  const canonicalPath = yachtData.href
+  if ((requestedPath ?? `/yachting/fleet/${expectedSegment}/${slug}`) !== canonicalPath) {
     permanentRedirect(canonicalPath)
   }
 
-  const similarYachts = await getSimilarYachts(yachtData)
   const isCharter = expectedSegment === 'charters'
   const offerPrice = isCharter ? yachtData.priceDay : yachtData.priceSale
+  // Independent of each other (both only need yachtData) — run concurrently
+  // rather than as two sequential round trips.
+  const [similarYachts, destination] = await Promise.all([
+    getSimilarYachts(yachtData),
+    getDestinationForYacht(yachtData),
+  ])
+  // Same "Other Destinations" internal-mesh links shown on the destination
+  // page itself (see app/yacht-charter/destination-page-shared.tsx) —
+  // reused here so a yacht page also crawls out toward every sibling
+  // destination, not just back to its own one. Charter-only, and only when
+  // this yacht actually matched a destination. Depends on `destination`
+  // above, so it can't join that Promise.all.
+  const relatedDestinations = isCharter && destination ? await getRelatedDestinations(destination) : []
+
+  const breadcrumbItems = [
+    { label: 'Home', href: '/' },
+    { label: isCharter ? 'Yacht Charter' : 'Yachts for Sale', href: isCharter ? '/charters' : '/sales' },
+    ...(destination ? [{ label: destination.name, href: `/yacht-charter/${destinationPath(destination)}` }] : []),
+    { label: yachtData.model },
+  ]
 
   const productJsonLd = {
     '@context': 'https://schema.org',
@@ -84,7 +111,18 @@ export async function YachtDetailPageContent({ slug, expectedSegment }: { slug: 
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
       />
-      <YachtDetailClient yacht={yachtData} similarYachts={similarYachts} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(breadcrumbItems)) }}
+      />
+      <YachtDetailClient
+        yacht={yachtData}
+        similarYachts={similarYachts}
+        destinationHref={destination ? `/yacht-charter/${destinationPath(destination)}` : undefined}
+        destinationName={destination?.name}
+        itineraries={destination?.itineraries}
+        relatedDestinations={relatedDestinations.map((rel) => ({ name: rel.name, href: `/yacht-charter/${destinationPath(rel)}` }))}
+      />
     </>
   )
 }

@@ -1,8 +1,19 @@
 import type { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
-import { yachtHref } from '@/lib/slug'
+import { resolveYachtHrefSync } from '@/lib/slug'
+import { normalizeCity } from '@/lib/yacht-service'
+import { getAllDestinations, destinationPath } from '@/lib/destinations'
 
 const BASE_URL = 'https://www.syrama-yachting.com'
+
+// Destinations and yachts are both DB-backed and editable without a
+// redeploy (see /admin/dashboard/destinations and the yacht admin) — with
+// no revalidate set here, Next.js renders this once at build time and
+// serves that exact snapshot until the next deploy, so a destination or
+// yacht added afterward would never appear in the sitemap. An hour keeps
+// it reasonably fresh without re-querying every destination + yacht on
+// every crawler hit (sitemaps get fetched often).
+export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -15,21 +26,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/privacy`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.2 },
   ]
 
+  // The destination SEO landing pages — see lib/destinations.ts (DB-backed:
+  // the `destination` table). Every URL is region-first: /yacht-charter/[region]
+  // for a region-only page, /yacht-charter/[region]/[city] for a city.
+  const destinations = await getAllDestinations()
+  const destinationRoutes: MetadataRoute.Sitemap = destinations.map((d) => ({
+    url: `${BASE_URL}/yacht-charter/${destinationPath(d)}`,
+    lastModified: d.updatedAt,
+    changeFrequency: 'weekly',
+    priority: 0.85,
+  }))
+
   try {
     const yachts = await prisma.yacht.findMany({
       where: { available: true },
-      select: { id: true, model: true, builder: true, status: true, createdAt: true },
+      select: { id: true, model: true, builder: true, status: true, region: true, city: true, createdAt: true },
     })
 
     const yachtRoutes: MetadataRoute.Sitemap = yachts.map((yacht) => ({
-      url: `${BASE_URL}${yachtHref(yacht)}`,
+      url: `${BASE_URL}${resolveYachtHrefSync({ ...yacht, city: normalizeCity(yacht.city) }, destinations)}`,
       lastModified: yacht.createdAt,
-      changeFrequency: 'weekly',
+      changeFrequency: 'weekly' as const,
       priority: 0.8,
     }))
 
-    return [...staticRoutes, ...yachtRoutes]
+    return [...staticRoutes, ...destinationRoutes, ...yachtRoutes]
   } catch {
-    return staticRoutes
+    return [...staticRoutes, ...destinationRoutes]
   }
 }

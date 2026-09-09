@@ -3,8 +3,12 @@ import DestinationCards from '@/components/DestinationCards'
 import Footer from '@/components/Footer'
 
 export const metadata = {
-  title: 'Yacht Charter Destinations | Syrama Yachting',
+  title: 'Yacht Charter Destinations',
   description: 'Explore luxury yacht charter destinations worldwide. French Riviera, Caribbean, Greece, Emirates, Maldives, and more.',
+  // Self-referencing canonical regardless of any ?region= etc. query string,
+  // so a query-string variant of this URL is never treated by Google as a
+  // separate page from the plain /charters URL.
+  alternates: { canonical: '/charters' },
 }
 
 export const revalidate = 3600

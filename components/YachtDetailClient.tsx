@@ -68,13 +68,30 @@ interface SimilarYacht {
   currency?: string | null
   priceSale: number | null
   region: string | null
+  city: string | null
   status: string | null
+  href?: string
   media?: Media[]
 }
 
 interface YachtDetailClientProps {
   yacht: Yacht
   similarYachts?: SimilarYacht[]
+  // Set when this yacht's city/region matches one of the dedicated SEO
+  // destination pages (see lib/destinations.ts) — lets the "back" link go
+  // straight there instead of the generic filtered fleet view. Undefined
+  // for yachts outside those destinations, which keep the existing link.
+  destinationHref?: string
+  // The matched destination's name and its "Suggested Itineraries" —
+  // real, already-written cruising routes near where this yacht is based
+  // (see lib/destinations.ts), not fabricated per-yacht content. Both
+  // undefined for yachts outside a mapped destination.
+  destinationName?: string
+  itineraries?: { name: string; description: string }[]
+  // Other destination pages to cross-link from this yacht's page — same
+  // internal-mesh links shown on the destination page itself. Empty for
+  // yachts outside a mapped destination or with no sibling destinations.
+  relatedDestinations?: { name: string; href: string }[]
 }
 
 // A field with no real data (null/undefined/empty string, or 0 — some
@@ -82,7 +99,7 @@ interface YachtDetailClientProps {
 // never be shown as if it were a value. Used everywhere a spec is rendered.
 const hasValue = (v: unknown): v is number | string => v !== null && v !== undefined && v !== '' && v !== 0
 
-export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDetailClientProps) {
+export default function YachtDetailClient({ yacht, similarYachts = [], destinationHref, destinationName, itineraries, relatedDestinations = [] }: YachtDetailClientProps) {
   const [imgIndex, setImgIndex] = useState(0)
   const [isReservationOpen, setIsReservationOpen] = useState(false)
   const [isAvailabilityOpen, setIsAvailabilityOpen] = useState(false)
@@ -100,7 +117,12 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
   const fleetParams = new URLSearchParams()
   if (yacht.region) fleetParams.set('region', yacht.region)
   if (!isCharter) fleetParams.set('tab', 'sale')
-  const fleetHref = fleetParams.size > 0 ? `/yachting/fleet?${fleetParams.toString()}` : '/yachting/fleet'
+  // A charter yacht whose city/region matches a dedicated SEO destination
+  // page (see lib/destinations.ts) links back there instead — same idea as
+  // the fleet link, just to a more specific, crawlable page.
+  const fleetHref = isCharter && destinationHref
+    ? destinationHref
+    : fleetParams.size > 0 ? `/yachting/fleet?${fleetParams.toString()}` : '/yachting/fleet'
 
   // A charter guest planning a trip needs the essentials to picture the
   // cruise — size, capacity/comfort, brand, and where to embark — not a
@@ -248,11 +270,32 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
               </div>
             ))}
           </div>
-          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, lineHeight: 2, color: '#8f8f7f', marginBottom: 48 }}>
+          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, lineHeight: 2, color: '#8f8f7f', marginBottom: itineraries && itineraries.length > 0 ? 40 : 48 }}>
             {isCharter
-              ? 'Premium yacht available for charter. Experience luxury maritime travel with professional crew and world-class amenities.'
-              : 'Premium yacht available for sale. A rare opportunity to acquire a meticulously maintained vessel, backed by expert brokerage support from Syrama Yachting.'}
+              ? `Charter the ${yacht.model}${yacht.builder ? ` by ${yacht.builder}` : ''}, a ${yacht.length}${yacht.lengthUnit || 'm'} yacht${hasValue(yacht.maxGuests) ? ` accommodating up to ${yacht.maxGuests} guests` : ''}${hasValue(yacht.cabins) ? ` across ${yacht.cabins} cabin${yacht.cabins === 1 ? '' : 's'}` : ''}${yacht.city ? `, based in ${yacht.city}` : yacht.region ? `, based in ${yacht.region}` : ''}. Syrama Yachting arranges the crew, provisioning and itinerary around your dates.`
+              : `The ${yacht.model}${yacht.builder ? ` by ${yacht.builder}` : ''} is available for sale — a ${yacht.length}${yacht.lengthUnit || 'm'} yacht${hasValue(yacht.year) ? ` built in ${yacht.year}` : ''}${yacht.city ? `, currently located in ${yacht.city}` : yacht.region ? `, currently located in ${yacht.region}` : ''}. Contact Syrama Yachting to speak with a broker about this vessel.`}
           </p>
+
+          {/* Real cruising routes near where this yacht is based — reused
+              from its matched destination page (lib/destinations.ts), not
+              invented per-yacht. Charter-only: a buyer isn't planning a
+              cruise. */}
+          {isCharter && itineraries && itineraries.length > 0 && (
+            <div style={{ marginBottom: 48, paddingTop: 40, borderTop: '1px solid rgba(184,151,74,0.12)' }}>
+              <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 12 }}>Suggested Itineraries</div>
+              <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(22px, 2.6vw, 30px)', fontWeight: 300, color: '#f5eedd', margin: '0 0 28px' }}>
+                Cruising Near {destinationName}
+              </h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 28 }}>
+                {itineraries.map((item) => (
+                  <div key={item.name} style={{ borderLeft: '2px solid #b8974a', paddingLeft: 18 }}>
+                    <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 18, fontWeight: 300, color: '#f5eedd', marginBottom: 8 }}>{item.name}</div>
+                    <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.8, color: '#8f8f7f', margin: 0 }}>{item.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="lg:sticky lg:top-[100px]">
@@ -312,6 +355,9 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
         <YachtExperienceJourney
           onRequestExperience={() => setIsReservationOpen(true)}
           onWhatsApp={() => setIsAvailabilityOpen(true)}
+          yachtName={yacht.model}
+          place={yacht.city || yacht.region || 'the coast'}
+          itineraries={itineraries}
         />
       )}
 
@@ -327,7 +373,7 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 32 }}>
             {similarYachts.map((sim) => (
-              <Link key={sim.id} href={yachtHref(sim)} style={{ textDecoration: 'none', display: 'block' }}>
+              <Link key={sim.id} href={sim.href ?? yachtHref(sim)} style={{ textDecoration: 'none', display: 'block' }}>
                 <div
                   style={{ position: 'relative', overflow: 'hidden', aspectRatio: '4/3', background: '#1a1a1a' }}
                   onMouseEnter={(e) => {
@@ -368,6 +414,39 @@ export default function YachtDetailClient({ yacht, similarYachts = [] }: YachtDe
                       : (sim.priceSale ? `€${sim.priceSale.toLocaleString('en-US')}` : 'Price on request')}
                   </div>
                 </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Other destinations — same internal-mesh links as the destination
+          page this yacht belongs to (see lib/destinations.ts), so a search
+          engine (and a browsing guest) can reach every sibling destination
+          from here too, not just back the way they came. */}
+      {relatedDestinations.length > 0 && (
+        <div style={{ padding: '0 clamp(24px, 6vw, 96px) clamp(64px, 8vw, 120px)', borderTop: '1px solid rgba(184,151,74,0.12)' }}>
+          <div style={{ paddingTop: 64, marginBottom: 32 }}>
+            <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 12 }}>Explore More</div>
+            <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(22px, 3vw, 34px)', fontWeight: 300, color: '#f5eedd', margin: 0 }}>Other Destinations</h2>
+          </div>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+            {relatedDestinations.map((rel) => (
+              <Link
+                key={rel.href}
+                href={rel.href}
+                style={{
+                  fontFamily: 'var(--font-tenor)',
+                  fontSize: 11,
+                  letterSpacing: '0.15em',
+                  textTransform: 'uppercase',
+                  color: '#b8974a',
+                  border: '1px solid rgba(184,151,74,0.3)',
+                  padding: '12px 22px',
+                  textDecoration: 'none',
+                }}
+              >
+                {rel.name}
               </Link>
             ))}
           </div>

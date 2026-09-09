@@ -15,12 +15,33 @@ const destinations = [
   { id: 'Miami', label: 'Miami', sub: 'Florida · USA', image: '/images/regions/Miami.webp' },
 ]
 
+// Same destinations as components/sections/Destinations.tsx — every one now
+// has a dedicated /yacht-charter/[slug] SEO page (see lib/destinations.ts).
+// Charter tiles link there instead of the generic filtered fleet view; sale
+// tiles always go through the fleet filter since there's no sale-specific
+// destination page.
+const DESTINATION_PAGE_BY_ID: Record<string, string> = {
+  'French Riviera': '/yacht-charter/french-riviera',
+  'Balearic Islands': '/yacht-charter/balearic-islands',
+  'Greece': '/yacht-charter/greece',
+  'Emirates': '/yacht-charter/emirates/dubai',
+  'Italy': '/yacht-charter/italy',
+  'Corsica': '/yacht-charter/corsica',
+  'Maldives': '/yacht-charter/maldives',
+  'Caribbean': '/yacht-charter/caribbean',
+  'Sardinia': '/yacht-charter/sardinia',
+  'Miami': '/yacht-charter/miami',
+}
+
 interface DestinationCardsProps {
   isSale?: boolean
 }
 
 export default function DestinationCards({ isSale = false }: DestinationCardsProps) {
-  const buildHref = (id: string) => isSale ? `/yachting/fleet?tab=sale&region=${id}` : `/yachting/fleet?region=${id}`
+  const buildHref = (id: string) => {
+    if (!isSale && DESTINATION_PAGE_BY_ID[id]) return DESTINATION_PAGE_BY_ID[id]
+    return isSale ? `/yachting/fleet?tab=sale&region=${id}` : `/yachting/fleet?region=${id}`
+  }
 
   return (
     <div style={{ flex: 1, padding: '64px clamp(24px, 6vw, 96px) 100px' }}>

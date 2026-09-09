@@ -35,7 +35,14 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* No `scroll-behavior: smooth` here — it turns Next.js's own
+     navigation-triggered scroll-to-top into a CSS-animated scroll instead
+     of an instant jump, and on a page whose images cause layout shift
+     while that animation is still running, it can land mid-page instead of
+     at the top (the "Other Destinations" link bug). lib/scroll.ts's
+     smoothScrollToId already implements its own manual, shift-safe easing
+     for the site's few same-page smooth-scroll links, so nothing relies on
+     this. */
   overflow-x: hidden;
 }
 

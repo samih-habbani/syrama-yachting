@@ -2,8 +2,9 @@ import PageNavbar from '@/components/PageNavbar';
 import Footer from '@/components/Footer';
 
 export const metadata = {
-  title: 'Privacy Policy | Syrama Yachting',
+  title: 'Privacy Policy',
   description: 'Privacy policy for Syrama Yachting.',
+  alternates: { canonical: '/privacy' },
 };
 
 export default function Privacy() {

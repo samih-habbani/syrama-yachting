@@ -1,10 +1,16 @@
 import { Suspense } from 'react'
-import Fleet, { type Yacht } from './Fleet'
+import Fleet, { type Yacht, type FleetSeoContent } from './Fleet'
+import type { BreadcrumbItem } from './Breadcrumbs'
 
 interface FleetWrapperProps {
   showFilters?: boolean
   limit?: number
   initialYachts?: Yacht[]
+  seo?: FleetSeoContent
+  initialRegion?: string
+  initialCity?: string | null
+  destinationLinks?: { region: string; city: string | null; path: string }[]
+  breadcrumbItems?: BreadcrumbItem[]
 }
 
 function FleetLoading() {
@@ -15,10 +21,10 @@ function FleetLoading() {
   )
 }
 
-export default function FleetWrapper({ showFilters = true, limit, initialYachts }: FleetWrapperProps) {
+export default function FleetWrapper({ showFilters = true, limit, initialYachts, seo, initialRegion, initialCity, destinationLinks, breadcrumbItems }: FleetWrapperProps) {
   return (
     <Suspense fallback={<FleetLoading />}>
-      <Fleet showFilters={showFilters} limit={limit} initialYachts={initialYachts} />
+      <Fleet showFilters={showFilters} limit={limit} initialYachts={initialYachts} seo={seo} initialRegion={initialRegion} initialCity={initialCity} destinationLinks={destinationLinks} breadcrumbItems={breadcrumbItems} />
     </Suspense>
   )
 }

@@ -396,3 +396,63 @@ model Message {
   @@index([status])
   @@map("message")
 }
+
+// One row per SEO destination landing page — a region-only page
+// (city_slug null, e.g. Greece) or a city page nested under its region
+// (e.g. French Riviera / Monaco). Replaces the formerly hardcoded catalogue
+// in lib/destinations.ts so every text on a destination page (and, via
+// DestinationFaq/DestinationItinerary, its FAQ and suggested itineraries)
+// is editable from /admin/dashboard/destinations instead of requiring a
+// code change.
+model Destination {
+  id              Int      @id @default(autoincrement())
+  regionSlug      String   @map("region_slug")
+  citySlug        String?  @map("city_slug")
+  name            String
+  // Value(s) to query the DB with — see lib/yacht-service.ts getYachts().
+  region          String
+  city            String?
+  title           String
+  metaDescription String   @map("meta_description")
+  h1              String
+  heroImage       String   @map("hero_image")
+  eyebrow         String
+  intro           String[]
+  // Curated cross-region suggestions for "Other Destinations", e.g.
+  // ["corsica"] on the French Riviera page — same-region siblings are
+  // added automatically and don't need to be listed here. Each entry is a
+  // "regionSlug" or "regionSlug/citySlug" key.
+  relatedKeys     String[] @map("related_keys")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  faqItems    DestinationFaq[]
+  itineraries DestinationItinerary[]
+
+  @@unique([regionSlug, citySlug])
+  @@map("destination")
+}
+
+model DestinationFaq {
+  id            Int         @id @default(autoincrement())
+  destinationId Int         @map("destination_id")
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  question      String
+  answer        String
+  position      Int         @default(0)
+
+  @@index([destinationId])
+  @@map("destination_faq")
+}
+
+model DestinationItinerary {
+  id            Int         @id @default(autoincrement())
+  destinationId Int         @map("destination_id")
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  name          String
+  description   String
+  position      Int         @default(0)
+
+  @@index([destinationId])
+  @@map("destination_itinerary")
+}

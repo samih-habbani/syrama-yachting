@@ -8,12 +8,14 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   const linkMap: Record<string, string> = {
-    // YACHT CHARTER section
-    'French Riviera': '/charters?region=french-riviera',
-    'Cannes': '/charters?region=cannes',
-    'Saint-Tropez': '/charters?region=saint-tropez',
-    'Monaco': '/charters?region=monaco',
-    'Dubai': '/charters?region=dubai',
+    // YACHT CHARTER section — the dedicated SEO landing pages (real,
+    // crawlable yacht listings), not the old ?region= query string which
+    // /charters never actually reads.
+    'French Riviera': '/yacht-charter/french-riviera',
+    'Cannes': '/yacht-charter/french-riviera/cannes',
+    'Saint-Tropez': '/yacht-charter/french-riviera/saint-tropez',
+    'Monaco': '/yacht-charter/french-riviera/monaco',
+    'Dubai': '/yacht-charter/emirates/dubai',
     'All Yachts': '/charters',
     // SERVICES section
     'Yacht Charter': '/charters',

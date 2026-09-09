@@ -12,6 +12,11 @@ export interface SearchableYacht {
   builder: string | null
   model: string
   status: string | null
+  region?: string | null
+  city?: string | null
+  // Resolved server-side (see lib/yacht-service.ts's getYachts) — see the
+  // same field on components/Fleet.tsx's Yacht for why.
+  href?: string
   media?: { url: string | null }[]
 }
 
@@ -563,7 +568,7 @@ function YachtSearchField({ yachts }: { yachts: SearchableYacht[] }) {
   const goToYacht = (yacht: SearchableYacht) => {
     setOpen(false)
     setQuery('')
-    router.push(yachtHref(yacht))
+    router.push(yacht.href ?? yachtHref(yacht))
   }
 
   return (

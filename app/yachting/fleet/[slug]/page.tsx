@@ -6,10 +6,22 @@
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { getYachtById } from '@/lib/yacht-service'
-import { idFromSlug, yachtHref } from '@/lib/slug'
+import { idFromSlug } from '@/lib/slug'
 
 export const revalidate = 86400
 export const dynamicParams = true
+
+// Without this, Next.js has no static shell to extend for this dynamic
+// segment and renders every single request fully dynamically — `revalidate`
+// above is silently ignored and no response is ever cached (confirmed via
+// `Cache-Control: no-store` and 2-9s response times even on repeat hits).
+// An empty list is enough: the first visit to any slug still generates
+// on-demand (dynamicParams: true), but that render is then cached per
+// `revalidate` like any other ISR page instead of re-querying the database
+// on every single legacy-link click.
+export async function generateStaticParams() {
+  return []
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
@@ -17,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const yacht = id !== null ? await getYachtById(id) : null
   if (!yacht) return { title: 'Yacht Not Found' }
 
-  return { alternates: { canonical: yachtHref(yacht) } }
+  return { alternates: { canonical: yacht.href } }
 }
 
 export default async function LegacyYachtDetailRedirect({ params }: { params: Promise<{ slug: string }> }) {
@@ -28,5 +40,5 @@ export default async function LegacyYachtDetailRedirect({ params }: { params: Pr
   const yacht = await getYachtById(id)
   if (!yacht) notFound()
 
-  permanentRedirect(yachtHref(yacht))
+  permanentRedirect(yacht.href)
 }
