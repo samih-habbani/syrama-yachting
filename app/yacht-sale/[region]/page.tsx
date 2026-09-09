@@ -1,8 +1,8 @@
-// Region-only SEO landing pages — /yacht-charter/french-riviera,
-// /yacht-charter/greece, /yacht-charter/italy, etc. City pages within a
-// region live one level down, at /yacht-charter/[region]/[city]/page.tsx —
-// see app/destination-page-shared.tsx for the page itself (shared with the
-// /yacht-sale equivalent).
+// Region-only SEO landing pages for yachts *for sale* — e.g.
+// /yacht-sale/french-riviera. City pages within a region live one level
+// down, at /yacht-sale/[region]/[city]/page.tsx — see
+// app/destination-page-shared.tsx for the page itself (shared with the
+// /yacht-charter equivalent).
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getDestinationByPath, allRegionOnlyParams } from '@/lib/destinations'
@@ -18,19 +18,19 @@ import { generateDestinationMetadata, DestinationPageContent } from '@/app/desti
 export const revalidate = 300
 
 export async function generateStaticParams() {
-  return allRegionOnlyParams('charter')
+  return allRegionOnlyParams('sale')
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ region: string }> }): Promise<Metadata> {
   const { region } = await params
-  const destination = await getDestinationByPath(region, null, 'charter')
+  const destination = await getDestinationByPath(region, null, 'sale')
   if (!destination) return { title: 'Destination Not Found' }
   return generateDestinationMetadata(destination)
 }
 
-export default async function RegionPage({ params }: { params: Promise<{ region: string }> }) {
+export default async function SaleRegionPage({ params }: { params: Promise<{ region: string }> }) {
   const { region } = await params
-  const destination = await getDestinationByPath(region, null, 'charter')
+  const destination = await getDestinationByPath(region, null, 'sale')
   if (!destination) notFound()
   return <DestinationPageContent destination={destination} />
 }

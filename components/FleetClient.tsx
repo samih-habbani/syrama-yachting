@@ -225,7 +225,7 @@ export default function FleetClient({ yachts }: FleetClientProps) {
         {/* View All Yachts Button */}
         <div style={{ textAlign: 'center', marginBottom: 60, marginTop: 40 }}>
           <Link
-            href="/charters"
+            href="/yacht-charter"
             style={{
               display: 'inline-flex',
               alignItems: 'center',

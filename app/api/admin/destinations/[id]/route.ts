@@ -10,8 +10,9 @@ async function checkAuth() {
   }
 }
 
-function destinationPublicPath(d: { regionSlug: string; citySlug: string | null }) {
-  return d.citySlug ? `/yacht-charter/${d.regionSlug}/${d.citySlug}` : `/yacht-charter/${d.regionSlug}`
+function destinationPublicPath(d: { kind: string; regionSlug: string; citySlug: string | null }) {
+  const prefix = d.kind === 'sale' ? '/yacht-sale' : '/yacht-charter'
+  return d.citySlug ? `${prefix}/${d.regionSlug}/${d.citySlug}` : `${prefix}/${d.regionSlug}`
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -43,6 +44,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 // remote Prisma Postgres connection was intermittently outliving its 5s
 // timeout between statements; a single query's nested writes stay atomic
 // without that separate timeout budget.
+//
+// `kind` is intentionally NOT accepted from the request body — it stays
+// whatever the row was created with. Changing a destination's kind after
+// creation would silently reassign which yachts match it (see
+// matchDestinationForYacht in lib/destinations.ts); the admin form already
+// locks the Kind field once editing, this is the server-side backstop.
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     await checkAuth()
@@ -59,15 +66,25 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       return Response.json({ error: 'Region slug, name, region, and every SEO field are required' }, { status: 400 })
     }
 
+    // "all-yachts" is a literal folder at this exact depth for both kinds
+    // (app/yacht-charter/all-yachts, app/yacht-sale/all-yachts — the full
+    // unfiltered fleet page) and Next.js always matches a literal segment
+    // before a sibling [region] one — a region-only destination with this
+    // slug would be permanently unreachable (shadowed by that page) despite
+    // existing in the DB and the sitemap.
+    if (regionSlug === 'all-yachts') {
+      return Response.json({ error: '"all-yachts" is reserved (it\'s the full-fleet page\'s own URL) and can\'t be used as a region slug' }, { status: 400 })
+    }
+
     const existing = await prisma.destination.findUnique({ where: { id: destinationId } })
     if (!existing) return Response.json({ error: 'Destination not found' }, { status: 404 })
 
     const normalizedCitySlug = citySlug ? String(citySlug).trim() || null : null
 
     if (!normalizedCitySlug) {
-      const clash = await prisma.destination.findFirst({ where: { regionSlug, citySlug: null, id: { not: destinationId } } })
+      const clash = await prisma.destination.findFirst({ where: { kind: existing.kind, regionSlug, citySlug: null, id: { not: destinationId } } })
       if (clash) {
-        return Response.json({ error: `A region-only page for "${regionSlug}" already exists` }, { status: 409 })
+        return Response.json({ error: `A ${existing.kind} region-only page for "${regionSlug}" already exists` }, { status: 409 })
       }
     }
 
@@ -98,12 +115,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     // editable, so a save can move a page to a different path.
     revalidatePath(destinationPublicPath(existing))
     revalidatePath(destinationPublicPath(updated))
+    revalidatePath(existing.kind === 'sale' ? '/yacht-sale' : '/yacht-charter')
     revalidatePath('/sitemap.xml')
 
     return Response.json(updated)
   } catch (error: unknown) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-      return Response.json({ error: 'A destination with this region/city already exists' }, { status: 409 })
+      return Response.json({ error: 'A destination with this kind/region/city already exists' }, { status: 409 })
     }
     console.error('Update destination error:', error)
     return Response.json({ error: 'Failed to update destination' }, { status: 500 })
@@ -122,6 +140,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     await prisma.destination.delete({ where: { id: destinationId } })
 
     revalidatePath(destinationPublicPath(existing))
+    revalidatePath(existing.kind === 'sale' ? '/yacht-sale' : '/yacht-charter')
     revalidatePath('/sitemap.xml')
 
     return Response.json({ success: true })

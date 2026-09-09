@@ -12,6 +12,7 @@ import ActionsMenu from '@/components/admin/ui/ActionsMenu'
 
 interface DestinationRow {
   id: number
+  kind: 'charter' | 'sale'
   regionSlug: string
   citySlug: string | null
   name: string
@@ -20,8 +21,9 @@ interface DestinationRow {
   updatedAt: string
 }
 
-function publicPath(d: Pick<DestinationRow, 'regionSlug' | 'citySlug'>) {
-  return d.citySlug ? `/yacht-charter/${d.regionSlug}/${d.citySlug}` : `/yacht-charter/${d.regionSlug}`
+function publicPath(d: Pick<DestinationRow, 'kind' | 'regionSlug' | 'citySlug'>) {
+  const prefix = d.kind === 'sale' ? '/yacht-sale' : '/yacht-charter'
+  return d.citySlug ? `${prefix}/${d.regionSlug}/${d.citySlug}` : `${prefix}/${d.regionSlug}`
 }
 
 export default function DestinationsPage() {
@@ -65,18 +67,14 @@ export default function DestinationsPage() {
     }
   }
 
-  // Grouped by region so the list reads like the site's own /yacht-charter
-  // hierarchy instead of a flat, order-of-creation table.
-  const byRegion = destinations.reduce<Record<string, DestinationRow[]>>((acc, d) => {
-    (acc[d.regionSlug] ||= []).push(d)
-    return acc
-  }, {})
+  const charterRows = destinations.filter((d) => d.kind !== 'sale')
+  const saleRows = destinations.filter((d) => d.kind === 'sale')
 
   return (
     <div>
       <PageHeader
         title="Destinations"
-        description="Every /yacht-charter SEO landing page — title, hero, intro, FAQ and suggested itineraries all live here, edited without a code change."
+        description="Every /yacht-charter and /yacht-sale SEO landing page — title, hero, intro, FAQ and suggested itineraries all live here, edited without a code change."
         breadcrumbs={[{ label: 'Overview', href: '/admin/dashboard' }, { label: 'Destinations' }]}
         action={
           <Button variant="primary" onClick={() => router.push('/admin/dashboard/destinations/new')}>
@@ -91,67 +89,92 @@ export default function DestinationsPage() {
           <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#8f8f7f' }}>Loading destinations…</div>
         </Card>
       ) : destinations.length === 0 ? (
-        <Card><EmptyState icon={MapPin} title="No destinations yet" description="Create the first one to publish a /yacht-charter landing page." /></Card>
+        <Card><EmptyState icon={MapPin} title="No destinations yet" description="Create the first one to publish a landing page." /></Card>
       ) : (
-        <Card style={{ overflow: 'hidden' }}>
-          <div
-            style={{
-              display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.6fr 1fr 90px', gap: 16, alignItems: 'center',
-              padding: '14px 24px', borderBottom: '1px solid rgba(184,151,74,0.12)',
-              fontFamily: 'var(--font-lora)', fontSize: 10.5, fontWeight: 700,
-              letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8f8f7f',
-            }}
-          >
-            <div>Destination</div>
-            <div>Region</div>
-            <div>City</div>
-            <div>Path</div>
-            <div>Updated</div>
-            <div />
+        <>
+          <div style={{ fontFamily: 'var(--font-lora)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8f8f7f', marginBottom: 12 }}>
+            Charter ({charterRows.length})
           </div>
+          <DestinationTable rows={charterRows} deletingId={deletingId} onEdit={(id) => router.push(`/admin/dashboard/destinations/${id}`)} onDelete={handleDelete} />
 
-          {Object.entries(byRegion).map(([regionSlug, rows]) => (
-            rows.map((d, i) => (
-              <div
-                key={d.id}
-                style={{
-                  display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.6fr 1fr 90px', gap: 16, alignItems: 'center',
-                  padding: '14px 24px',
-                  borderBottom: !(regionSlug === Object.keys(byRegion)[Object.keys(byRegion).length - 1] && i === rows.length - 1)
-                    ? '1px solid rgba(184,151,74,0.08)' : 'none',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 7, background: 'rgba(184,151,74,0.08)', border: '1px solid rgba(184,151,74,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <MapPin size={14} color="#d4b472" strokeWidth={1.75} />
-                  </div>
-                  <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#f5eedd', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {d.name}
-                  </div>
-                  {!d.citySlug && <Badge tone="gold">Region</Badge>}
-                </div>
-                <div style={{ fontFamily: 'var(--font-lora)', fontSize: 12.5, color: '#d8d8cc' }}>{d.region}</div>
-                <div style={{ fontFamily: 'var(--font-lora)', fontSize: 12.5, color: d.city ? '#d8d8cc' : '#5a5a52' }}>{d.city || '—'}</div>
-                <div style={{ fontFamily: 'var(--font-lora)', fontSize: 12, color: '#8f8f7f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {publicPath(d)}
-                </div>
-                <div style={{ fontFamily: 'var(--font-lora)', fontSize: 12, color: '#6b6b60' }}>
-                  {new Date(d.updatedAt).toLocaleDateString()}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <ActionsMenu
-                    items={[
-                      { label: 'Edit', icon: <Pencil size={13} strokeWidth={2} />, onClick: () => router.push(`/admin/dashboard/destinations/${d.id}`) },
-                      { label: 'View live page', icon: <ExternalLink size={13} strokeWidth={2} />, onClick: () => window.open(publicPath(d), '_blank') },
-                      { label: deletingId === d.id ? 'Deleting…' : 'Delete', icon: <Trash2 size={13} strokeWidth={2} />, tone: 'danger', onClick: () => handleDelete(d) },
-                    ]}
-                  />
-                </div>
-              </div>
-            ))
-          ))}
-        </Card>
+          <div style={{ fontFamily: 'var(--font-lora)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8f8f7f', margin: '28px 0 12px' }}>
+            Sale ({saleRows.length})
+          </div>
+          {saleRows.length > 0 ? (
+            <DestinationTable rows={saleRows} deletingId={deletingId} onEdit={(id) => router.push(`/admin/dashboard/destinations/${id}`)} onDelete={handleDelete} />
+          ) : (
+            <Card><EmptyState icon={MapPin} title="No sale destinations yet" description="Create one to publish a /yacht-sale landing page — its tile appears on /sales automatically." /></Card>
+          )}
+        </>
       )}
     </div>
+  )
+}
+
+// Module-level (not defined inside DestinationsPage) — a component
+// declared during render gets recreated every render, which resets
+// whatever internal state it holds (ActionsMenu's open/close in particular).
+function DestinationTable({ rows, deletingId, onEdit, onDelete }: {
+  rows: DestinationRow[]
+  deletingId: number | null
+  onEdit: (id: number) => void
+  onDelete: (d: DestinationRow) => void
+}) {
+  return (
+    <Card style={{ overflow: 'hidden' }}>
+      <div
+        style={{
+          display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.6fr 1fr 90px', gap: 16, alignItems: 'center',
+          padding: '14px 24px', borderBottom: '1px solid rgba(184,151,74,0.12)',
+          fontFamily: 'var(--font-lora)', fontSize: 10.5, fontWeight: 700,
+          letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8f8f7f',
+        }}
+      >
+        <div>Destination</div>
+        <div>Region</div>
+        <div>City</div>
+        <div>Path</div>
+        <div>Updated</div>
+        <div />
+      </div>
+
+      {rows.map((d, i) => (
+        <div
+          key={d.id}
+          style={{
+            display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.6fr 1fr 90px', gap: 16, alignItems: 'center',
+            padding: '14px 24px',
+            borderBottom: i < rows.length - 1 ? '1px solid rgba(184,151,74,0.08)' : 'none',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 7, background: 'rgba(184,151,74,0.08)', border: '1px solid rgba(184,151,74,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <MapPin size={14} color="#d4b472" strokeWidth={1.75} />
+            </div>
+            <div style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#f5eedd', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {d.name}
+            </div>
+            {!d.citySlug && <Badge tone="gold">Region</Badge>}
+          </div>
+          <div style={{ fontFamily: 'var(--font-lora)', fontSize: 12.5, color: '#d8d8cc' }}>{d.region}</div>
+          <div style={{ fontFamily: 'var(--font-lora)', fontSize: 12.5, color: d.city ? '#d8d8cc' : '#5a5a52' }}>{d.city || '—'}</div>
+          <div style={{ fontFamily: 'var(--font-lora)', fontSize: 12, color: '#8f8f7f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {publicPath(d)}
+          </div>
+          <div style={{ fontFamily: 'var(--font-lora)', fontSize: 12, color: '#6b6b60' }}>
+            {new Date(d.updatedAt).toLocaleDateString()}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <ActionsMenu
+              items={[
+                { label: 'Edit', icon: <Pencil size={13} strokeWidth={2} />, onClick: () => onEdit(d.id) },
+                { label: 'View live page', icon: <ExternalLink size={13} strokeWidth={2} />, onClick: () => window.open(publicPath(d), '_blank') },
+                { label: deletingId === d.id ? 'Deleting…' : 'Delete', icon: <Trash2 size={13} strokeWidth={2} />, tone: 'danger', onClick: () => onDelete(d) },
+              ]}
+            />
+          </div>
+        </div>
+      ))}
+    </Card>
   )
 }

@@ -10,17 +10,16 @@ export default function Footer() {
 
   const linkMap: Record<string, string> = {
     // YACHT CHARTER section — the dedicated SEO landing pages (real,
-    // crawlable yacht listings), not the old ?region= query string which
-    // /charters never actually reads.
+    // crawlable yacht listings), not a ?region= query string.
     'French Riviera': '/yacht-charter/french-riviera',
     'Cannes': '/yacht-charter/french-riviera/cannes',
     'Saint-Tropez': '/yacht-charter/french-riviera/saint-tropez',
     'Monaco': '/yacht-charter/french-riviera/monaco',
     'Dubai': '/yacht-charter/emirates/dubai',
-    'All Yachts': '/charters',
+    'All Yachts': '/yacht-charter',
     // SERVICES section
-    'Yacht Charter': '/charters',
-    'Yacht Sales': '/sales',
+    'Yacht Charter': '/yacht-charter',
+    'Yacht Sales': '/yacht-sale',
     'Bespoke Experiences': '/experiences',
     // SYRAMA section
     'About': '/about',

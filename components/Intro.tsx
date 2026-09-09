@@ -176,7 +176,7 @@ export default function Intro() {
                 {item.desc}
               </p>
               <Link
-                href={item.label === 'CHARTER' ? '/charters' : '/sales'}
+                href={item.label === 'CHARTER' ? '/yacht-charter' : '/yacht-sale'}
                 style={{
                   fontFamily: 'var(--font-lora)',
                   fontSize: 11,

@@ -8,13 +8,15 @@ import { smoothScrollToId } from '@/lib/scroll';
 
 // pathname seul ne suffit pas : /yachting/fleet sert à la fois le parcours
 // charter et vente (distingués par ?tab=sale), donc le param est nécessaire aussi.
-// /yacht-charter/* (les landing pages SEO par destination) sont toujours
-// charter-only, donc elles comptent comme CHARTERS quel que soit tabParam.
+// /yacht-charter/* et /yacht-sale/* (destination picker + landing pages SEO
+// par destination) sont toujours d'un seul type fixe, donc elles comptent
+// comme CHARTERS ou SALES quel que soit tabParam.
 function isNavItemActive(href: string, pathname: string, tabParam: string | null) {
   const isFleetPage = pathname === '/yachting/fleet';
-  const isDestinationPage = pathname.startsWith('/yacht-charter/');
-  if (href === '/charters') return pathname === '/charters' || isDestinationPage || (isFleetPage && tabParam !== 'sale');
-  if (href === '/sales') return pathname === '/sales' || (isFleetPage && tabParam === 'sale');
+  const isCharterPage = pathname === '/yacht-charter' || pathname.startsWith('/yacht-charter/');
+  const isSalePage = pathname === '/yacht-sale' || pathname.startsWith('/yacht-sale/');
+  if (href === '/yacht-charter') return isCharterPage || (isFleetPage && tabParam !== 'sale');
+  if (href === '/yacht-sale') return isSalePage || (isFleetPage && tabParam === 'sale');
   return pathname === href;
 }
 
@@ -36,7 +38,7 @@ export default function Navbar() {
   const router = useRouter();
 
   // Ne pas afficher le back button sur les pages principales
-  const mainPages = ['/', '/charters', '/sales', '/experiences'];
+  const mainPages = ['/', '/yacht-charter', '/yacht-sale', '/experiences'];
   const showBackButton = !mainPages.includes(pathname);
 
   // Check authentication status
@@ -78,8 +80,8 @@ export default function Navbar() {
 
   const navItems = [
     { label: 'HOME', href: '/' },
-    { label: 'CHARTERS', href: '/charters' },
-    { label: 'SALES', href: '/sales' },
+    { label: 'CHARTERS', href: '/yacht-charter' },
+    { label: 'SALES', href: '/yacht-sale' },
     { label: 'BESPOKE EXPERIENCES', href: '/experiences' },
   ];
 

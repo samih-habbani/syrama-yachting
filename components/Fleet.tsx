@@ -85,17 +85,24 @@ interface FleetProps {
   // getDestinationLinks(). When set, changing the Destination/City filter
   // to a combination with its own dedicated page navigates there instead
   // of only filtering the grid client-side.
-  destinationLinks?: { region: string; city: string | null; path: string }[]
+  destinationLinks?: { kind: 'charter' | 'sale'; region: string; city: string | null; path: string }[]
   // Rendered over the hero image (see below) instead of in the page's
   // normal flow above it — sitting on plain dark background it read as an
   // afterthought; over the photo, styled for contrast, it's part of the
   // hero itself.
   breadcrumbItems?: BreadcrumbItem[]
+  // Set by a destination page (charter or sale) to fix which tab shows,
+  // ignoring the URL's own `?tab=` — a destination's title/H1/intro/FAQ are
+  // tied to one specific kind, so there's no correct page for a toggle to
+  // switch to. The Charter/Sale toggle itself is hidden whenever `seo` is
+  // set (see the Toggle block below) — this prop is what makes that fixed
+  // kind take effect even if `?tab=` is present in the URL.
+  defaultTab?: 'charter' | 'sale'
 }
 
 const PAGE_SIZE = 12
 
-export default function Fleet({ showFilters = true, limit, initialYachts, seo, initialRegion, initialCity, destinationLinks, breadcrumbItems }: FleetProps) {
+export default function Fleet({ showFilters = true, limit, initialYachts, seo, initialRegion, initialCity, destinationLinks, breadcrumbItems, defaultTab }: FleetProps) {
   const router = useRouter()
   const pathname = usePathname()
   // `?region=`/`?tab=` are read via the isolated <FleetSearchParamsSync>
@@ -113,7 +120,7 @@ export default function Fleet({ showFilters = true, limit, initialYachts, seo, i
   const [regionParam, setRegionParam] = useState<string | null>(null)
   const [tabParam, setTabParam] = useState<string | null>(null)
 
-  const [activeTab, setActiveTab] = useState<'charter' | 'sale'>(tabParam === 'sale' ? 'sale' : 'charter')
+  const [activeTab, setActiveTab] = useState<'charter' | 'sale'>(defaultTab ?? (tabParam === 'sale' ? 'sale' : 'charter'))
   const [allYachts, setAllYachts] = useState<Yacht[]>(initialYachts ?? [])
   const [loading, setLoading] = useState(!initialYachts)
   const [availabilityYacht, setAvailabilityYacht] = useState<Yacht | null>(null)
@@ -267,8 +274,11 @@ export default function Fleet({ showFilters = true, limit, initialYachts, seo, i
   }, [allYachts, bounds])
 
   useEffect(() => {
+    // Destination pages ignore the URL's own ?tab= entirely — their kind
+    // is fixed (see the defaultTab prop comment above).
+    if (defaultTab) return
     setActiveTab(tabParam === 'sale' ? 'sale' : 'charter')
-  }, [tabParam])
+  }, [tabParam, defaultTab])
 
   // Reacts to the URL's own `?region=` (still used by a few older links)
   // changing after mount. On a destination page there is no such param, so
@@ -362,8 +372,15 @@ export default function Fleet({ showFilters = true, limit, initialYachts, seo, i
   const handleFiltersChange = (next: FilterState) => {
     const identityChanged = next.region !== filters.region || next.city !== filters.city
     if (identityChanged && destinationLinks) {
+      // On a destination page (defaultTab set), only match a destination of
+      // that same fixed kind — a charter page's City filter must never
+      // navigate to a sale destination page, or vice versa. On the plain
+      // /yachting/fleet page (no fixed kind), match whichever kind the
+      // Charter/Sale toggle currently shows, same as today.
+      const matchKind = defaultTab ?? activeTab
       const match = destinationLinks.find((d) =>
-        d.region.toLowerCase() === (next.region || '').toLowerCase()
+        d.kind === matchKind
+        && d.region.toLowerCase() === (next.region || '').toLowerCase()
         && (d.city || '').toLowerCase() === (next.city || '').toLowerCase()
       )
       if (match && match.path !== pathname) {
@@ -553,30 +570,36 @@ export default function Fleet({ showFilters = true, limit, initialYachts, seo, i
             </a>
           )}
 
-          {/* Toggle */}
-          <div style={{ display: 'flex', gap: 24 }}>
-            {(['charter', 'sale'] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => handleTabChange(tab)}
-                style={{
-                  fontFamily: 'var(--font-tenor)',
-                  fontSize: 11,
-                  letterSpacing: '0.2em',
-                  textTransform: 'uppercase',
-                  background: 'transparent',
-                  border: 'none',
-                  padding: '12px 0',
-                  color: activeTab === tab ? '#b8974a' : '#8f8f7f',
-                  cursor: 'pointer',
-                  borderBottom: activeTab === tab ? '2px solid #b8974a' : '2px solid transparent',
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                {tab === 'charter' ? 'Charter' : 'For Sale'}
-              </button>
-            ))}
-          </div>
+          {/* Toggle — hidden on a destination page (seo set): its
+              title/H1/intro/FAQ are tied to one specific kind (defaultTab),
+              and there's no matching page on the other side for this to
+              switch to. Only the plain /yachting/fleet page (no fixed
+              identity) shows it. */}
+          {!seo && (
+            <div style={{ display: 'flex', gap: 24 }}>
+              {(['charter', 'sale'] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => handleTabChange(tab)}
+                  style={{
+                    fontFamily: 'var(--font-tenor)',
+                    fontSize: 11,
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: '12px 0',
+                    color: activeTab === tab ? '#b8974a' : '#8f8f7f',
+                    cursor: 'pointer',
+                    borderBottom: activeTab === tab ? '2px solid #b8974a' : '2px solid transparent',
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  {tab === 'charter' ? 'Charter' : 'For Sale'}
+                </button>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         {/* Scroll anchor — pagination jumps back here instead of leaving the

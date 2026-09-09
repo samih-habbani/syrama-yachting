@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Save, X, Plus, ChevronUp, ChevronDown, Trash2 } from 'lucide-react'
 import Card from './ui/Card'
 import Button from './ui/Button'
-import { FilterField, TextField } from './ui/FilterBar'
+import { FilterField, TextField, SelectField } from './ui/FilterBar'
 import MultiSelectField from './ui/MultiSelectField'
 
 export interface DestinationFaqItem { question: string; answer: string }
@@ -13,6 +13,7 @@ export interface DestinationItineraryItem { name: string; description: string }
 
 export interface DestinationRecord {
   id?: number
+  kind: 'charter' | 'sale'
   regionSlug: string
   citySlug: string | null
   name: string
@@ -29,7 +30,10 @@ export interface DestinationRecord {
   itineraries: DestinationItineraryItem[]
 }
 
-export interface RelatedOption { value: string; label: string }
+// `kind` lets the form only offer same-kind destinations as related links
+// (a charter destination should never cross-link a sale one) — filtered
+// against the form's own live Kind selection, see its usage below.
+export interface RelatedOption { kind: 'charter' | 'sale'; value: string; label: string }
 
 function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
@@ -110,6 +114,7 @@ export default function DestinationForm({
   const isEditing = Boolean(destination?.id)
 
   const [formData, setFormData] = useState<DestinationRecord>({
+    kind: destination?.kind || 'charter',
     regionSlug: destination?.regionSlug || '',
     citySlug: destination?.citySlug ?? null,
     name: destination?.name || '',
@@ -177,7 +182,7 @@ export default function DestinationForm({
         {isEditing ? `Edit ${destination?.name}` : 'New Destination'}
       </h2>
       <p style={{ fontFamily: 'var(--font-lora)', fontSize: 13, color: '#8f8f7f', margin: '0 0 28px' }}>
-        Everything here is what renders on the public /yacht-charter page — saving updates it immediately.
+        Everything here is what renders on the public {formData.kind === 'sale' ? '/yacht-sale' : '/yacht-charter'} page — saving updates it immediately.
       </p>
 
       {error && (
@@ -189,6 +194,15 @@ export default function DestinationForm({
       <form onSubmit={handleSubmit}>
         <Section title="Identity" description="Controls the public URL and which real yacht inventory (by region/city) shows on this page. Change with care — the URL moves if you edit the slugs.">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
+            <FilterField label={isEditing ? 'Kind (fixed after creation)' : 'Kind'}>
+              <SelectField
+                value={formData.kind}
+                onChange={(v) => update({ kind: v as 'charter' | 'sale' })}
+              >
+                <option value="charter" disabled={isEditing && formData.kind !== 'charter'}>Charter</option>
+                <option value="sale" disabled={isEditing && formData.kind !== 'sale'}>Sale</option>
+              </SelectField>
+            </FilterField>
             <FilterField label="Display Name">
               <TextField required value={formData.name} onChange={(e) => update({ name: e.target.value })} placeholder="e.g. Monaco" />
             </FilterField>
@@ -282,7 +296,12 @@ export default function DestinationForm({
           </Button>
         </Section>
 
-        <Section title="Suggested Itineraries" description="Shown on the destination page and on the description page of every yacht based there.">
+        <Section
+          title="Suggested Itineraries"
+          description={formData.kind === 'sale'
+            ? "Charter-only feature — a sale destination's yacht pages show its FAQ here instead, not itineraries. Safe to leave empty."
+            : 'Shown on the destination page and on the description page of every yacht based there.'}
+        >
           {formData.itineraries.map((item, i) => (
             <div key={i} style={{ border: '1px solid rgba(184,151,74,0.15)', borderRadius: 8, padding: 16, marginBottom: 12 }}>
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
@@ -316,7 +335,7 @@ export default function DestinationForm({
         <Section title="Related Destinations" description="Cross-region links shown under 'Explore More' — same-region siblings are added automatically, this is only for curated cross-region suggestions.">
           <MultiSelectField
             label="destinations"
-            options={relatedOptions}
+            options={relatedOptions.filter((o) => o.kind === formData.kind)}
             selected={formData.relatedKeys}
             onChange={(next) => update({ relatedKeys: next })}
             isOpen={isRelatedOpen}

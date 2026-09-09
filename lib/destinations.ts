@@ -1,8 +1,11 @@
-// Destination catalogue for the /yacht-charter SEO landing pages — a
-// region always appears in the URL:
-//   /yacht-charter/[region]          — region-only pages (see app/yacht-charter/[region]/page.tsx)
-//   /yacht-charter/[region]/[city]   — city pages (see app/yacht-charter/[region]/[city]/page.tsx)
-// e.g. /yacht-charter/french-riviera and /yacht-charter/french-riviera/monaco.
+// Destination catalogue for the /yacht-charter and /yacht-sale SEO landing
+// pages — a region always appears in the URL, prefixed by kind:
+//   /yacht-charter/[region](/[city])   — see app/yacht-charter/[region](/[city])/page.tsx
+//   /yacht-sale/[region](/[city])      — see app/yacht-sale/[region](/[city])/page.tsx
+// e.g. /yacht-charter/french-riviera/monaco and /yacht-sale/french-riviera.
+// A charter and a sale destination can share the same region/city — every
+// lookup below is scoped by `kind` so the two never cross (see
+// DestinationKind).
 //
 // Backed by the `destination` / `destination_faq` / `destination_itinerary`
 // tables (see prisma/schema.prisma) — editable from
@@ -33,8 +36,15 @@ export interface DestinationItinerary {
   description: string
 }
 
+export type DestinationKind = 'charter' | 'sale'
+
 export interface Destination {
   id: number
+  // "charter" (/yacht-charter/...) or "sale" (/yacht-sale/...) — a charter
+  // and a sale destination can share the same regionSlug/citySlug (both
+  // can have a French Riviera entry), so every lookup below is scoped by
+  // kind to avoid crossing the two.
+  kind: DestinationKind
   // URL segments — see the module comment above. citySlug is null for a
   // region-only page (e.g. Greece, French Riviera itself).
   regionSlug: string
@@ -69,6 +79,7 @@ export interface Destination {
 
 interface DestinationRow {
   id: number
+  kind: DestinationKind
   regionSlug: string
   citySlug: string | null
   name: string
@@ -102,7 +113,7 @@ interface DestinationRow {
 export const getAllDestinations = cache(async (): Promise<Destination[]> => {
   const rows = await prisma.$queryRaw<DestinationRow[]>`
     SELECT
-      d.id, d.region_slug as "regionSlug", d.city_slug as "citySlug", d.name, d.region, d.city,
+      d.id, d.kind, d.region_slug as "regionSlug", d.city_slug as "citySlug", d.name, d.region, d.city,
       d.title, d.meta_description as "metaDescription", d.h1, d.hero_image as "heroImage",
       d.eyebrow, d.intro, d.related_keys as "relatedKeys", d.updated_at as "updatedAt",
       (SELECT json_agg(json_build_object('question', f.question, 'answer', f.answer) ORDER BY f.position ASC)
@@ -115,6 +126,7 @@ export const getAllDestinations = cache(async (): Promise<Destination[]> => {
 
   return rows.map((row) => ({
     id: row.id,
+    kind: row.kind,
     regionSlug: row.regionSlug,
     citySlug: row.citySlug,
     name: row.name,
@@ -133,54 +145,69 @@ export const getAllDestinations = cache(async (): Promise<Destination[]> => {
   }))
 })
 
-// The path segment(s) after /yacht-charter/ for a destination — a single
+// The public URL prefix for a destination's kind.
+export function destinationUrlPrefix(kind: DestinationKind): string {
+  return kind === 'sale' ? '/yacht-sale' : '/yacht-charter'
+}
+
+// The path segment(s) after the kind's prefix for a destination — a single
 // regionSlug for a region-only page, or `regionSlug/citySlug` for a city.
 export function destinationPath(d: Pick<Destination, 'regionSlug' | 'citySlug'>): string {
   return d.citySlug ? `${d.regionSlug}/${d.citySlug}` : d.regionSlug
 }
 
-export async function getDestinationByPath(regionSlug: string, citySlug: string | null = null): Promise<Destination | undefined> {
-  const destinations = await getAllDestinations()
-  return destinations.find((d) => d.regionSlug === regionSlug && d.citySlug === citySlug)
+// The full public URL, e.g. /yacht-charter/french-riviera/monaco or
+// /yacht-sale/french-riviera.
+export function destinationFullPath(d: Pick<Destination, 'kind' | 'regionSlug' | 'citySlug'>): string {
+  return `${destinationUrlPrefix(d.kind)}/${destinationPath(d)}`
 }
 
-export interface DestinationLink { region: string; city: string | null; path: string }
+export async function getDestinationByPath(regionSlug: string, citySlug: string | null = null, kind: DestinationKind = 'charter'): Promise<Destination | undefined> {
+  const destinations = await getAllDestinations()
+  return destinations.find((d) => d.kind === kind && d.regionSlug === regionSlug && d.citySlug === citySlug)
+}
 
-// A lightweight {region, city, path} projection of every destination — safe
-// to pass down into a 'use client' component (components/Fleet.tsx), unlike
-// the full Destination array. Lets the Destination/City filters there
-// navigate to the matching dedicated /yacht-charter page instead of only
-// filtering the currently-loaded grid: a client-side filter change can't by
-// itself update that page's title, H1, intro or FAQ, so without this a user
-// picking "Cannes" while on the Beaulieu-sur-Mer page would keep seeing
-// Beaulieu-sur-Mer's copy above a Cannes-filtered grid.
+export interface DestinationLink { kind: DestinationKind; region: string; city: string | null; path: string }
+
+// A lightweight {kind, region, city, path} projection of every destination
+// — safe to pass down into a 'use client' component (components/Fleet.tsx),
+// unlike the full Destination array. Lets the Destination/City filters
+// there navigate to the matching dedicated /yacht-charter or /yacht-sale
+// page instead of only filtering the currently-loaded grid: a client-side
+// filter change can't by itself update that page's title, H1, intro or
+// FAQ, so without this a user picking "Cannes" while on the
+// Beaulieu-sur-Mer page would keep seeing Beaulieu-sur-Mer's copy above a
+// Cannes-filtered grid. `kind` lets the caller only match within the same
+// kind as the page it's currently on (see components/Fleet.tsx).
 export async function getDestinationLinks(): Promise<DestinationLink[]> {
   const destinations = await getAllDestinations()
-  return destinations.map((d) => ({ region: d.region, city: d.city, path: `/yacht-charter/${destinationPath(d)}` }))
+  return destinations.map((d) => ({ kind: d.kind, region: d.region, city: d.city, path: destinationFullPath(d) }))
 }
 
 // Resolves a `related` entry — either a bare regionSlug ('greece') or a
-// 'regionSlug/citySlug' pair ('french-riviera/monaco').
-export async function getDestinationByKey(key: string): Promise<Destination | undefined> {
+// 'regionSlug/citySlug' pair ('french-riviera/monaco') — always within the
+// same kind as the destination that referenced it.
+export async function getDestinationByKey(key: string, kind: DestinationKind = 'charter'): Promise<Destination | undefined> {
   const [region, city] = key.split('/')
-  return getDestinationByPath(region, city ?? null)
+  return getDestinationByPath(region, city ?? null, kind)
 }
 
 // The region-level overview page for a given regionSlug, if one exists —
 // not every region does (Emirates only has the Dubai city page) — used to
 // decide whether a breadcrumb's region segment should be a link.
-export async function getRegionOverviewDestination(regionSlug: string): Promise<Destination | undefined> {
+export async function getRegionOverviewDestination(regionSlug: string, kind: DestinationKind = 'charter'): Promise<Destination | undefined> {
   const destinations = await getAllDestinations()
-  return destinations.find((d) => d.regionSlug === regionSlug && d.citySlug === null)
+  return destinations.find((d) => d.kind === kind && d.regionSlug === regionSlug && d.citySlug === null)
 }
 
-// Every other destination sharing the same region as `destination` — used
-// so a destination page's "Explore More" section always lists every
+// Every other destination sharing the same region AND kind as `destination`
+// — used so a destination page's "Explore More" section always lists every
 // sibling city automatically (see app/yacht-charter), without needing each
-// row's `related` list hand-maintained for same-region completeness.
+// row's `related` list hand-maintained for same-region completeness. A
+// charter page never lists a sale destination here, or vice versa.
 export async function getSameRegionDestinations(destination: Destination): Promise<Destination[]> {
   const destinations = await getAllDestinations()
-  return destinations.filter((d) => d.regionSlug === destination.regionSlug && d.id !== destination.id)
+  return destinations.filter((d) => d.kind === destination.kind && d.regionSlug === destination.regionSlug && d.id !== destination.id)
 }
 
 // Same-region siblings first, then the hand-curated cross-region
@@ -191,38 +218,49 @@ export async function getSameRegionDestinations(destination: Destination): Promi
 export async function getRelatedDestinations(destination: Destination): Promise<Destination[]> {
   const sameRegion = await getSameRegionDestinations(destination)
   const curated = (
-    await Promise.all(destination.related.map((key) => getDestinationByKey(key)))
+    await Promise.all(destination.related.map((key) => getDestinationByKey(key, destination.kind)))
   ).filter((d): d is Destination => Boolean(d))
   const seenPaths = new Set<string>()
   return [...sameRegion, ...curated].filter((d) => {
-    const path = destinationPath(d)
+    const path = destinationFullPath(d)
     if (seenPaths.has(path)) return false
     seenPaths.add(path)
     return true
   })
 }
 
-// generateStaticParams for app/yacht-charter/[region]/page.tsx.
-export async function allRegionOnlyParams(): Promise<{ region: string }[]> {
+// generateStaticParams for app/yacht-charter/[region]/page.tsx and
+// app/yacht-sale/[region]/page.tsx.
+export async function allRegionOnlyParams(kind: DestinationKind = 'charter'): Promise<{ region: string }[]> {
   const destinations = await getAllDestinations()
-  return destinations.filter((d) => d.citySlug === null).map((d) => ({ region: d.regionSlug }))
+  return destinations.filter((d) => d.kind === kind && d.citySlug === null).map((d) => ({ region: d.regionSlug }))
 }
 
-// generateStaticParams for app/yacht-charter/[region]/[city]/page.tsx.
-export async function allCityParams(): Promise<{ region: string; city: string }[]> {
+// generateStaticParams for app/yacht-charter/[region]/[city]/page.tsx and
+// app/yacht-sale/[region]/[city]/page.tsx.
+export async function allCityParams(kind: DestinationKind = 'charter'): Promise<{ region: string; city: string }[]> {
   const destinations = await getAllDestinations()
   return destinations
-    .filter((d): d is Destination & { citySlug: string } => d.citySlug !== null)
+    .filter((d): d is Destination & { citySlug: string } => d.kind === kind && d.citySlug !== null)
     .map((d) => ({ region: d.regionSlug, city: d.citySlug }))
+}
+
+// Charter vs sale, derived the same way lib/slug.ts's yachtTypeSegment
+// does — duplicated here (rather than imported) since lib/slug.ts already
+// imports from this file and importing back would be circular.
+function isCharterStatus(status: string | null | undefined): boolean {
+  return (status || '').toLowerCase() === 'location'
 }
 
 // Reverse lookup used to link a yacht's page back to "its" destination page
 // — a city-specific match (e.g. city="Cannes") wins over a region-only page
 // (e.g. "French Riviera" with city: null) so a Cannes yacht links to
-// /yacht-charter/french-riviera/cannes, not the broader Riviera page.
-// Returns undefined when the yacht isn't in any of the mapped
-// destinations — callers must fall back to the existing fleet link, never
-// invent a destination page that doesn't exist.
+// /yacht-charter/french-riviera/cannes, not the broader Riviera page. Only
+// matches within the yacht's own kind (derived from `status`) — a sale
+// yacht in French Riviera must never pick up a charter destination's
+// content, and vice versa. Returns undefined when the yacht isn't in any
+// of the mapped destinations — callers must fall back to the existing
+// fleet link, never invent a destination page that doesn't exist.
 //
 // Synchronous and takes the already-loaded `destinations` list explicitly
 // — used when resolving many yachts at once (see
@@ -231,19 +269,21 @@ export async function allCityParams(): Promise<{ region: string; city: string }[
 // instead of once per yacht (which, relying on cache() alone across a
 // Promise.all of hundreds of yachts, was enough concurrent DB calls to
 // exhaust the connection pool).
-export function matchDestinationForYacht(destinations: Destination[], yacht: { region?: string | null; city?: string | null }): Destination | undefined {
+export function matchDestinationForYacht(destinations: Destination[], yacht: { region?: string | null; city?: string | null; status?: string | null }): Destination | undefined {
+  const kind: DestinationKind = isCharterStatus(yacht.status) ? 'charter' : 'sale'
+  const pool = destinations.filter((d) => d.kind === kind)
   const region = (yacht.region || '').toLowerCase()
   const city = (yacht.city || '').toLowerCase()
 
-  const cityMatch = destinations.find((d) => d.city && d.city.toLowerCase() === city && d.region.toLowerCase() === region)
+  const cityMatch = pool.find((d) => d.city && d.city.toLowerCase() === city && d.region.toLowerCase() === region)
   if (cityMatch) return cityMatch
 
-  return destinations.find((d) => d.city === null && d.region.toLowerCase() === region)
+  return pool.find((d) => d.city === null && d.region.toLowerCase() === region)
 }
 
 // Single-yacht async convenience wrapper — see lib/slug.ts's
 // resolveYachtHref for the same split applied to href resolution.
-export async function getDestinationForYacht(yacht: { region?: string | null; city?: string | null }): Promise<Destination | undefined> {
+export async function getDestinationForYacht(yacht: { region?: string | null; city?: string | null; status?: string | null }): Promise<Destination | undefined> {
   const destinations = await getAllDestinations()
   return matchDestinationForYacht(destinations, yacht)
 }

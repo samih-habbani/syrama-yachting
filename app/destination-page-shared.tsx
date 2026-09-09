@@ -1,20 +1,24 @@
-// Shared implementation behind /yacht-charter/[region]/page.tsx and
-// /yacht-charter/[region]/[city]/page.tsx — not a route itself, just the
-// logic both thin page.tsx files call into so a region-only page and a city
-// page never drift apart by accident (same pattern as
+// Shared implementation behind every destination route — both
+// /yacht-charter/[region](/[city]) and /yacht-sale/[region](/[city]) —
+// not a route itself, just the logic each thin page.tsx file calls into so
+// a region-only page and a city page (and the charter/sale kinds) never
+// drift apart by accident (same pattern as
 // app/yachting/fleet/yacht-detail-shared.tsx).
 //
 // This is intentionally NOT a separate, custom-built page: it renders the
-// exact same Navbar / Fleet (filters, Charter↔Sale toggle, yacht cards,
-// pagination) as /yachting/fleet, with destination-specific SEO copy
-// (unique H1, intro, "Available Now" heading) injected into Fleet's own
-// header via the `seo` prop, and the Destination/City filter pre-set to
-// this page's region — so it's the same fleet browsing experience, scoped
-// and introduced by real content, not a redesign. A FAQ section (with
-// FAQPage JSON-LD) follows the fleet grid. Adding a new destination later
-// is a database edit (via /admin/dashboard/destinations, see
+// exact same Navbar / Fleet (filters, yacht cards, pagination) as
+// /yachting/fleet, with destination-specific SEO copy (unique H1, intro,
+// "Available Now" heading) injected into Fleet's own header via the `seo`
+// prop, and the Destination/City filter pre-set to this page's region — so
+// it's the same fleet browsing experience, scoped and introduced by real
+// content, not a redesign. A FAQ section (with FAQPage JSON-LD) follows
+// the fleet grid. Adding a new destination later — charter or sale — is a
+// database edit (via /admin/dashboard/destinations, see
 // lib/destinations.ts), not a code change; nothing here is
-// destination-specific.
+// destination-specific. The Charter/Sale toggle Fleet normally shows is
+// hidden on every destination page (see components/Fleet.tsx): a
+// destination's title/H1/intro/FAQ are tied to one specific kind, so
+// there's no matching page for the toggle to switch to.
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
@@ -26,7 +30,7 @@ import { breadcrumbJsonLd } from '@/lib/breadcrumb'
 import { getYachts } from '@/lib/yacht-service'
 import {
   type Destination,
-  destinationPath,
+  destinationFullPath,
   getRegionOverviewDestination,
   getRelatedDestinations,
   getDestinationLinks,
@@ -35,7 +39,7 @@ import {
 const SITE_URL = 'https://www.syrama-yachting.com'
 
 export function generateDestinationMetadata(destination: Destination): Metadata {
-  const canonicalPath = `/yacht-charter/${destinationPath(destination)}`
+  const canonicalPath = destinationFullPath(destination)
   const imageUrl = `${SITE_URL}${destination.heroImage}`
 
   return {
@@ -60,23 +64,25 @@ export function generateDestinationMetadata(destination: Destination): Metadata 
 }
 
 export async function DestinationPageContent({ destination }: { destination: Destination }) {
-  // The FULL fleet, same as /yachting/fleet — Fleet does all filtering
-  // client-side, so the Destination/Builder/Sort filters stay fully
-  // functional here too (pre-scoped to this region via initialRegion, not
-  // locked to it).
-  const initialYachts = await getYachts({ type: 'all', limit: 500 })
+  const isSale = destination.kind === 'sale'
+
+  // Scoped to this destination's own kind — the Charter/Sale toggle is
+  // hidden on every destination page (see components/Fleet.tsx), so the
+  // other kind's yachts would never be shown here anyway; no reason to
+  // fetch them.
+  const initialYachts = await getYachts({ type: isSale ? 'sale' : 'charter', limit: 500 })
   const destinationLinks = await getDestinationLinks()
 
   // A city page's region segment only links to a region-overview page when
   // one actually exists (e.g. French Riviera does, Emirates doesn't — only
   // its Dubai city page) — otherwise that breadcrumb level is skipped
   // rather than linking to a page that would 404.
-  const regionOverview = destination.citySlug ? await getRegionOverviewDestination(destination.regionSlug) : undefined
+  const regionOverview = destination.citySlug ? await getRegionOverviewDestination(destination.regionSlug, destination.kind) : undefined
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
-    { label: 'Yacht Charter', href: '/charters' },
+    { label: isSale ? 'Yachts For Sale' : 'Yacht Charter', href: isSale ? '/yacht-sale' : '/yacht-charter' },
     ...(destination.citySlug
-      ? [{ label: destination.eyebrow, ...(regionOverview ? { href: `/yacht-charter/${destinationPath(regionOverview)}` } : {}) }]
+      ? [{ label: destination.eyebrow, ...(regionOverview ? { href: destinationFullPath(regionOverview) } : {}) }]
       : []),
     { label: destination.name },
   ]
@@ -92,11 +98,12 @@ export async function DestinationPageContent({ destination }: { destination: Des
   }
 
   // "Other Destinations" always includes every other page covering the same
-  // region first (e.g. Cannes → Saint-Tropez, Monaco, French Riviera — every
-  // one of them, not a hand-picked subset), then the hand-curated
-  // cross-region suggestions from destination.related (e.g. Corsica from
-  // the French Riviera page), deduped — see lib/destinations.ts. New
-  // destinations added there are picked up automatically.
+  // region and kind first (e.g. Cannes → Saint-Tropez, Monaco, French
+  // Riviera — every one of them, not a hand-picked subset), then the
+  // hand-curated cross-region suggestions from destination.related (e.g.
+  // Corsica from the French Riviera page), deduped — see
+  // lib/destinations.ts. New destinations added there are picked up
+  // automatically.
   const relatedDestinations = await getRelatedDestinations(destination)
 
   return (
@@ -114,6 +121,7 @@ export async function DestinationPageContent({ destination }: { destination: Des
           initialRegion={destination.region}
           initialCity={destination.city}
           breadcrumbItems={breadcrumbItems}
+          defaultTab={isSale ? 'sale' : 'charter'}
           seo={{
             eyebrow: destination.eyebrow,
             h1: destination.h1,
@@ -133,7 +141,7 @@ export async function DestinationPageContent({ destination }: { destination: Des
             <div style={{ marginBottom: 40 }}>
               <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 12 }}>FAQ</div>
               <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(26px, 3.5vw, 40px)', fontWeight: 300, color: '#f5eedd', margin: 0 }}>
-                Chartering a Yacht in {destination.name}
+                {isSale ? `Buying a Yacht in ${destination.name}` : `Chartering a Yacht in ${destination.name}`}
               </h2>
             </div>
             <FaqAccordion items={destination.faq} />
@@ -150,8 +158,8 @@ export async function DestinationPageContent({ destination }: { destination: Des
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
               {relatedDestinations.map((rel) => (
                 <Link
-                  key={destinationPath(rel)}
-                  href={`/yacht-charter/${destinationPath(rel)}`}
+                  key={destinationFullPath(rel)}
+                  href={destinationFullPath(rel)}
                   style={{
                     fontFamily: 'var(--font-tenor)',
                     fontSize: 11,

@@ -8,6 +8,7 @@ import DestinationForm, { type DestinationRecord, type RelatedOption } from '@/c
 
 interface DestinationListRow {
   id: number
+  kind: 'charter' | 'sale'
   regionSlug: string
   citySlug: string | null
   name: string
@@ -48,6 +49,7 @@ export default function DestinationEditPage() {
           const options: RelatedOption[] = rows
             .filter((d) => isNew || String(d.id) !== params.id)
             .map((d) => ({
+              kind: d.kind,
               value: d.citySlug ? `${d.regionSlug}/${d.citySlug}` : d.regionSlug,
               label: `${d.name} (${d.region}${d.city ? ` · ${d.city}` : ''})`,
             }))

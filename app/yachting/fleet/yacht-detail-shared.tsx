@@ -7,7 +7,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { getYachtById, getSimilarYachts } from '@/lib/yacht-service'
 import YachtDetailClient from '@/components/YachtDetailClient'
 import { idFromSlug, type YachtTypeSegment } from '@/lib/slug'
-import { getDestinationForYacht, getRelatedDestinations, destinationPath } from '@/lib/destinations'
+import { getDestinationForYacht, getRelatedDestinations, destinationFullPath } from '@/lib/destinations'
 import { breadcrumbJsonLd } from '@/lib/breadcrumb'
 
 const SITE_URL = 'https://www.syrama-yachting.com'
@@ -75,17 +75,18 @@ export async function YachtDetailPageContent({ slug, expectedSegment, requestedP
     getDestinationForYacht(yachtData),
   ])
   // Same "Other Destinations" internal-mesh links shown on the destination
-  // page itself (see app/yacht-charter/destination-page-shared.tsx) —
-  // reused here so a yacht page also crawls out toward every sibling
-  // destination, not just back to its own one. Charter-only, and only when
-  // this yacht actually matched a destination. Depends on `destination`
-  // above, so it can't join that Promise.all.
-  const relatedDestinations = isCharter && destination ? await getRelatedDestinations(destination) : []
+  // page itself (see app/destination-page-shared.tsx) — reused here so a
+  // yacht page also crawls out toward every sibling destination, not just
+  // back to its own one. getRelatedDestinations is kind-aware internally,
+  // so this is correct for both charter and sale once `destination` has
+  // matched (a sale yacht only ever gets sale siblings). Depends on
+  // `destination` above, so it can't join that Promise.all.
+  const relatedDestinations = destination ? await getRelatedDestinations(destination) : []
 
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
-    { label: isCharter ? 'Yacht Charter' : 'Yachts for Sale', href: isCharter ? '/charters' : '/sales' },
-    ...(destination ? [{ label: destination.name, href: `/yacht-charter/${destinationPath(destination)}` }] : []),
+    { label: isCharter ? 'Yacht Charter' : 'Yachts for Sale', href: isCharter ? '/yacht-charter' : '/yacht-sale' },
+    ...(destination ? [{ label: destination.name, href: destinationFullPath(destination) }] : []),
     { label: yachtData.model },
   ]
 
@@ -118,10 +119,11 @@ export async function YachtDetailPageContent({ slug, expectedSegment, requestedP
       <YachtDetailClient
         yacht={yachtData}
         similarYachts={similarYachts}
-        destinationHref={destination ? `/yacht-charter/${destinationPath(destination)}` : undefined}
+        destinationHref={destination ? destinationFullPath(destination) : undefined}
         destinationName={destination?.name}
         itineraries={destination?.itineraries}
-        relatedDestinations={relatedDestinations.map((rel) => ({ name: rel.name, href: `/yacht-charter/${destinationPath(rel)}` }))}
+        destinationFaq={destination?.faq}
+        relatedDestinations={relatedDestinations.map((rel) => ({ name: rel.name, href: destinationFullPath(rel) }))}
       />
     </>
   )

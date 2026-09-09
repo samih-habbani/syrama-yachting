@@ -7,6 +7,7 @@ import AvailabilityModal from './AvailabilityModal'
 import BrokerContactModal from './BrokerContactModal'
 import ShareButtons from './ShareButtons'
 import YachtExperienceJourney from './YachtExperienceJourney'
+import FaqAccordion from './FaqAccordion'
 import Footer from './Footer'
 import { useWhatsappContext } from './WhatsappContext'
 import { yachtHref } from '@/lib/slug'
@@ -88,6 +89,12 @@ interface YachtDetailClientProps {
   // undefined for yachts outside a mapped destination.
   destinationName?: string
   itineraries?: { name: string; description: string }[]
+  // The matched destination's FAQ — shown on a *sale* yacht's page (a
+  // charter yacht's page uses the itineraries/journey section above
+  // instead; there's no cruising-itinerary equivalent for a purchase
+  // decision, but the same FAQ content that already exists on the
+  // destination page is directly useful here too).
+  destinationFaq?: { question: string; answer: string }[]
   // Other destination pages to cross-link from this yacht's page — same
   // internal-mesh links shown on the destination page itself. Empty for
   // yachts outside a mapped destination or with no sibling destinations.
@@ -99,7 +106,7 @@ interface YachtDetailClientProps {
 // never be shown as if it were a value. Used everywhere a spec is rendered.
 const hasValue = (v: unknown): v is number | string => v !== null && v !== undefined && v !== '' && v !== 0
 
-export default function YachtDetailClient({ yacht, similarYachts = [], destinationHref, destinationName, itineraries, relatedDestinations = [] }: YachtDetailClientProps) {
+export default function YachtDetailClient({ yacht, similarYachts = [], destinationHref, destinationName, itineraries, destinationFaq, relatedDestinations = [] }: YachtDetailClientProps) {
   const [imgIndex, setImgIndex] = useState(0)
   const [isReservationOpen, setIsReservationOpen] = useState(false)
   const [isAvailabilityOpen, setIsAvailabilityOpen] = useState(false)
@@ -117,10 +124,16 @@ export default function YachtDetailClient({ yacht, similarYachts = [], destinati
   const fleetParams = new URLSearchParams()
   if (yacht.region) fleetParams.set('region', yacht.region)
   if (!isCharter) fleetParams.set('tab', 'sale')
-  // A charter yacht whose city/region matches a dedicated SEO destination
-  // page (see lib/destinations.ts) links back there instead — same idea as
-  // the fleet link, just to a more specific, crawlable page.
-  const fleetHref = isCharter && destinationHref
+  // A yacht (charter or sale) whose city/region matches a dedicated SEO
+  // destination page (see lib/destinations.ts) links back there instead of
+  // the generic filtered fleet view — destinationHref is already kind-aware
+  // (getDestinationForYacht/destinationFullPath in yacht-detail-shared.tsx
+  // only ever match a same-kind destination), so this is correct for both:
+  // a charter yacht returns to its /yacht-charter/... page, a sale yacht to
+  // its /yacht-sale/... page — never to the generic /yachting/fleet fallback
+  // (which now redirects to /yacht-charter|sale/all-yachts, losing the
+  // region/city context) when a more specific page exists.
+  const fleetHref = destinationHref
     ? destinationHref
     : fleetParams.size > 0 ? `/yachting/fleet?${fleetParams.toString()}` : '/yachting/fleet'
 
@@ -294,6 +307,21 @@ export default function YachtDetailClient({ yacht, similarYachts = [], destinati
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Sale equivalent of the itineraries block above — reused from
+              the matched destination page's own FAQ (lib/destinations.ts),
+              not invented per-yacht. There's no cruising-itinerary
+              equivalent for a purchase decision, but this same content is
+              directly useful here. */}
+          {!isCharter && destinationFaq && destinationFaq.length > 0 && (
+            <div style={{ marginBottom: 48, paddingTop: 40, borderTop: '1px solid rgba(184,151,74,0.12)' }}>
+              <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 12 }}>FAQ</div>
+              <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(22px, 2.6vw, 30px)', fontWeight: 300, color: '#f5eedd', margin: '0 0 28px' }}>
+                Buying a Yacht in {destinationName}
+              </h2>
+              <FaqAccordion items={destinationFaq} />
             </div>
           )}
         </div>

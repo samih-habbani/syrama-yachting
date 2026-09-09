@@ -406,6 +406,12 @@ model Message {
 // code change.
 model Destination {
   id              Int      @id @default(autoincrement())
+  // "charter" | "sale" — a charter and a sale destination can share the
+  // same regionSlug/citySlug (e.g. both have a French Riviera entry), so
+  // the unique constraint below is scoped by kind too. Plain string
+  // rather than a Prisma enum so the admin form can't force a migration
+  // if a third kind is ever needed.
+  kind            String   @default("charter")
   regionSlug      String   @map("region_slug")
   citySlug        String?  @map("city_slug")
   name            String
@@ -421,7 +427,7 @@ model Destination {
   // Curated cross-region suggestions for "Other Destinations", e.g.
   // ["corsica"] on the French Riviera page — same-region siblings are
   // added automatically and don't need to be listed here. Each entry is a
-  // "regionSlug" or "regionSlug/citySlug" key.
+  // "regionSlug" or "regionSlug/citySlug" key, always within the same kind.
   relatedKeys     String[] @map("related_keys")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
@@ -429,7 +435,7 @@ model Destination {
   faqItems    DestinationFaq[]
   itineraries DestinationItinerary[]
 
-  @@unique([regionSlug, citySlug])
+  @@unique([kind, regionSlug, citySlug])
   @@map("destination")
 }
 
