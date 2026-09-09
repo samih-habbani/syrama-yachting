@@ -66,6 +66,36 @@ export default function DestinationCards({ isSale = false }: DestinationCardsPro
             ? 'Browse yachts for sale across our worldwide network of premium destinations.'
             : 'Select a region to browse yachts available for charter.'}
         </p>
+
+        {/* Discreet, low-commitment CTA for a visitor who already knows what
+            they want and would rather message someone than browse — kept
+            small and secondary so it doesn't compete with the destination
+            grid below, which is still this page's main path. */}
+        {!isSale && (
+          <a
+            href={`https://wa.me/971505548034?text=${encodeURIComponent("Hello Syrama Yachting! I'd like help finding the right yacht for my charter.")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
+              fontFamily: 'var(--font-tenor)',
+              fontSize: 10,
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+              color: '#b8974a',
+              border: '1px solid rgba(184,151,74,0.3)',
+              padding: '13px 22px',
+              textDecoration: 'none',
+              marginTop: 28,
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/whatsapp.png" alt="" style={{ width: 15, height: 15 }} />
+            Speak to a Yacht Advisor
+          </a>
+        )}
       </motion.div>
 
       {/* Destination cards */}
@@ -125,29 +155,110 @@ export default function DestinationCards({ isSale = false }: DestinationCardsPro
         ))}
       </div>
 
-      {/* Bottom CTA */}
-      <div style={{ textAlign: 'center', marginTop: 64 }}>
-        <Link
-          href={isSale ? '/yachting/fleet?tab=sale' : '/yachting/fleet'}
+      {/* Main "can't decide" CTA — the highest-intent moment on this page:
+          someone who has just looked through every destination and still
+          hasn't found the right fit. Charter-only (there's no brokered
+          "sourcing" equivalent framed for sale enquiries here). */}
+      {!isSale && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 12,
-            fontFamily: 'var(--font-tenor)',
-            fontSize: 10,
-            letterSpacing: '0.25em',
-            textTransform: 'uppercase',
-            color: '#06090f',
-            background: 'linear-gradient(135deg, #b8974a, #d4b472)',
-            padding: '16px 32px',
-            textDecoration: 'none',
-            boxShadow: '0 4px 20px rgba(184,151,74,0.35)',
+            marginTop: 80,
+            padding: 'clamp(40px, 6vw, 64px)',
+            textAlign: 'center',
+            border: '1px solid rgba(184,151,74,0.2)',
+            background: 'linear-gradient(135deg, rgba(184,151,74,0.06) 0%, rgba(212,180,114,0.02) 100%)',
           }}
         >
-          View Our Full Fleet
-          <svg width="16" height="5" viewBox="0 0 16 5" fill="none"><line x1="0" y1="2.5" x2="12" y2="2.5" stroke="currentColor" /><polyline points="9,1 14,2.5 9,4" stroke="currentColor" strokeWidth="0.8" fill="none" /></svg>
-        </Link>
-      </div>
+          <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 16 }}>
+            Can&apos;t Find The Right Yacht?
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(28px, 4vw, 44px)', color: '#f5eedd', margin: '0 0 20px' }}>
+            Let Us Source It For You.
+          </h2>
+          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.8, color: '#8f8f7f', maxWidth: 560, margin: '0 auto 36px' }}>
+            Tell us your dates, number of guests and preferred itinerary. Our team will source the most suitable options for you.
+          </p>
+          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 24 }}>
+            <a
+              href={`https://wa.me/971505548034?text=${encodeURIComponent("Hello Syrama Yachting! I'd like a tailored yacht selection. Here are my dates, guest count and preferred itinerary:")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 12,
+                fontFamily: 'var(--font-tenor)',
+                fontSize: 10,
+                letterSpacing: '0.25em',
+                textTransform: 'uppercase',
+                color: '#06090f',
+                background: 'linear-gradient(135deg, #b8974a, #d4b472)',
+                padding: '16px 32px',
+                textDecoration: 'none',
+                boxShadow: '0 4px 20px rgba(184,151,74,0.35)',
+              }}
+            >
+              Request a Selection
+              <svg width="16" height="5" viewBox="0 0 16 5" fill="none"><line x1="0" y1="2.5" x2="12" y2="2.5" stroke="currentColor" /><polyline points="9,1 14,2.5 9,4" stroke="currentColor" strokeWidth="0.8" fill="none" /></svg>
+            </a>
+            <a
+              href="mailto:contact@syrama-services.com?subject=Yacht%20Selection%20Request&body=Hello%20Syrama%20Yachting%2C%0A%0AI'd%20like%20a%20tailored%20yacht%20selection.%20Here%20are%20my%20dates%2C%20guest%20count%20and%20preferred%20itinerary%3A%0A"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 12,
+                fontFamily: 'var(--font-tenor)',
+                fontSize: 10,
+                letterSpacing: '0.25em',
+                textTransform: 'uppercase',
+                color: '#b8974a',
+                border: '1px solid rgba(184,151,74,0.35)',
+                padding: '16px 32px',
+                textDecoration: 'none',
+              }}
+            >
+              Email Us
+            </a>
+          </div>
+          <Link
+            href="/yachting/fleet"
+            style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#8f8f7f', textDecoration: 'underline', textUnderlineOffset: 4 }}
+          >
+            Or browse our full fleet
+          </Link>
+        </motion.div>
+      )}
+
+      {/* Bottom CTA — sale yachts keep the plain "view everything" link
+          since the sourcing pitch above is charter-only. */}
+      {isSale && (
+        <div style={{ textAlign: 'center', marginTop: 64 }}>
+          <Link
+            href="/yachting/fleet?tab=sale"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 12,
+              fontFamily: 'var(--font-tenor)',
+              fontSize: 10,
+              letterSpacing: '0.25em',
+              textTransform: 'uppercase',
+              color: '#06090f',
+              background: 'linear-gradient(135deg, #b8974a, #d4b472)',
+              padding: '16px 32px',
+              textDecoration: 'none',
+              boxShadow: '0 4px 20px rgba(184,151,74,0.35)',
+            }}
+          >
+            View Our Full Fleet
+            <svg width="16" height="5" viewBox="0 0 16 5" fill="none"><line x1="0" y1="2.5" x2="12" y2="2.5" stroke="currentColor" /><polyline points="9,1 14,2.5 9,4" stroke="currentColor" strokeWidth="0.8" fill="none" /></svg>
+          </Link>
+        </div>
+      )}
     </div>
   )
 }

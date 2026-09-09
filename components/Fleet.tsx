@@ -523,6 +523,36 @@ export default function Fleet({ showFilters = true, limit, initialYachts, seo, i
             </div>
           )}
 
+          {/* Discreet, low-commitment CTA for a visitor who already knows
+              what they want and would rather message someone than browse —
+              same treatment as the /charters destination-picker page.
+              Charter-only, so it disappears if they switch to the Sale tab. */}
+          {activeTab === 'charter' && (
+            <a
+              href={`https://wa.me/971505548034?text=${encodeURIComponent("Hello Syrama Yachting! I'd like help finding the right yacht for my charter.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                fontFamily: 'var(--font-tenor)',
+                fontSize: 10,
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+                color: '#b8974a',
+                border: '1px solid rgba(184,151,74,0.3)',
+                padding: '13px 22px',
+                textDecoration: 'none',
+                marginBottom: 32,
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/assets/whatsapp.png" alt="" style={{ width: 15, height: 15 }} />
+              Speak to a Yacht Advisor
+            </a>
+          )}
+
           {/* Toggle */}
           <div style={{ display: 'flex', gap: 24 }}>
             {(['charter', 'sale'] as const).map(tab => (
@@ -790,38 +820,103 @@ export default function Fleet({ showFilters = true, limit, initialYachts, seo, i
           } : { model: '' }}
         />
 
-        {/* CTA */}
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(24px, 3vw, 38px)', fontWeight: 300, color: '#f5eedd', marginBottom: 16 }}>
-            {activeTab === 'charter' ? 'Ready to set sail?' : 'Interested in acquisition?'}
-          </div>
-          <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#8f8f7f', maxWidth: 480, margin: '0 auto 32px' }}>
-            {activeTab === 'charter'
-              ? 'Contact our concierge team to arrange your bespoke voyage.'
-              : 'Speak with our brokers about purchasing opportunities and investment potential.'}
-          </p>
-          <a
-            href="#contact"
+        {/* CTA — the highest-intent moment on this page: someone who just
+            looked through the grid and still hasn't found the right fit.
+            Same "Can't find the right yacht?" treatment as the /charters
+            destination-picker page, WhatsApp/email led, charter-only; the
+            Sale tab keeps its own brokerage-focused pitch. */}
+        {activeTab === 'charter' ? (
+          <div
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 14,
-              fontFamily: 'var(--font-tenor)',
-              fontSize: 10,
-              letterSpacing: '0.28em',
-              textTransform: 'uppercase',
-              color: '#06090f',
-              background: '#b8974a',
-              padding: '16px 36px',
-              textDecoration: 'none',
-              transition: 'background 0.3s ease',
+              padding: 'clamp(40px, 6vw, 64px)',
+              textAlign: 'center',
+              border: '1px solid rgba(184,151,74,0.2)',
+              background: 'linear-gradient(135deg, rgba(184,151,74,0.06) 0%, rgba(212,180,114,0.02) 100%)',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
           >
-            Get in touch
-          </a>
-        </div>
+            <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 16 }}>
+              Can&apos;t Find The Right Yacht?
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-cormorant)', fontWeight: 300, fontSize: 'clamp(28px, 4vw, 44px)', color: '#f5eedd', margin: '0 0 20px' }}>
+              Let Us Source It For You.
+            </h2>
+            <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 13, lineHeight: 1.8, color: '#8f8f7f', maxWidth: 560, margin: '0 auto 36px' }}>
+              Tell us your dates, number of guests and preferred itinerary. Our team will source the most suitable options for you.
+            </p>
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <a
+                href={`https://wa.me/971505548034?text=${encodeURIComponent("Hello Syrama Yachting! I'd like a tailored yacht selection. Here are my dates, guest count and preferred itinerary:")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  fontFamily: 'var(--font-tenor)',
+                  fontSize: 10,
+                  letterSpacing: '0.25em',
+                  textTransform: 'uppercase',
+                  color: '#06090f',
+                  background: 'linear-gradient(135deg, #b8974a, #d4b472)',
+                  padding: '16px 32px',
+                  textDecoration: 'none',
+                  boxShadow: '0 4px 20px rgba(184,151,74,0.35)',
+                }}
+              >
+                Request a Selection
+                <svg width="16" height="5" viewBox="0 0 16 5" fill="none"><line x1="0" y1="2.5" x2="12" y2="2.5" stroke="currentColor" /><polyline points="9,1 14,2.5 9,4" stroke="currentColor" strokeWidth="0.8" fill="none" /></svg>
+              </a>
+              <a
+                href="mailto:contact@syrama-services.com?subject=Yacht%20Selection%20Request&body=Hello%20Syrama%20Yachting%2C%0A%0AI'd%20like%20a%20tailored%20yacht%20selection.%20Here%20are%20my%20dates%2C%20guest%20count%20and%20preferred%20itinerary%3A%0A"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  fontFamily: 'var(--font-tenor)',
+                  fontSize: 10,
+                  letterSpacing: '0.25em',
+                  textTransform: 'uppercase',
+                  color: '#b8974a',
+                  border: '1px solid rgba(184,151,74,0.35)',
+                  padding: '16px 32px',
+                  textDecoration: 'none',
+                }}
+              >
+                Email Us
+              </a>
+            </div>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(24px, 3vw, 38px)', fontWeight: 300, color: '#f5eedd', marginBottom: 16 }}>
+              Interested in acquisition?
+            </div>
+            <p style={{ fontFamily: 'var(--font-tenor)', fontSize: 12, lineHeight: 1.8, color: '#8f8f7f', maxWidth: 480, margin: '0 auto 32px' }}>
+              Speak with our brokers about purchasing opportunities and investment potential.
+            </p>
+            <a
+              href="#contact"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 14,
+                fontFamily: 'var(--font-tenor)',
+                fontSize: 10,
+                letterSpacing: '0.28em',
+                textTransform: 'uppercase',
+                color: '#06090f',
+                background: '#b8974a',
+                padding: '16px 36px',
+                textDecoration: 'none',
+                transition: 'background 0.3s ease',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#d4b472')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = '#b8974a')}
+            >
+              Get in touch
+            </a>
+          </div>
+        )}
       </div>
     </section>
   )
