@@ -38,6 +38,27 @@ import {
 
 const SITE_URL = 'https://www.syrama-yachting.com'
 
+// Curated "further reading" links from a destination page down to the blog
+// cluster that supports it — keyed by "regionSlug/citySlug". Only
+// destinations with a real content cluster get an entry; everything else
+// renders no guides section. Each destination's blog articles link back up
+// here, so this closes the pillar/cluster loop.
+const DESTINATION_GUIDES: Record<string, { heading: string; links: { label: string; href: string }[] }> = {
+  'emirates/dubai': {
+    heading: 'Planning a Dubai Charter',
+    links: [
+      { label: 'How much it costs to rent a yacht in Dubai', href: '/blog/dubai-yacht-rental-cost' },
+      { label: 'The best yacht routes in Dubai', href: '/blog/dubai-yacht-charter-routes' },
+      { label: '2, 3 or 4 hours — how long to book', href: '/blog/how-long-rent-yacht-dubai' },
+      { label: "What's included in the price", href: '/blog/dubai-yacht-rental-whats-included' },
+      { label: 'Choosing the right yacht size for your group', href: '/blog/dubai-yacht-size-guide' },
+      { label: 'Sunset yacht charter in Dubai', href: '/blog/dubai-sunset-yacht-charter' },
+      { label: "New Year's Eve on the water", href: '/blog/new-years-eve-yacht-charter-dubai' },
+      { label: 'All Dubai yacht charter guides', href: '/blog/category/dubai-yacht-charter' },
+    ],
+  },
+}
+
 export function generateDestinationMetadata(destination: Destination): Metadata {
   const canonicalPath = destinationFullPath(destination)
   const imageUrl = `${SITE_URL}${destination.heroImage}`
@@ -105,6 +126,7 @@ export async function DestinationPageContent({ destination }: { destination: Des
   // lib/destinations.ts. New destinations added there are picked up
   // automatically.
   const relatedDestinations = await getRelatedDestinations(destination)
+  const guides = DESTINATION_GUIDES[`${destination.regionSlug}/${destination.citySlug ?? ''}`]
 
   return (
     <div className="flex flex-col min-h-screen bg-[#06090f]">
@@ -145,6 +167,30 @@ export async function DestinationPageContent({ destination }: { destination: Des
               </h2>
             </div>
             <FaqAccordion items={destination.faq} />
+          </div>
+        )}
+
+        {/* Further reading — links down to the blog cluster that supports
+            this destination (see DESTINATION_GUIDES above). Closes the
+            pillar/cluster loop: the articles link back up to this page. */}
+        {guides && (
+          <div style={{ padding: '0 clamp(24px, 6vw, 96px) 80px', borderTop: '1px solid rgba(184,151,74,0.12)' }}>
+            <div style={{ paddingTop: 64, marginBottom: 28, maxWidth: 760 }}>
+              <div style={{ fontFamily: 'var(--font-tenor)', fontSize: 10, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#b8974a', marginBottom: 12 }}>Guides</div>
+              <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(22px, 3vw, 34px)', fontWeight: 300, color: '#f5eedd', margin: 0 }}>{guides.heading}</h2>
+            </div>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 760 }}>
+              {guides.links.map((g) => (
+                <li key={g.href}>
+                  <Link
+                    href={g.href}
+                    style={{ fontFamily: 'var(--font-tenor)', fontSize: 14, lineHeight: 1.7, color: '#b8974a', textDecoration: 'none', borderBottom: '1px solid rgba(184,151,74,0.25)' }}
+                  >
+                    {g.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 

@@ -92,10 +92,24 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
     articleSection: post.category,
   }
 
+  // FAQPage JSON-LD — only when the article genuinely has an FAQ block, so
+  // the structured data always matches something visible on the page.
+  const faqItems = post.content.flatMap((b) => (b.type === 'faq' ? b.items : []))
+  const faqJsonLd = faqItems.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  } : null
+
   return (
     <main id="main-content" style={{ background: '#06090f', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(breadcrumbItems)) }} />
+      {faqJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />}
 
       <Navbar />
 

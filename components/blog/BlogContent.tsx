@@ -150,6 +150,26 @@ export default function BlogContent({ blocks }: { blocks: BlogBlock[] }) {
                 )}
               </blockquote>
             )
+          case 'faq':
+            return (
+              <div key={i} style={{ margin: '44px 0 24px' }}>
+                <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(24px, 3vw, 32px)', fontWeight: 300, color: '#f5eedd', margin: '0 0 24px' }}>
+                  Frequently asked questions
+                </h2>
+                <dl style={{ margin: 0 }}>
+                  {block.items.map((item, j) => (
+                    <div key={j} style={{ padding: '18px 0', borderTop: '1px solid rgba(184,151,74,0.15)' }}>
+                      <dt style={{ fontFamily: 'var(--font-cormorant)', fontSize: 19, fontWeight: 400, color: '#d8d8cc', marginBottom: 8 }}>
+                        {item.q}
+                      </dt>
+                      <dd style={{ margin: 0, fontFamily: 'var(--font-tenor)', fontSize: 15, lineHeight: 1.9, color: '#8f8f7f' }}>
+                        {renderInline(item.a)}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )
           default:
             return null
         }

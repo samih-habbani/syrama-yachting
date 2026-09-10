@@ -39,12 +39,14 @@ const BLOCK_LABELS: Record<BlockType, string> = {
   paragraph: 'Paragraph',
   list: 'List (one item per line)',
   quote: 'Pull quote',
+  faq: 'FAQ (one "Question | Answer" per line)',
 }
 
 function toEditorBlocks(blocks: BlogBlock[]): EditorBlock[] {
   if (!blocks.length) return [{ type: 'paragraph', text: '', attribution: '' }]
   return blocks.map((b) => {
     if (b.type === 'list') return { type: 'list', text: b.items.join('\n'), attribution: '' }
+    if (b.type === 'faq') return { type: 'faq', text: b.items.map((i) => `${i.q} | ${i.a}`).join('\n'), attribution: '' }
     if (b.type === 'quote') return { type: 'quote', text: b.text, attribution: b.attribution ?? '' }
     return { type: b.type, text: b.text, attribution: '' }
   })
@@ -56,6 +58,14 @@ function toBlogBlocks(blocks: EditorBlock[]): BlogBlock[] {
       if (b.type === 'list') {
         const items = b.text.split('\n').map((s) => s.trim()).filter(Boolean)
         return items.length ? { type: 'list', items } : null
+      }
+      if (b.type === 'faq') {
+        const items = b.text
+          .split('\n')
+          .map((line) => line.split('|'))
+          .filter((parts) => parts.length >= 2 && parts[0].trim() && parts.slice(1).join('|').trim())
+          .map((parts) => ({ q: parts[0].trim(), a: parts.slice(1).join('|').trim() }))
+        return items.length ? { type: 'faq', items } : null
       }
       const text = b.text.trim()
       if (!text) return null
@@ -292,7 +302,7 @@ export default function BlogPostForm({ post, onCancel }: { post?: BlogPostRecord
                     style={{ ...textareaStyle, minHeight: block.type === 'heading' ? 44 : 80 }}
                     value={block.text}
                     onChange={(e) => updateBlock(i, { text: e.target.value })}
-                    placeholder={block.type === 'list' ? 'One item per line' : block.type === 'heading' ? 'Section heading' : 'Text…'}
+                    placeholder={block.type === 'list' ? 'One item per line' : block.type === 'faq' ? 'One per line:  Question text | Answer text' : block.type === 'heading' ? 'Section heading' : 'Text…'}
                   />
                   {block.type === 'quote' && (
                     <TextField

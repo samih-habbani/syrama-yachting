@@ -17,6 +17,14 @@ export const BLOG_CATEGORIES = [
   'Destinations',
   'Buying a Yacht',
   'Yachting Advice',
+  // Dedicated topical cluster for Dubai-specific charter content (price,
+  // routes, occasions, pre-booking questions). Drives the same-category
+  // "Related Articles" block so a reader stays inside the Dubai cluster,
+  // and has one real hub page at /blog/category/dubai-yacht-charter (see
+  // app/blog/category/[category]/page.tsx). Broader educational articles
+  // stay in "Charter Guides" — this is only for pieces that are genuinely
+  // Dubai-focused.
+  'Dubai Yacht Charter',
 ] as const
 
 export type BlogCategory = (typeof BLOG_CATEGORIES)[number]
@@ -31,6 +39,11 @@ export type BlogBlock =
   | { type: 'paragraph'; text: string }
   | { type: 'list'; items: string[] }
   | { type: 'quote'; text: string; attribution?: string }
+  // A Q&A block. Rendered as a styled list by BlogContent, and — when a
+  // post contains at least one — also emitted as FAQPage JSON-LD by the
+  // article page. Use only where the questions are real pre-booking
+  // searches, not filler.
+  | { type: 'faq'; items: { q: string; a: string }[] }
 
 export interface BlogPost {
   id: number
@@ -131,11 +144,18 @@ export async function getAllPublishedSlugs(): Promise<string[]> {
   return (await getPublishedPosts()).map((p) => p.slug)
 }
 
+// Published posts in one category, newest first — used by the category hub
+// page (app/blog/category/[category]/page.tsx).
+export async function getPostsByCategory(category: string): Promise<BlogPost[]> {
+  return (await getPublishedPosts()).filter((p) => p.category === category)
+}
+
 // ~200 words per minute, floored at 1 — used at save time (admin API and
 // the seed script), not at render time.
 export function computeReadingMinutes(content: BlogBlock[]): number {
   const words = content.reduce((n, block) => {
     if (block.type === 'list') return n + block.items.join(' ').split(/\s+/).length
+    if (block.type === 'faq') return n + block.items.map((i) => `${i.q} ${i.a}`).join(' ').split(/\s+/).length
     if (block.type === 'heading' || block.type === 'paragraph' || block.type === 'quote') {
       return n + block.text.split(/\s+/).length
     }
