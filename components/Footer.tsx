@@ -200,30 +200,31 @@ export default function Footer() {
 
             {/* Contact & Links */}
             <motion.div
-              className="flex items-center gap-5 text-sm tracking-wide flex-wrap justify-center md:justify-end"
+              className="flex items-center gap-4 text-sm tracking-wide flex-wrap justify-center md:justify-end"
               variants={itemVariants}
             >
               <a
                 href="https://www.instagram.com/syrama_services/"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Syrama Yachting on Instagram"
-                className="text-[#f5eedd]/60 hover:text-[#b8974a] transition-colors"
+                className="inline-flex items-center gap-1.5 text-[#f5eedd]/60 hover:text-[#b8974a] transition-colors"
               >
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M7.8 2h8.4A5.8 5.8 0 0 1 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8A5.8 5.8 0 0 1 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8A3.6 3.6 0 0 0 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6A3.6 3.6 0 0 0 16.4 4H7.6m9.65 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6" />
                 </svg>
+                Instagram
               </a>
+              <span className="text-[#b8974a]/30">•</span>
               <a
                 href="https://www.youtube.com/@SyramaYachting"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Syrama Yachting on YouTube"
-                className="text-[#f5eedd]/60 hover:text-[#b8974a] transition-colors"
+                className="inline-flex items-center gap-1.5 text-[#f5eedd]/60 hover:text-[#b8974a] transition-colors"
               >
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M23.5 6.2a3 3 0 0 0-2.11-2.13C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.39.52A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.11 2.13c1.89.52 9.39.52 9.39.52s7.5 0 9.39-.52a3 3 0 0 0 2.11-2.13A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8M9.6 15.6V8.4l6.25 3.6z" />
                 </svg>
+                YouTube
               </a>
               <span className="text-[#b8974a]/30">•</span>
               <a
