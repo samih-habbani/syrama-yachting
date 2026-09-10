@@ -22,6 +22,7 @@ export default function Footer() {
     'Yacht Sales': '/yacht-sale',
     'Bespoke Experiences': '/experiences',
     // SYRAMA section
+    'Blog': '/blog',
     'About': '/about',
     'Contact': '/#contact',
     'Instagram': 'https://www.instagram.com/syrama_services/',
@@ -39,7 +40,7 @@ export default function Footer() {
     },
     {
       category: 'SYRAMA',
-      links: ['About', 'Contact', 'Instagram', 'LinkedIn'],
+      links: ['Blog', 'About', 'Contact', 'Instagram', 'LinkedIn'],
     },
   ];
 

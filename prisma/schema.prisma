@@ -462,3 +462,54 @@ model DestinationItinerary {
   @@index([destinationId])
   @@map("destination_itinerary")
 }
+
+// One row per blog article — /blog/[slug]. A cluster-content SEO engine
+// that links back up to the /yacht-charter and /yacht-sale pillar pages
+// (see app/yacht-charter/page.tsx, app/yacht-sale/page.tsx) rather than
+// duplicating their role — edited from /admin/dashboard/blog.
+//
+// Mapped to "yachting_blog_post", NOT "blog_post" — a `blog_post` table
+// already exists in this database with a different schema and 3 real,
+// published articles (Monaco Grand Prix, Saint-Tropez, private aviation)
+// that are NOT referenced anywhere in this codebase and are not scoped to
+// yacht charter/sales (one is about private jets). It belongs to a
+// different Syrama Services property sharing this same Postgres instance —
+// confirmed with the user not to touch it. This model is a deliberately
+// separate, yachting-site-only table.
+model YachtingBlogPost {
+  id              Int       @id @default(autoincrement())
+  slug            String    @unique
+  title           String
+  // Falls back to `title` in generateMetadata when empty — only needed
+  // when the on-page H1 should read differently from the <title>/OG title.
+  metaTitle       String?   @map("meta_title")
+  metaDescription String    @map("meta_description")
+  // Short teaser shown on the /blog index card and used as the JSON-LD
+  // Article `description` fallback when metaDescription would be redundant
+  // there — kept separate from metaDescription so one can target the SERP
+  // snippet while the other targets an on-page reader skimming the grid.
+  excerpt         String
+  // Ordered content blocks: [{type:'heading'|'paragraph'|'list'|'quote', ...}]
+  // — see components/blog/BlogContent.tsx for the shape and renderer. One
+  // JSON column rather than a child table (like DestinationFaq above) since
+  // blocks are never queried independently of their post.
+  content         Json
+  coverImage      String    @map("cover_image")
+  coverImageAlt   String    @map("cover_image_alt")
+  category        String
+  tags            String[]  @default([])
+  // "draft" | "published" — a draft never appears on /blog, in the
+  // sitemap, or in generateStaticParams; its /blog/[slug] page 404s.
+  status          String    @default("draft")
+  publishedAt     DateTime? @map("published_at")
+  // Computed at save time (word count / ~200wpm) rather than derived at
+  // render time — content is normally read far more often than written.
+  readingMinutes  Int       @map("reading_minutes")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([category])
+  @@map("yachting_blog_post")
+}

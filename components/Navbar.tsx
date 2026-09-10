@@ -17,6 +17,7 @@ function isNavItemActive(href: string, pathname: string, tabParam: string | null
   const isSalePage = pathname === '/yacht-sale' || pathname.startsWith('/yacht-sale/');
   if (href === '/yacht-charter') return isCharterPage || (isFleetPage && tabParam !== 'sale');
   if (href === '/yacht-sale') return isSalePage || (isFleetPage && tabParam === 'sale');
+  if (href === '/blog') return pathname === '/blog' || pathname.startsWith('/blog/');
   return pathname === href;
 }
 
@@ -38,7 +39,7 @@ export default function Navbar() {
   const router = useRouter();
 
   // Ne pas afficher le back button sur les pages principales
-  const mainPages = ['/', '/yacht-charter', '/yacht-sale', '/experiences'];
+  const mainPages = ['/', '/yacht-charter', '/yacht-sale', '/experiences', '/blog'];
   const showBackButton = !mainPages.includes(pathname);
 
   // Check authentication status
@@ -83,6 +84,7 @@ export default function Navbar() {
     { label: 'CHARTERS', href: '/yacht-charter' },
     { label: 'SALES', href: '/yacht-sale' },
     { label: 'BESPOKE EXPERIENCES', href: '/experiences' },
+    { label: 'BLOG', href: '/blog' },
   ];
 
   return (
