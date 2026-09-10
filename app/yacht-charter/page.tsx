@@ -11,7 +11,7 @@ import Footer from '@/components/Footer'
 
 const SITE_URL = 'https://www.syrama-yachting.com'
 const TITLE = 'Luxury Yacht Charter Worldwide'
-const DESCRIPTION = 'Charter a private, crewed luxury yacht worldwide with Syrama Yachting. Motor yachts and superyachts, bespoke itineraries, French Riviera to the Caribbean.'
+const DESCRIPTION = "Charter a private, crewed luxury yacht worldwide with Syrama Yachting. Explore motor yachts and superyachts across the world's finest destinations."
 
 export const metadata: Metadata = {
   title: TITLE,

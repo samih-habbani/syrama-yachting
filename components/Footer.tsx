@@ -106,6 +106,32 @@ export default function Footer() {
                 contact@syrama-services.com
               </a>
             </div>
+
+            {/* Link back to the parent company — Syrama Yachting is the
+                yachting arm of Syrama, a Dubai private concierge
+                (syrama.ae). Copy reflects that site's own positioning. */}
+            <div className="mt-6 pt-5 border-t border-[#b8974a]/15">
+              <p className="font-[var(--font-lora)] text-[#f5eedd]/50 text-sm leading-relaxed tracking-wide">
+                Syrama Yachting is the yachting arm of{' '}
+                <a
+                  href="https://www.syrama.ae"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#b8974a] hover:text-[#d4b472] transition-colors"
+                >
+                  Syrama
+                </a>
+                , a Dubai private concierge orchestrating every detail of an extraordinary life — private aviation, villas, events and bespoke requests.
+              </p>
+              <a
+                href="https://www.syrama.ae"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-3 font-[var(--font-heading)] text-[#b8974a] hover:text-[#d4b472] transition-colors text-xs tracking-widest uppercase"
+              >
+                Discover Syrama &rarr;
+              </a>
+            </div>
           </motion.div>
 
           {/* Links sections */}
