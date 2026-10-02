@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Pencil, Trash2, Images, Sailboat, Link2 } from 'lucide-react'
+import { Pencil, Trash2, Images, Sailboat, Link2, ExternalLink } from 'lucide-react'
 import MediaManager from './MediaManager'
 import Card from './ui/Card'
 import Badge from './ui/Badge'
@@ -9,6 +9,7 @@ import Pagination from './ui/Pagination'
 import EmptyState from './ui/EmptyState'
 import ActionsMenu from './ui/ActionsMenu'
 import GenerateBookingLinkModal from './GenerateBookingLinkModal'
+import { yachtHref } from '@/lib/slug'
 
 interface Yacht {
   id: number
@@ -184,6 +185,14 @@ export default function YachtListWithPagination({
               <ActionsMenu
                 items={[
                   { label: 'Edit', icon: <Pencil size={13.5} strokeWidth={1.75} />, onClick: () => onEdit(yacht) },
+                  // Goes to the flat /yachting/fleet/charters|sales/[slug]
+                  // URL — a real, working link either way: it either is the
+                  // yacht's canonical page, or it permanent-redirects there
+                  // (see YachtDetailPageContent in yacht-detail-shared.tsx).
+                  // Computed client-side with no DB call, unlike the public
+                  // site's resolveYachtHref, which is why it's the flat
+                  // form rather than the nested destination URL.
+                  { label: 'View on Site', icon: <ExternalLink size={13.5} strokeWidth={1.75} />, onClick: () => window.open(yachtHref(yacht), '_blank') },
                   { label: expanded ? 'Hide Images' : 'Manage Images', icon: <Images size={13.5} strokeWidth={1.75} />, onClick: () => setExpandedYachtId(expanded ? null : yacht.id) },
                   { label: 'Generate Booking Link', icon: <Link2 size={13.5} strokeWidth={1.75} />, onClick: () => setLinkYacht(yacht) },
                   { label: 'Delete', icon: <Trash2 size={13.5} strokeWidth={1.75} />, onClick: () => onDelete(yacht.id), tone: 'danger' },
