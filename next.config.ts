@@ -25,6 +25,18 @@ const nextConfig: NextConfig = {
     ]
   },
   images: {
+    // Serve images exactly as stored, bypassing Vercel's Image Optimization.
+    // In production every /_next/image request was answering HTTP 402
+    // (OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED) — the plan's image
+    // optimization quota was exhausted (the catalogue alone is ~5,600
+    // uploaded photos, each requested in several sizes/formats) — so ALL
+    // next/image photos site-wide (yacht thumbnails, lightbox, regions,
+    // experiences) failed to render. The sources are already compressed
+    // WebP (typically 50–200 KB), so serving them directly is fast and
+    // can never hit a quota. Remove this line only if the Vercel plan is
+    // upgraded and optimization is wanted again (the settings below then
+    // apply again).
+    unoptimized: true,
     // Source photos are already WebP; let the optimizer re-encode to AVIF
     // too (smaller still on the browsers that support it) and pick
     // whichever the requesting browser accepts.
