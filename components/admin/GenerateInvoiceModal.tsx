@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { X, FileDown } from 'lucide-react'
 import Button from './ui/Button'
 import { FilterField, TextField, SelectField } from './ui/FilterBar'
+import LineItemsEditor, { emptyItem, toLineItems, type EditableItem } from './LineItemsEditor'
 
 interface GenerateInvoiceModalProps {
   reservation: {
@@ -26,7 +27,8 @@ export default function GenerateInvoiceModal({ reservation, onClose }: GenerateI
   const [serviceCity, setServiceCity] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [priceTotal, setPriceTotal] = useState('')
+  const [rows, setRows] = useState<EditableItem[]>([emptyItem()])
+  const [quoteId, setQuoteId] = useState<number | null>(null)
   const [currency, setCurrency] = useState('EUR')
   const [applyVat, setApplyVat] = useState(false)
   const [vatRate, setVatRate] = useState('5')
@@ -45,7 +47,8 @@ export default function GenerateInvoiceModal({ reservation, onClose }: GenerateI
     setServiceCity(reservation.location || '')
     setStartDate(toDateInput(reservation.date))
     setEndDate(toDateInput(reservation.endDate))
-    setPriceTotal(reservation.price != null ? String(reservation.price) : '')
+    setRows([{ description: yachtLabel ? `Yacht charter — ${yachtLabel}` : 'Yacht charter', quantity: '1', unitPrice: reservation.price != null ? String(reservation.price) : '' }])
+    setQuoteId(null)
     setCurrency('EUR')
     setApplyVat(false)
     setVatRate('5')
@@ -53,6 +56,23 @@ export default function GenerateInvoiceModal({ reservation, onClose }: GenerateI
     setNotes('')
     setError('')
     setCreatedId(null)
+    // If a quote already exists for this reservation, start from its
+    // lines (charter + extras), currency, VAT and notes.
+    let cancelled = false
+    fetch(`/api/admin/quotes?reservationId=${reservation.id}`)
+      .then((r) => (r.ok ? r.json() : { quotes: [] }))
+      .then(({ quotes }) => {
+        const q = quotes?.[0]
+        if (!q || cancelled) return
+        setQuoteId(q.id)
+        setCurrency(q.currency)
+        setApplyVat(q.applyVat)
+        setVatRate(String(q.vatRate || 5))
+        if (q.notes) setNotes(q.notes)
+        setRows(q.items.map((i: { description: string; quantity: number; unitPrice: number }) => ({ description: i.description, quantity: String(i.quantity), unitPrice: String(i.unitPrice) })))
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reservation?.id])
 
@@ -79,7 +99,8 @@ export default function GenerateInvoiceModal({ reservation, onClose }: GenerateI
           serviceCity: serviceCity || undefined,
           startDate: startDate || undefined,
           endDate: endDate || undefined,
-          priceTotal: priceTotal || undefined,
+          items: toLineItems(rows),
+          quoteId: quoteId || undefined,
           currency,
           status,
           notes: notes || undefined,
@@ -113,7 +134,7 @@ export default function GenerateInvoiceModal({ reservation, onClose }: GenerateI
     >
       <div
         style={{
-          width: '100%', maxWidth: 460, maxHeight: '88vh', overflowY: 'auto',
+          width: '100%', maxWidth: 560, maxHeight: '88vh', overflowY: 'auto',
           background: 'linear-gradient(180deg, #0f1419 0%, #06090f 100%)',
           border: '1px solid rgba(184,151,74,0.2)', borderRadius: 12, padding: 32,
         }}
@@ -175,15 +196,25 @@ export default function GenerateInvoiceModal({ reservation, onClose }: GenerateI
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-              <FilterField label="Total Price">
-                <TextField type="number" step="0.01" min={0} value={priceTotal} onChange={(e) => setPriceTotal(e.target.value)} />
+              <FilterField label="Status">
+                <SelectField value={status} onChange={setStatus}>
+                  <option value="draft">Draft</option>
+                  <option value="sent">Sent</option>
+                  <option value="paid">Paid</option>
+                </SelectField>
               </FilterField>
               <FilterField label="Currency">
                 <SelectField value={currency} onChange={setCurrency}>
                   <option value="EUR">EUR</option>
                   <option value="AED">AED</option>
+                  <option value="USD">USD</option>
                 </SelectField>
               </FilterField>
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+              {quoteId && <div style={{ fontFamily: 'var(--font-lora)', fontSize: 11.5, color: '#d4b472', marginBottom: 8 }}>Lines prefilled from the quote — edit freely.</div>}
+              <LineItemsEditor rows={rows} onChange={setRows} currency={currency} />
             </div>
 
             <label
@@ -210,16 +241,6 @@ export default function GenerateInvoiceModal({ reservation, onClose }: GenerateI
                 </FilterField>
               </div>
             )}
-
-            <div style={{ marginBottom: 16 }}>
-              <FilterField label="Status">
-                <SelectField value={status} onChange={setStatus}>
-                  <option value="draft">Draft</option>
-                  <option value="sent">Sent</option>
-                  <option value="paid">Paid</option>
-                </SelectField>
-              </FilterField>
-            </div>
 
             <div style={{ marginBottom: 28 }}>
               <FilterField label="Notes">

@@ -170,6 +170,8 @@ model Reservation {
   // can be edited on its own, same convention as BookingLink.
   startTime        String?   @map("start_time")
   endTime          String?   @map("end_time")
+  // Port / marina the charter departs from (location = the city).
+  departurePort    String?   @map("departure_port")
   plannedItinerary String?   @map("planned_itinerary")
   // Defaults match how a fresh reservation is set up in the admin: no
   // deposit yet, payment due immediately unless edited otherwise.
@@ -263,6 +265,12 @@ model Invoice {
   category         String
   applyVat         Boolean   @default(false) @map("apply_vat")
   vatRate          Float     @default(0) @map("vat_rate")
+  // Hand-written line items [{description, quantity, unitPrice}] — the
+  // charter itself plus any extras (catering, sea toys…). Null on legacy
+  // invoices, which render as one single line from priceTotal.
+  items            Json?
+  // The quote this invoice was built from, if any (loose reference).
+  quoteId          Int?      @map("quote_id")
 
   @@index([reservationId])
   @@map("invoice")
@@ -512,4 +520,26 @@ model YachtingBlogPost {
   @@index([publishedAt])
   @@index([category])
   @@map("yachting_blog_post")
+}
+// A client quote (devis) generated from a reservation. Line items are
+// free-form [{description, quantity, unitPrice}] — the first usually the
+// yacht charter, the rest hand-written options (catering, sea toys…).
+// `reservationId` is a loose reference, same convention as Invoice.
+model Quote {
+  id            Int       @id @default(autoincrement())
+  reservationId Int       @map("reservation_id")
+  // "QUO-26<id>", same scheme as invoices — set after insert.
+  quoteNumber   String    @unique @map("quote_number")
+  currency      String
+  items         Json
+  applyVat      Boolean   @default(false) @map("apply_vat")
+  vatRate       Float     @default(0) @map("vat_rate")
+  validUntil    DateTime? @map("valid_until")
+  // "draft" | "sent" | "accepted"
+  status        String    @default("draft")
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([reservationId])
+  @@map("quote")
 }

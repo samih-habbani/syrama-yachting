@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { cookies } from 'next/headers'
 import { createInvoice } from '@/lib/invoice'
+import { parseLineItems, itemsSubtotal } from '@/lib/line-items'
 
 async function checkAuth() {
   const cookieStore = await cookies()
@@ -137,6 +138,8 @@ export async function GET(request: Request) {
   }
 }
 
+const isCommissionCategory = (c: unknown) => c === 'commission'
+
 // POST — create an invoice for a reservation. Two flows, chosen by
 // `category`:
 //   - "service" (default): a client-facing invoice, for a reservation
@@ -152,8 +155,12 @@ export async function POST(request: Request) {
     const {
       reservationId, category, customerId, providerId, serviceTitle, serviceCity,
       startDate, endDate, priceTotal, commissionRate, commissionAmount,
-      currency, status, notes, applyVat, vatRate,
+      currency, status, notes, applyVat, vatRate, items: rawItems, quoteId,
     } = data
+    // Hand-written lines (charter + extras): when present they ARE the
+    // invoice amount — priceTotal is kept in sync (pre-VAT subtotal) so
+    // the stats and listing keep working unchanged.
+    const items = !isCommissionCategory(category) ? parseLineItems(rawItems) : []
 
     if (!reservationId || !currency) {
       return Response.json({ error: 'Reservation and currency are required' }, { status: 400 })
@@ -182,7 +189,9 @@ export async function POST(request: Request) {
       serviceCity: !isCommission ? serviceCity || null : null,
       startDate: startDate ? new Date(startDate) : null,
       endDate: endDate ? new Date(endDate) : null,
-      priceTotal: priceTotal !== undefined && priceTotal !== '' ? parseFloat(priceTotal) : null,
+      priceTotal: items.length > 0 ? itemsSubtotal(items) : priceTotal !== undefined && priceTotal !== '' ? parseFloat(priceTotal) : null,
+      items: items.length > 0 ? items : null,
+      quoteId: quoteId ? parseInt(quoteId) : null,
       commissionRate: isCommission && commissionRate !== undefined && commissionRate !== '' ? parseFloat(commissionRate) : null,
       commissionAmount: isCommission && commissionAmount !== undefined && commissionAmount !== '' ? parseFloat(commissionAmount) : null,
       currency,

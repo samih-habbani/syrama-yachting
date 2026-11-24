@@ -4,7 +4,7 @@ import { Document, Page, Text, View, Image, StyleSheet, renderToBuffer } from '@
 
 // Extracted from the client's own reference invoice PDF (same emblem used
 // on every SYRAMA document).
-const LOGO_PATH = path.join(process.cwd(), 'public/assets/invoices/syrama-logo.png')
+export const LOGO_PATH = path.join(process.cwd(), 'public/assets/invoices/syrama-logo.png')
 
 export interface InvoicePdfData {
   invoiceNumber: string
@@ -26,6 +26,8 @@ export interface InvoicePdfData {
   startDate: string | null
   endDate: string | null
   lineAmount: string | null
+  // Hand-written line items (charter + extras). Empty → legacy single line.
+  items: { description: string; quantity: number; unitPrice: string; total: string }[]
 
   commissionRate: number | null
   applyVat: boolean
@@ -36,11 +38,12 @@ export interface InvoicePdfData {
   currency: string
 
   notes: string | null
+  trip?: { startTime: string | null; endTime: string | null; departurePort: string | null; city: string | null }
 }
 
-const NAVY = '#0d1b2e'
+export const NAVY = '#0d1b2e'
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   page: {
     fontSize: 9.5,
     fontFamily: 'Helvetica',
@@ -98,6 +101,42 @@ const BADGE_LABEL: Record<InvoicePdfData['status'], string> = {
   draft: 'Draft / Brouillon',
   sent: 'Sent / Envoyée',
   paid: 'Paid / Payée',
+}
+
+export function BankDetails({ englishOnly = false }: { englishOnly?: boolean } = {}) {
+  const t = (en: string, fr: string) => (englishOnly ? en : `${en} / ${fr}`)
+  return (
+    <>
+      <Text style={styles.sectionTitle}>{t('Bank Transfer Details', 'Coordonnées bancaires')}</Text>
+      <View style={styles.bankBox}>
+      <View style={styles.bankCol}>
+        <Text><Text style={styles.bankHeading}>{t('Account Holder', 'Titulaire')} :</Text>{'\n'}SYRAMA CONCIERGE SERVICES - FZCO{'\n\n'}</Text>
+        <Text><Text style={styles.bankHeading}>IBAN :</Text>{'\n'}AE36 0860 0000 0954 7977 433</Text>
+      </View>
+      <View style={styles.bankCol}>
+        <Text><Text style={styles.bankHeading}>BIC / SWIFT :</Text>{'\n'}WIOBAEADXXX{'\n\n'}</Text>
+        <Text><Text style={styles.bankHeading}>{t('Bank Address', 'Adresse banque')} :</Text>{'\n'}Etihad Airways Centre, 5th Floor{'\n'}Abu Dhabi, UAE</Text>
+      </View>
+      </View>
+
+    </>
+  )
+}
+
+// Trip facts shown on quotes and invoices. Empty fields are skipped.
+export function TripDetails({ rows, englishOnly = false }: { rows: [string, string | null | undefined][]; englishOnly?: boolean }) {
+  const shown = rows.filter(([, v]) => v)
+  if (shown.length === 0) return null
+  return (
+    <>
+      <Text style={styles.sectionTitle}>{englishOnly ? 'Trip Details' : 'Trip Details / Détails de la prestation'}</Text>
+      <View style={styles.clientBox}>
+        {shown.map(([k, v]) => (
+          <Text key={k}><Text style={{ fontFamily: 'Helvetica-Bold' }}>{k} : </Text>{v}</Text>
+        ))}
+      </View>
+    </>
+  )
 }
 
 function InvoiceDocument({ data }: { data: InvoicePdfData }) {
@@ -165,7 +204,32 @@ function InvoiceDocument({ data }: { data: InvoicePdfData }) {
           </>
         )}
 
+        <TripDetails rows={[['Embarkation / Embarquement', data.trip?.startTime], ['Disembarkation / Débarquement', data.trip?.endTime], ['Embarkation port / Port d\'embarquement', data.trip?.departurePort], ['City / Ville', data.trip?.city]]} />
+
         <Text style={styles.sectionTitle}>Services Rendered / Prestation réalisée</Text>
+        {data.items.length > 0 ? (
+          <View style={styles.table}>
+            <View style={styles.tableHead}>
+              <Text style={[styles.th, { width: '52%' }]}>Description</Text>
+              <Text style={[styles.th, { width: '10%', textAlign: 'right' }]}>Qty</Text>
+              <Text style={[styles.th, { width: '19%', textAlign: 'right' }]}>Unit price</Text>
+              <Text style={[styles.th, { width: '19%', textAlign: 'right' }]}>Total</Text>
+            </View>
+            {data.items.map((it, i) => (
+              <View key={i} style={styles.tableRow} wrap={false}>
+                <View style={[styles.td, { width: '52%' }]}>
+                  <Text style={i === 0 ? styles.serviceName : { fontSize: 10, color: '#333' }}>{it.description}</Text>
+                  {i === 0 && (data.startDate || data.endDate) && (
+                    <Text style={styles.serviceDetail}>{[data.startDate, data.endDate].filter(Boolean).join(' - ')}</Text>
+                  )}
+                </View>
+                <Text style={[styles.td, { width: '10%', textAlign: 'right' }]}>{it.quantity}</Text>
+                <Text style={[styles.td, { width: '19%', textAlign: 'right' }]}>{it.unitPrice}</Text>
+                <Text style={[styles.td, { width: '19%', textAlign: 'right' }]}>{it.total} {data.currency}</Text>
+              </View>
+            ))}
+          </View>
+        ) : (
         <View style={styles.table}>
           <View style={styles.tableHead}>
             <Text style={[styles.th, { width: '50%' }]}>Description</Text>
@@ -188,6 +252,7 @@ function InvoiceDocument({ data }: { data: InvoicePdfData }) {
             <Text style={[styles.td, { width: '20%', textAlign: 'right' }]}>{data.lineAmount ? `${data.lineAmount} ${data.currency}` : '—'}</Text>
           </View>
         </View>
+        )}
 
         <View style={styles.totalsTable}>
           {!data.isService && data.commissionRate != null && (
@@ -224,17 +289,7 @@ function InvoiceDocument({ data }: { data: InvoicePdfData }) {
             : 'VAT exempt — Free Zone entity (UAE) / Exonéré de TVA — Zone franche (EAU)'}
         </Text>
 
-        <Text style={styles.sectionTitle}>Bank Transfer Details / Coordonnées bancaires</Text>
-        <View style={styles.bankBox}>
-          <View style={styles.bankCol}>
-            <Text><Text style={styles.bankHeading}>Account Holder / Titulaire :</Text>{'\n'}SYRAMA CONCIERGE SERVICES - FZCO{'\n\n'}</Text>
-            <Text><Text style={styles.bankHeading}>IBAN :</Text>{'\n'}AE36 0860 0000 0954 7977 433</Text>
-          </View>
-          <View style={styles.bankCol}>
-            <Text><Text style={styles.bankHeading}>BIC / SWIFT :</Text>{'\n'}WIOBAEADXXX{'\n\n'}</Text>
-            <Text><Text style={styles.bankHeading}>Bank Address / Adresse banque :</Text>{'\n'}Etihad Airways Centre, 5th Floor{'\n'}Abu Dhabi, UAE</Text>
-          </View>
-        </View>
+        <BankDetails />
 
         {data.notes && (
           <View style={styles.notesBox}>

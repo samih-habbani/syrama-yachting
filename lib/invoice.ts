@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import type { Invoice } from '@prisma/client'
 import type { InvoicePdfData } from '@/lib/invoice-pdf'
+import { parseLineItems, itemsSubtotal, lineTotal, formatMoney, formatDMY } from '@/lib/line-items'
 
 // The imported provider dataset used dash-only strings ('-', '--', ...) as
 // a "no value" placeholder — same convention used across the admin.
@@ -25,35 +26,19 @@ export async function createInvoice(params: {
   notes: string | null
   applyVat: boolean
   vatRate: number
+  items?: object | null
+  quoteId?: number | null
 }): Promise<Invoice> {
   // The invoice number continues the legacy "INV-26<id>" scheme (year
   // prefix + the row's own id), so it can only be known once the row
   // exists — create with a throwaway unique placeholder, then fix it up.
   const created = await prisma.invoice.create({
-    data: { ...params, invoiceNumber: `TEMP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}` },
+    data: { ...params, items: params.items ?? undefined, invoiceNumber: `TEMP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}` },
   })
   return prisma.invoice.update({
     where: { id: created.id },
     data: { invoiceNumber: `INV-26${created.id}` },
   })
-}
-
-const DATE_OPTIONS_LONG: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' }
-
-function formatDMY(d: Date | null | undefined) {
-  if (!d) return null
-  return d.toLocaleDateString('en-GB', DATE_OPTIONS_LONG) // dd/mm/yyyy
-}
-
-// `toLocaleString('fr-FR', ...)` groups thousands with a narrow no-break
-// space (U+202F) that the standard Helvetica PDF font can't render (same
-// class of bug as the contract's "●" placeholder) — group manually with a
-// plain ASCII space instead, comma as the decimal separator.
-function formatMoney(n: number | null | undefined) {
-  if (n == null) return null
-  const [intPart, decPart] = n.toFixed(2).split('.')
-  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
-  return `${grouped},${decPart}`
 }
 
 // Rebuilds everything a generated invoice PDF needs — reservation, client
@@ -67,7 +52,7 @@ export async function invoiceToPdfData(invoice: Invoice): Promise<InvoicePdfData
         where: { id: invoice.reservationId },
         select: {
           firstName: true, lastName: true, email: true, phone: true,
-          date: true, endDate: true, price: true, priceTotal: true,
+          date: true, endDate: true, startTime: true, endTime: true, departurePort: true, price: true, priceTotal: true,
           location: true, objectTitle: true,
           client: { select: { fullName: true, email: true, phone: true, address: true, city: true, country: true } },
           yacht: { select: { model: true, builder: true, city: true, region: true } },
@@ -141,7 +126,8 @@ export async function invoiceToPdfData(invoice: Invoice): Promise<InvoicePdfData
     ? invoice.priceTotal ?? reservation?.priceTotal ?? reservation?.price ?? null
     : invoice.commissionAmount
 
-  const baseAmount = isService ? (invoice.priceTotal ?? reservation?.priceTotal ?? reservation?.price ?? null) : invoice.commissionAmount
+  const items = isService ? parseLineItems(invoice.items) : []
+  const baseAmount = items.length > 0 ? itemsSubtotal(items) : isService ? (invoice.priceTotal ?? reservation?.priceTotal ?? reservation?.price ?? null) : invoice.commissionAmount
   const vatAmount = invoice.applyVat && baseAmount != null ? baseAmount * (invoice.vatRate / 100) : null
   const totalWithVat = invoice.applyVat && baseAmount != null ? baseAmount + (vatAmount || 0) : baseAmount
 
@@ -168,6 +154,7 @@ export async function invoiceToPdfData(invoice: Invoice): Promise<InvoicePdfData
     startDate: formatDMY(startDate),
     endDate: formatDMY(endDate),
     lineAmount: formatMoney(lineAmount),
+    items: items.map((i) => ({ description: i.description, quantity: i.quantity, unitPrice: formatMoney(i.unitPrice) || '', total: formatMoney(lineTotal(i)) || '' })),
     commissionRate: invoice.commissionRate,
     applyVat: invoice.applyVat,
     vatRate: invoice.vatRate,
@@ -176,5 +163,8 @@ export async function invoiceToPdfData(invoice: Invoice): Promise<InvoicePdfData
     totalDue: formatMoney(totalWithVat),
     currency: invoice.currency,
     notes: invoice.notes,
+    trip: isService
+      ? { startTime: reservation?.startTime ?? null, endTime: reservation?.endTime ?? null, departurePort: reservation?.departurePort ?? null, city: invoice.serviceCity || reservation?.location || serviceLocation || null }
+      : undefined,
   }
 }

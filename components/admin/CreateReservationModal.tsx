@@ -31,6 +31,10 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
     newClientEmail: '',
     newClientPhone: '',
     date: '',
+    endDate: '',
+    startTime: '',
+    endTime: '',
+    departurePort: '',
     numberOfPeople: '',
     location: '',
     price: ''
@@ -95,6 +99,11 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
         return
       }
 
+      if (formData.endDate && formData.endDate < formData.date) {
+        setError('End date must be on or after the start date')
+        return
+      }
+
       if (createNewClient) {
         if (!formData.newClientName || !formData.newClientEmail || !formData.newClientPhone) {
           setError('All client fields are required')
@@ -114,6 +123,10 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
         email: createNewClient ? formData.newClientEmail : undefined,
         phone: createNewClient ? formData.newClientPhone : undefined,
         date: formData.date,
+        endDate: formData.endDate || undefined,
+        startTime: formData.startTime || undefined,
+        endTime: formData.endTime || undefined,
+        departurePort: formData.departurePort || undefined,
         numberOfPeople: formData.numberOfPeople,
         location: formData.location || 'Not specified',
         price: formData.price ? parseFloat(formData.price) : undefined
@@ -140,6 +153,10 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
         newClientEmail: '',
         newClientPhone: '',
         date: '',
+        endDate: '',
+        startTime: '',
+        endTime: '',
+        departurePort: '',
         numberOfPeople: '',
         location: '',
         price: ''
@@ -286,7 +303,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
           {/* Date & People */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Date *</label>
+              <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Start date *</label>
               <input
                 type="date"
                 name="date"
@@ -311,10 +328,39 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess }: C
             </div>
           </div>
 
+          {/* End date (multi-day charter) & times */}
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">End date</label>
+              <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} min={formData.date || undefined} className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-2 text-white focus:outline-none transition text-sm" />
+            </div>
+            <div>
+              <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Start time</label>
+              <input type="time" name="startTime" value={formData.startTime} onChange={handleChange} className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-2 text-white focus:outline-none transition text-sm" />
+            </div>
+            <div>
+              <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">End time</label>
+              <input type="time" name="endTime" value={formData.endTime} onChange={handleChange} className="w-full bg-white/5 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-2 text-white focus:outline-none transition text-sm" />
+            </div>
+          </div>
+          <p className="text-gray-500 text-xs -mt-2">Leave the end date empty for a same-day charter.</p>
+
+          <div>
+            <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Embarkation port</label>
+            <input
+              type="text"
+              name="departurePort"
+              value={formData.departurePort}
+              onChange={handleChange}
+              placeholder="e.g., Port Vauban, Dubai Marina"
+              className="w-full bg-[#06090f]/80 border border-[#b8974a]/20 hover:border-[#b8974a]/40 focus:border-[#b8974a] rounded-lg px-4 py-2 text-[#f5eedd] focus:outline-none transition text-sm placeholder-gray-500"
+            />
+          </div>
+
           {/* Location & Price */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">Location</label>
+              <label className="text-gray-500 text-xs tracking-widest uppercase block mb-3">City</label>
               <input
                 type="text"
                 name="location"

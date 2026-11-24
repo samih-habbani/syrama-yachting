@@ -8,12 +8,14 @@ import { FilterField, TextField, SelectField } from './ui/FilterBar'
 interface Reservation {
   id: number
   date: string | null
+  endDate?: string | null
   numberOfPeople: number | null
   location: string | null
   price?: number | null
   status: string
   startTime: string | null
   endTime: string | null
+  departurePort?: string | null
   plannedItinerary: string | null
   deposit: number | null
   paymentDeadline: string | null
@@ -40,8 +42,8 @@ function todayInputValue() {
 
 export default function EditReservationModal({ reservation, onClose, onSuccess }: EditReservationModalProps) {
   const [formData, setFormData] = useState({
-    date: '', numberOfPeople: '', location: '', price: '', status: 'pending',
-    startTime: '', endTime: '', plannedItinerary: '', deposit: '0', paymentDeadline: '',
+    date: '', endDate: '', numberOfPeople: '', location: '', price: '', status: 'pending',
+    startTime: '', endTime: '', departurePort: '', plannedItinerary: '', deposit: '0', paymentDeadline: '',
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -50,12 +52,14 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
     if (reservation) {
       setFormData({
         date: toDateInputValue(reservation.date),
+        endDate: toDateInputValue(reservation.endDate ?? null),
         numberOfPeople: reservation.numberOfPeople != null ? String(reservation.numberOfPeople) : '',
         location: reservation.location || '',
         price: reservation.price != null ? String(reservation.price) : '',
         status: reservation.status || 'pending',
         startTime: reservation.startTime || '',
         endTime: reservation.endTime || '',
+        departurePort: reservation.departurePort || '',
         plannedItinerary: reservation.plannedItinerary || '',
         deposit: reservation.deposit != null ? String(reservation.deposit) : '0',
         paymentDeadline: toDateInputValue(reservation.paymentDeadline) || todayInputValue(),
@@ -137,11 +141,17 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
           )}
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-            <FilterField label="Date *">
+            <FilterField label="Start date *">
               <TextField type="date" required value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
             </FilterField>
             <FilterField label="Guests *">
               <TextField type="number" min={1} required value={formData.numberOfPeople} onChange={(e) => setFormData({ ...formData, numberOfPeople: e.target.value })} />
+            </FilterField>
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <FilterField label="End date (multi-day charter — leave empty if same day)">
+              <TextField type="date" value={formData.endDate} min={formData.date || undefined} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} />
             </FilterField>
           </div>
 
@@ -155,7 +165,13 @@ export default function EditReservationModal({ reservation, onClose, onSuccess }
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <FilterField label="Location">
+            <FilterField label="Embarkation port">
+              <TextField value={formData.departurePort} onChange={(e) => setFormData({ ...formData, departurePort: e.target.value })} placeholder="e.g., Port Vauban, Dubai Marina" />
+            </FilterField>
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <FilterField label="City">
               <TextField value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
             </FilterField>
           </div>

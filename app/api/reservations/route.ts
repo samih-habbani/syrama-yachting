@@ -19,7 +19,7 @@ async function isAdmin() {
 export async function POST(request: Request) {
   try {
     const data = await request.json()
-    const { clientId, fullName, email, phone, yachtId, propertyId, objectTitle, date, numberOfPeople, location, price } = data
+    const { clientId, fullName, email, phone, yachtId, propertyId, objectTitle, date, endDate, startTime, endTime, departurePort, numberOfPeople, location, price } = data
 
     // Admin "quick add" path — used from the Clients admin page to tag a
     // product (yacht or villa) a client has booked, as a visual reminder.
@@ -41,6 +41,11 @@ export async function POST(request: Request) {
           propertyId: propertyId ? parseInt(propertyId) : null,
           objectTitle: objectTitle || null,
           date: date ? new Date(date) : null,
+          endDate: endDate ? new Date(endDate) : null,
+          startTime: startTime || null,
+          endTime: endTime || null,
+          departurePort: departurePort || null,
+          numberOfPeople: numberOfPeople ? parseInt(numberOfPeople) : null,
           location: location || null,
           region: yacht?.region || property?.region || null,
           price: price ? parseFloat(price) : null,
@@ -131,6 +136,11 @@ export async function POST(request: Request) {
         clientId: clientIdToUse,
         yachtId: parseInt(yachtId),
         date: new Date(date),
+        // Multi-day charters + embarkation / disembarkation times (admin form).
+        endDate: endDate && endDate !== date ? new Date(endDate) : null,
+        startTime: startTime || null,
+        endTime: endTime || null,
+        departurePort: departurePort || null,
         numberOfPeople: parseInt(numberOfPeople),
         location: location || 'Not specified',
         region: yacht.region || 'Unknown',
@@ -244,6 +254,7 @@ export async function GET(request: Request) {
           createdAt: true,
           startTime: true,
           endTime: true,
+          departurePort: true,
           plannedItinerary: true,
           deposit: true,
           paymentDeadline: true,
@@ -291,8 +302,21 @@ export async function GET(request: Request) {
       invoices.filter((inv) => inv.category === 'commission').map((inv) => [inv.reservationId, inv.id])
     )
 
+    // Latest quote per reservation (devis) — lets the UI offer "Download
+    // Quote" and prefill the invoice from it.
+    const quotes = reservationIds.length > 0
+      ? await prisma.quote.findMany({
+          where: { reservationId: { in: reservationIds } },
+          select: { id: true, reservationId: true },
+          orderBy: { createdAt: 'desc' },
+        })
+      : []
+    const quoteIdByReservationId = new Map<number, number>()
+    for (const q of quotes) if (!quoteIdByReservationId.has(q.reservationId)) quoteIdByReservationId.set(q.reservationId, q.id)
+
     const reservationsWithLink = reservations.map((r) => ({
       ...r,
+      quoteId: quoteIdByReservationId.get(r.id) || null,
       bookingLinkToken: tokenByReservationId.get(r.id) || null,
       commissionInvoiceId: commissionInvoiceIdByReservationId.get(r.id) || null,
       invoiceId: invoiceIdByReservationId.get(r.id) || null,
@@ -320,7 +344,7 @@ export async function PUT(request: Request) {
   try {
     await checkAuth()
     const data = await request.json()
-    const { id, date, numberOfPeople, location, price, status, startTime, endTime, plannedItinerary, deposit, paymentDeadline } = data
+    const { id, date, endDate, numberOfPeople, location, price, status, startTime, endTime, departurePort, plannedItinerary, deposit, paymentDeadline } = data
 
     if (!id) {
       return Response.json({ error: 'Reservation ID is required' }, { status: 400 })
@@ -330,12 +354,14 @@ export async function PUT(request: Request) {
       where: { id: parseInt(id) },
       data: {
         ...(date && { date: new Date(date) }),
+        ...(endDate !== undefined && { endDate: endDate ? new Date(endDate) : null }),
         ...(numberOfPeople && { numberOfPeople: parseInt(numberOfPeople) }),
         ...(location !== undefined && { location }),
         ...(price !== undefined && { price: price === '' || price === null ? null : parseFloat(price) }),
         ...(status && { status }),
         ...(startTime !== undefined && { startTime: startTime || null }),
         ...(endTime !== undefined && { endTime: endTime || null }),
+        ...(departurePort !== undefined && { departurePort: departurePort || null }),
         ...(plannedItinerary !== undefined && { plannedItinerary: plannedItinerary || null }),
         ...(deposit !== undefined && { deposit: deposit === '' || deposit === null ? null : parseFloat(deposit) }),
         ...(paymentDeadline !== undefined && { paymentDeadline: paymentDeadline ? new Date(paymentDeadline) : null }),

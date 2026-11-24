@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, CalendarCheck, Users as UsersIcon, MapPin, Euro, Pencil, FileDown, Link2, Receipt, Percent } from 'lucide-react'
+import { Plus, CalendarCheck, Users as UsersIcon, MapPin, Euro, Pencil, FileDown, Link2, Receipt, Percent, FileText } from 'lucide-react'
 import ReservationFilters from '@/components/admin/ReservationFilters'
 import CreateReservationModal from '@/components/admin/CreateReservationModal'
 import EditReservationModal from '@/components/admin/EditReservationModal'
 import GenerateBookingLinkModal from '@/components/admin/GenerateBookingLinkModal'
+import GenerateQuoteModal from '@/components/admin/GenerateQuoteModal'
 import GenerateInvoiceModal from '@/components/admin/GenerateInvoiceModal'
 import GenerateCommissionInvoiceModal from '@/components/admin/GenerateCommissionInvoiceModal'
 import PageHeader from '@/components/admin/ui/PageHeader'
@@ -35,8 +36,11 @@ interface Reservation {
   contract: { id: number } | null
   bookingLinkToken: string | null
   invoiceId: number | null
+  quoteId: number | null
   commissionInvoiceId: number | null
 }
+
+type QuoteEdit = NonNullable<React.ComponentProps<typeof GenerateQuoteModal>['quote']>
 
 const EMPTY_FILTERS = { id: '', clientName: '', yachtModel: '', dateFrom: '', dateTo: '' }
 
@@ -54,6 +58,8 @@ export default function ReservationsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
   const [linkingReservation, setLinkingReservation] = useState<Reservation | null>(null)
+  const [quotingReservation, setQuotingReservation] = useState<Reservation | null>(null)
+  const [editingQuote, setEditingQuote] = useState<QuoteEdit | null>(null)
   const [invoicingReservation, setInvoicingReservation] = useState<Reservation | null>(null)
   const [commissionReservation, setCommissionReservation] = useState<Reservation | null>(null)
   const [filters, setFilters] = useState(EMPTY_FILTERS)
@@ -141,6 +147,12 @@ export default function ReservationsPage() {
         }}
       />
 
+      <GenerateQuoteModal
+        reservation={quotingReservation ? { id: quotingReservation.id, yacht: quotingReservation.yacht, price: quotingReservation.price ?? null, quoteId: quotingReservation.quoteId } : null}
+        quote={editingQuote}
+        onClose={() => { setQuotingReservation(null); setEditingQuote(null); fetchReservations(currentPage) }}
+      />
+
       <GenerateInvoiceModal
         reservation={invoicingReservation ? {
           id: invoicingReservation.id,
@@ -215,17 +227,34 @@ export default function ReservationsPage() {
                 items={[
                   { label: 'Edit', icon: <Pencil size={13.5} strokeWidth={1.75} />, onClick: () => setEditingReservation(res) },
                   ...(res.contract
-                    ? [
-                        { label: 'Download Contract', icon: <FileDown size={13.5} strokeWidth={1.75} />, onClick: () => window.open(`/api/admin/contracts/${res.contract!.id}/pdf`, '_blank') },
-                        res.invoiceId
-                          ? { label: 'Download Invoice', icon: <Receipt size={13.5} strokeWidth={1.75} />, onClick: () => window.open(`/api/admin/invoices/${res.invoiceId}/pdf`, '_blank') }
-                          : { label: 'Generate Invoice', icon: <Receipt size={13.5} strokeWidth={1.75} />, onClick: () => setInvoicingReservation(res) },
-                      ]
+                    ? [{ label: 'Download Contract', icon: <FileDown size={13.5} strokeWidth={1.75} />, onClick: () => window.open(`/api/admin/contracts/${res.contract!.id}/pdf`, '_blank') }]
                     : res.bookingLinkToken
                       ? [{ label: 'Get Link', icon: <Link2 size={13.5} strokeWidth={1.75} />, onClick: () => setLinkingReservation(res) }]
                       : res.yacht
                         ? [{ label: 'Generate Booking Link', icon: <Link2 size={13.5} strokeWidth={1.75} />, onClick: () => setLinkingReservation(res) }]
                         : []),
+                  // Quote (devis) then invoice, both straight from the
+                  // reservation — no contract needed. The invoice reuses
+                  // the quote's hand-written lines.
+                  ...(res.quoteId
+                    ? [{ label: 'Download Quote', icon: <FileText size={13.5} strokeWidth={1.75} />, onClick: () => window.open(`/api/admin/quotes/${res.quoteId}/pdf`, '_blank') }]
+                    : []),
+                  ...(res.quoteId
+                    ? [{
+                        label: 'Edit Quote',
+                        icon: <Pencil size={13.5} strokeWidth={1.75} />,
+                        onClick: async () => {
+                          const r = await fetch(`/api/admin/quotes/${res.quoteId}`)
+                          if (!r.ok) return alert('Could not load the quote')
+                          setEditingQuote(await r.json())
+                          setQuotingReservation(res)
+                        },
+                      }]
+                    : []),
+                  { label: res.quoteId ? 'New Quote' : 'Generate Quote', icon: <FileText size={13.5} strokeWidth={1.75} />, onClick: () => setQuotingReservation(res) },
+                  res.invoiceId
+                    ? { label: 'Download Invoice', icon: <Receipt size={13.5} strokeWidth={1.75} />, onClick: () => window.open(`/api/admin/invoices/${res.invoiceId}/pdf`, '_blank') }
+                    : { label: 'Generate Invoice', icon: <Receipt size={13.5} strokeWidth={1.75} />, onClick: () => setInvoicingReservation(res) },
                   // Independent of the client-facing contract/invoice flow
                   // above — for a booking where SYRAMA was the referral /
                   // apporteur d'affaires rather than the direct party.

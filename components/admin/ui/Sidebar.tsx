@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Sailboat, CalendarCheck, Calendar, Contact,
-  MessageSquare, ShieldUser, ExternalLink, LogOut, Building2, Link2, Receipt, MapPin, Newspaper,
+  MessageSquare, ShieldUser, ExternalLink, LogOut, Building2, Link2, Receipt, MapPin, Newspaper, FileText,
 } from 'lucide-react'
 
 interface NavItem {
@@ -31,6 +31,7 @@ const NAV: NavGroup[] = [
       { label: 'Yachts', href: '/admin/dashboard/yachts', icon: Sailboat, match: '/yachts' },
       { label: 'Reservations', href: '/admin/dashboard/reservations', icon: CalendarCheck, match: '/reservations' },
       { label: 'Booking Links', href: '/admin/dashboard/booking-links', icon: Link2, match: '/booking-links' },
+      { label: 'Quotes', href: '/admin/dashboard/quotes', icon: FileText, match: '/quotes' },
       { label: 'Invoices', href: '/admin/dashboard/invoices', icon: Receipt, match: '/invoices' },
       { label: 'Calendar', href: '/admin/dashboard/calendar', icon: Calendar, match: '/calendar' },
       { label: 'Destinations', href: '/admin/dashboard/destinations', icon: MapPin, match: '/destinations' },
